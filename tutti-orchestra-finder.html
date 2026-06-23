@@ -1,0 +1,2895 @@
+<!--
+  Tutti — find an ensemble near you
+  Prototype: orchestra / youth-symphony discovery map for parents and players.
+  Self-contained HTML + Leaflet. Sample data (greater Los Angeles) is illustrative.
+
+  PHASE 1 build (1.1–1.6). New data-model fields (additive — flagged in HANDOFF terms):
+    rating, reviewCount, ratingSource  → 1.1 Compare reviews column (aggregated, NOT org-submitted)
+    instruments[]                      → 1.3 instrument filter
+    rehearsal, commitment, financialAid, goodFit → 1.4 detail depth (sample data, labeled)
+    applyUrl (optional, falls back to website)   → 1.6 Apply hand-off
+-->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tutti — find an ensemble near you</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Mulish:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+
+<style>
+  :root{
+    --paper:#F2F1EC;          /* warm programme paper          */
+    --surface:#FFFFFF;
+    --ink:#1E2E37;            /* deep slate-teal (concert dark) */
+    --ink-soft:#52636C;       /* AA on white (~5.7:1)           */
+    --ink-faint:#8A989F;      /* decorative only — fails AA, never load-bearing text */
+    --brass:#B5832A;          /* music-stand brass — youth      */
+    --brass-deep:#946A1E;     /* AA on white (~4.8:1)           */
+    --garnet:#8C2F36;         /* professional                   */
+    --teal:#2E6E6A;           /* community                      */
+    --slate:#3E5360;          /* collegiate / conservatory      */
+    --line:rgba(30,46,55,.12);
+    --line-soft:rgba(30,46,55,.07);
+    --shadow:0 10px 30px -12px rgba(30,46,55,.28);
+    --shadow-sm:0 4px 14px -8px rgba(30,46,55,.4);
+    --display:'Fraunces',Georgia,'Times New Roman',serif;
+    --sans:'Mulish',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    --rail:340px;
+    --nav:72px;
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;font-family:var(--sans);color:var(--ink);background:var(--paper);
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  }
+  button{font-family:inherit;cursor:pointer}
+  a{color:inherit}
+  ::selection{background:rgba(181,131,42,.22)}
+  .visually-hidden{
+    position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+    clip:rect(0 0 0 0);white-space:nowrap;border:0;
+  }
+
+  /* ---------- App shell ---------- */
+  .app{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    display:flex;align-items:center;gap:18px;
+    padding:0 20px;height:64px;flex:0 0 64px;
+    background:var(--surface);border-bottom:1px solid var(--line);
+    z-index:600;position:relative;
+  }
+  .brand{display:flex;align-items:baseline;gap:10px;user-select:none}
+  .brand__mark{
+    font-family:var(--display);font-weight:600;font-size:26px;letter-spacing:-.01em;
+    color:var(--ink);line-height:1;
+  }
+  .brand__mark .dot{color:var(--brass)}
+  .brand__tag{font-size:12.5px;color:var(--ink-soft);font-weight:600;display:none}
+  @media(min-width:920px){.brand__tag{display:inline}}
+
+  .search{position:relative;flex:1;max-width:560px;margin:0 auto}
+  .search__field{
+    display:flex;align-items:center;gap:10px;
+    background:var(--paper);border:1px solid var(--line);border-radius:999px;
+    padding:9px 14px;transition:border-color .15s,box-shadow .15s;
+  }
+  .search__field:focus-within{border-color:var(--brass);box-shadow:0 0 0 3px rgba(181,131,42,.16)}
+  .search__field svg{flex:0 0 auto;color:var(--ink-soft)}
+  .search input{
+    border:0;outline:0;background:transparent;width:100%;font-size:15px;color:var(--ink);
+  }
+  .search input::placeholder{color:var(--ink-soft);opacity:.85}
+  .search__near{
+    border:0;background:transparent;color:var(--brass-deep);font-weight:700;font-size:13px;
+    white-space:nowrap;padding:4px 6px;border-radius:8px;
+  }
+  .search__near:hover{background:rgba(181,131,42,.12)}
+
+  .topbar__right{display:flex;align-items:center;gap:10px;margin-left:auto}
+  .ghost{
+    border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);
+    font-weight:700;font-size:13px;border-radius:999px;padding:8px 14px;
+  }
+  .ghost:hover{border-color:var(--ink-soft);color:var(--ink)}
+  .ghost--accent{color:var(--brass-deep);border-color:rgba(181,131,42,.4)}
+  .ghost--accent:hover{background:rgba(181,131,42,.1);border-color:var(--brass);color:var(--brass-deep)}
+  @media(max-width:640px){.ghost--plain{display:none}}
+
+  /* ---------- Body row ---------- */
+  .body{display:flex;flex:1;min-height:0}
+
+  /* ---------- Left icon nav ---------- */
+  .nav{
+    flex:0 0 var(--nav);background:var(--ink);color:#cfdade;
+    display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 0;
+    z-index:500;
+  }
+  .nav__btn{
+    width:52px;border:0;background:transparent;color:#bccbd2;border-radius:14px;
+    padding:9px 0;display:flex;flex-direction:column;align-items:center;gap:5px;
+    font-size:10.5px;font-weight:700;letter-spacing:.02em;transition:.15s;position:relative;
+  }
+  .nav__btn svg{stroke-width:1.8}
+  .nav__btn:hover{background:rgba(255,255,255,.08);color:#fff}
+  .nav__btn.is-active{color:#fff}
+  .nav__btn.is-active::before{
+    content:"";position:absolute;top:8px;bottom:8px;width:3px;border-radius:3px;
+    background:var(--brass);left:-10px;
+  }
+  .nav__spacer{flex:1}
+  .nav__count{
+    position:absolute;top:4px;right:8px;background:var(--brass);color:#1a130a;
+    font-size:10px;min-width:16px;height:16px;border-radius:9px;display:grid;place-items:center;
+    padding:0 4px;font-weight:800;
+  }
+
+  /* ---------- Views ---------- */
+  .view{flex:1;min-width:0;display:none;position:relative}
+  .view.is-active{display:flex}
+
+  /* ===== Explore view ===== */
+  #view-explore{flex-direction:row}
+
+  .rail{
+    flex:0 0 var(--rail);max-width:var(--rail);background:var(--surface);
+    border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;
+  }
+  .rail__head{padding:16px 18px 10px;border-bottom:1px solid var(--line-soft)}
+  .rail__title{font-family:var(--display);font-size:19px;font-weight:600;margin:0 0 2px}
+  .rail__sub{font-size:13px;color:var(--ink-soft);margin:0}
+  .filters{display:flex;flex-wrap:wrap;gap:7px;padding:12px 18px 6px}
+  .chip{
+    border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);
+    border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:700;transition:.13s;
+  }
+  .chip:hover{border-color:var(--ink-soft)}
+  .chip.is-on{background:var(--ink);border-color:var(--ink);color:#fff}
+  .chip[data-type="youth"].is-on{background:var(--brass);border-color:var(--brass)}
+  .chip[data-type="professional"].is-on{background:var(--garnet);border-color:var(--garnet)}
+  .chip[data-type="community"].is-on{background:var(--teal);border-color:var(--teal)}
+  .chip--toggle.is-on{background:var(--teal);border-color:var(--teal);color:#fff}
+  .chip--toggle .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--teal);margin-right:6px;vertical-align:middle}
+  .chip--toggle.is-on .dot{background:#fff}
+
+  .controls{display:flex;flex-direction:column;gap:9px;padding:6px 18px 12px;border-bottom:1px solid var(--line-soft)}
+  .ctl{display:flex;align-items:center;gap:9px}
+  .ctl label{font-size:12.5px;font-weight:700;color:var(--ink-soft);flex:0 0 84px}
+  .ctl select{
+    flex:1;font-family:inherit;font-size:13px;font-weight:600;color:var(--ink);
+    border:1px solid var(--line);border-radius:9px;padding:7px 9px;background:var(--surface);
+  }
+
+  .results{overflow:auto;flex:1;padding:8px 10px 88px}
+  .results__count{padding:8px 8px 4px;font-size:12px;font-weight:700;color:var(--ink-soft);letter-spacing:.03em;text-transform:uppercase}
+
+  .card{
+    border:1px solid var(--line);border-radius:14px;padding:13px 14px 40px;margin:7px 4px;
+    background:var(--surface);transition:.13s;cursor:pointer;position:relative;
+  }
+  .card:hover{border-color:var(--brass);box-shadow:var(--shadow-sm);transform:translateY(-1px)}
+  .card.is-active{border-color:var(--brass);box-shadow:0 0 0 2px rgba(181,131,42,.25)}
+  .card.is-compared{border-color:var(--slate);box-shadow:0 0 0 2px rgba(62,83,96,.22)}
+  .card__top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+  .card__name{font-family:var(--display);font-size:16.5px;font-weight:600;line-height:1.2;margin:0}
+  .card__area{font-size:12.5px;color:var(--ink-soft);margin:3px 0 0;display:flex;align-items:center;gap:5px}
+  .badge{
+    font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+    padding:4px 8px;border-radius:7px;white-space:nowrap;
+  }
+  .badge--youth{background:rgba(181,131,42,.16);color:var(--brass-deep)}
+  .badge--professional{background:rgba(140,47,54,.13);color:var(--garnet)}
+  .badge--community{background:rgba(46,110,106,.14);color:var(--teal)}
+  .badge--collegiate{background:rgba(62,83,96,.14);color:var(--slate)}
+  .card__meta{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:12.5px;color:var(--ink-soft)}
+  .card__meta b{color:var(--ink);font-weight:700}
+  .stars{color:var(--brass-deep);font-weight:800;display:inline-flex;align-items:center;gap:4px}
+  .card__dist{color:var(--slate);font-weight:700}
+  .card__heart{
+    position:absolute;bottom:9px;right:12px;border:0;background:transparent;
+    color:var(--ink-soft);padding:4px;border-radius:8px;line-height:0;
+  }
+  .card__heart:hover{color:var(--garnet);background:rgba(140,47,54,.08)}
+  .card__heart.is-saved{color:var(--garnet)}
+  .card__cmp{
+    position:absolute;bottom:11px;left:12px;border:1px solid var(--line);background:var(--surface);
+    color:var(--ink-soft);font-size:11.5px;font-weight:800;border-radius:8px;padding:4px 9px;
+    display:flex;align-items:center;gap:5px;line-height:1;transition:.12s;
+  }
+  .card__cmp:hover{border-color:var(--slate);color:var(--slate)}
+  .card__cmp.is-on{background:var(--slate);border-color:var(--slate);color:#fff}
+
+  /* compare tray (Explore) */
+  .cmp-tray{
+    position:absolute;left:0;right:var(--rail);bottom:0;z-index:470;
+    background:var(--ink);color:#fff;display:flex;align-items:center;gap:14px;
+    padding:11px 18px;box-shadow:0 -8px 24px -14px rgba(30,46,55,.6);
+    transform:translateY(120%);transition:transform .22s ease;
+  }
+  .cmp-tray.is-up{transform:none}
+  .cmp-tray__txt{font-size:13px;font-weight:700;color:#e7eef0}
+  .cmp-tray__txt b{color:#fff}
+  .cmp-tray__chips{display:flex;gap:7px;flex-wrap:wrap;flex:1;min-width:0}
+  .cmp-pill{background:rgba(255,255,255,.12);border:0;color:#fff;border-radius:999px;
+    padding:5px 9px 5px 11px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px}
+  .cmp-pill button{border:0;background:transparent;color:#cfdade;font-weight:800;line-height:1;padding:0}
+  .cmp-tray__go{
+    background:var(--brass);color:#1a130a;border:0;border-radius:999px;padding:9px 18px;
+    font-weight:800;font-size:13px;white-space:nowrap;
+  }
+  .cmp-tray__go:disabled{opacity:.45;cursor:not-allowed}
+  .cmp-tray__clear{background:transparent;border:0;color:#cfdade;font-weight:700;font-size:12.5px}
+
+  /* map */
+  .map-wrap{flex:1;position:relative;min-width:0}
+  #map{position:absolute;inset:0;background:#e9e9e4}
+  .legend{
+    position:absolute;left:14px;bottom:16px;z-index:450;background:var(--surface);
+    border:1px solid var(--line);border-radius:12px;padding:10px 12px;box-shadow:var(--shadow-sm);
+    font-size:12px;font-weight:600;color:var(--ink-soft);
+  }
+  .legend__row{display:flex;align-items:center;gap:8px;margin:3px 0}
+  .legend__dot{width:11px;height:11px;border-radius:50%;flex:0 0 auto}
+
+  /* leaflet pin */
+  .pin{
+    width:30px;height:30px;border-radius:50% 50% 50% 2px;transform:rotate(45deg);
+    display:grid;place-items:center;border:2.5px solid #fff;box-shadow:var(--shadow-sm);
+    transition:transform .12s, box-shadow .12s;
+  }
+  .pin__glyph{transform:rotate(-45deg);color:#fff;font-size:15px;line-height:1;font-weight:700}
+  .pin--youth{background:var(--brass)}
+  .pin--professional{background:var(--garnet)}
+  .pin--community{background:var(--teal)}
+  .pin--collegiate{background:var(--slate)}
+  .pin-icon.is-active .pin{transform:rotate(45deg) scale(1.28);box-shadow:0 0 0 4px rgba(181,131,42,.3),var(--shadow)}
+  .pin-icon:hover .pin{transform:rotate(45deg) scale(1.12)}
+  .pin-icon:focus-visible{outline:none}
+  .pin-icon:focus-visible .pin{box-shadow:0 0 0 4px var(--brass),var(--shadow)}
+
+  /* preset chips under search */
+  .presets{
+    position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:450;
+    display:flex;gap:7px;flex-wrap:wrap;justify-content:center;max-width:90%;
+  }
+  .preset{
+    background:var(--surface);border:1px solid var(--line);border-radius:999px;
+    padding:6px 12px;font-size:12px;font-weight:700;color:var(--ink-soft);box-shadow:var(--shadow-sm);
+  }
+  .preset:hover{border-color:var(--brass);color:var(--brass-deep)}
+
+  /* ---------- Detail slide-over ---------- */
+  .detail{
+    position:absolute;top:0;right:0;bottom:0;width:min(440px,92%);
+    background:var(--surface);border-left:1px solid var(--line);box-shadow:var(--shadow);
+    transform:translateX(102%);transition:transform .26s cubic-bezier(.4,0,.2,1);
+    z-index:550;display:flex;flex-direction:column;
+  }
+  .detail.is-open{transform:none}
+  .detail__head{position:relative;padding:20px 22px 16px;border-bottom:1px solid var(--line);overflow:hidden}
+  .detail__staff{position:absolute;inset:0;opacity:.5;pointer-events:none}
+  .detail__staff::before{
+    content:"";position:absolute;left:0;right:0;top:50%;height:46px;transform:translateY(-50%);
+    background:repeating-linear-gradient(to bottom,transparent 0 10px,rgba(30,46,55,.10) 10px 11px);
+  }
+  .detail__close{
+    position:absolute;top:14px;right:14px;border:1px solid var(--line);background:var(--surface);
+    width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:var(--ink-soft);z-index:2;
+  }
+  .detail__close:hover{color:var(--ink);border-color:var(--ink-soft)}
+  .detail__badges{display:flex;gap:7px;position:relative;z-index:2;margin-bottom:8px;flex-wrap:wrap}
+  .detail__name{font-family:var(--display);font-size:25px;font-weight:600;line-height:1.12;margin:0;position:relative;z-index:2}
+  .detail__area{font-size:13.5px;color:var(--ink-soft);margin:6px 0 0;position:relative;z-index:2;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .detail__rating{display:inline-flex;align-items:center;gap:5px;color:var(--brass-deep);font-weight:800}
+  .detail__body{overflow:auto;padding:6px 22px 28px;flex:1}
+  .detail__blurb{font-size:14px;line-height:1.55;color:var(--ink-soft);margin:16px 0 4px}
+
+  .fit{
+    margin-top:14px;background:rgba(181,131,42,.08);border:1px solid rgba(181,131,42,.28);
+    border-radius:12px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;
+  }
+  .fit svg{flex:0 0 auto;color:var(--brass-deep);margin-top:1px}
+  .fit p{margin:0;font-size:13px;line-height:1.5;color:var(--ink)}
+  .fit b{font-weight:800}
+
+  .sect{margin-top:22px}
+  .sect__h{
+    font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--brass-deep);
+    margin:0 0 11px;display:flex;align-items:center;gap:8px;
+  }
+  .sect__h::after{content:"";flex:1;height:1px;background:var(--line)}
+
+  .factgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .fact{border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:var(--paper)}
+  .fact__k{font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 3px;display:flex;align-items:center;gap:6px}
+  .fact__v{font-size:13px;font-weight:700;color:var(--ink);margin:0;line-height:1.35}
+  .fact__v.aid-yes{color:var(--teal)} .fact__v.aid-no{color:var(--ink-soft)}
+
+  .tier{border:1px solid var(--line);border-radius:12px;padding:12px 13px;margin-bottom:9px}
+  .tier__top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .tier__name{font-weight:800;font-size:14px}
+  .tier__age{font-size:12px;font-weight:700;color:var(--brass-deep);white-space:nowrap}
+  .tier__desc{font-size:12.5px;color:var(--ink-soft);margin:5px 0 0;line-height:1.45}
+
+  .perf{display:flex;gap:13px;padding:11px 0;border-bottom:1px solid var(--line-soft)}
+  .perf:last-child{border-bottom:0}
+  .perf__date{
+    flex:0 0 50px;text-align:center;border:1px solid var(--line);border-radius:10px;padding:6px 0;
+    background:var(--paper);
+  }
+  .perf__mon{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--garnet)}
+  .perf__day{font-family:var(--display);font-size:21px;font-weight:600;line-height:1}
+  .perf__info{flex:1;min-width:0}
+  .perf__title{font-weight:700;font-size:13.5px;margin:0}
+  .perf__sub{font-size:12px;color:var(--ink-soft);margin:3px 0 0}
+  .perf__price{font-size:12px;font-weight:800;color:var(--ink);margin-top:4px}
+
+  .pricerow{display:flex;align-items:center;justify-content:space-between;gap:10px;
+    background:var(--paper);border:1px solid var(--line);border-radius:11px;padding:11px 14px;font-size:13px}
+  .pricerow b{font-family:var(--display);font-size:16px;font-weight:600}
+
+  .audrow{border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin-bottom:8px}
+  .audrow__top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+  .lvl{font-size:11px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;
+    padding:3px 8px;border-radius:6px;background:rgba(62,83,96,.13);color:var(--slate)}
+  .status{font-size:11px;font-weight:800;display:flex;align-items:center;gap:5px}
+  .status .d{width:7px;height:7px;border-radius:50%}
+  .status--open{color:var(--teal)} .status--open .d{background:var(--teal);box-shadow:0 0 0 3px rgba(46,110,106,.18)}
+  .status--upcoming{color:var(--brass-deep)} .status--upcoming .d{background:var(--brass)}
+  .status--rolling{color:var(--ink-soft)} .status--rolling .d{background:var(--ink-faint)}
+  .audrow__meta{font-size:12.5px;color:var(--ink-soft);line-height:1.5}
+  .audrow__meta b{color:var(--ink)}
+
+  .detail__cta{
+    display:grid;grid-template-columns:auto 1fr;gap:10px;padding:14px 22px;
+    border-top:1px solid var(--line);background:var(--surface);
+  }
+  .btn{
+    text-align:center;text-decoration:none;border-radius:11px;padding:12px;font-weight:800;font-size:14px;
+    border:1px solid var(--ink);color:var(--ink);background:var(--surface);transition:.13s;
+    display:flex;align-items:center;justify-content:center;gap:7px;
+  }
+  .btn:hover{background:var(--paper)}
+  .btn--primary{background:var(--brass-deep);border-color:var(--brass-deep);color:#fff}
+  .btn--primary:hover{background:#7d590f}
+  .btn--save{flex:0 0 auto;width:48px;padding:12px 0}
+  .btn--save.is-saved{background:rgba(140,47,54,.1);border-color:var(--garnet);color:var(--garnet)}
+  .detail__cta-row2{grid-column:1/-1;margin-top:-2px}
+  .btn--ghost{border-color:var(--line);color:var(--ink-soft);font-size:13px;padding:10px}
+  .btn--ghost:hover{border-color:var(--ink-soft);color:var(--ink);background:var(--paper)}
+
+  /* ===== Board views (auditions / performances / saved) ===== */
+  .board{min-height:0;background:var(--paper)}
+  .view.board{flex-direction:column}
+  .board__head{
+    padding:22px 28px 8px;background:var(--surface);border-bottom:1px solid var(--line);
+  }
+  .board__title{font-family:var(--display);font-size:24px;font-weight:600;margin:0}
+  .board__sub{font-size:13.5px;color:var(--ink-soft);margin:5px 0 14px;max-width:62ch}
+  .board__filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .board__search{
+    display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;
+    padding:7px 13px;background:var(--paper);min-width:180px;
+  }
+  .board__search input{border:0;outline:0;background:transparent;font-size:13.5px;width:100%;font-family:inherit}
+  .board__scroll{flex:1;min-height:0;overflow:auto;padding:18px 28px 32px}
+  .board__grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+
+  .aud-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 17px;
+    display:flex;flex-direction:column;gap:0;transition:.13s}
+  .aud-card:hover{box-shadow:var(--shadow-sm);transform:translateY(-1px)}
+  .aud-card__top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:9px}
+  .aud-card__org{font-weight:800;font-size:13px;color:var(--ink-soft)}
+  .aud-card__title{font-family:var(--display);font-size:18px;font-weight:600;margin:2px 0 0;line-height:1.18}
+  .aud-card__rows{margin:12px 0 14px;display:flex;flex-direction:column;gap:7px}
+  .kv{display:flex;gap:9px;font-size:13px}
+  .kv svg{flex:0 0 auto;color:var(--brass-deep);margin-top:1px}
+  .kv span{color:var(--ink-soft)} .kv b{color:var(--ink);font-weight:700}
+  .aud-card__foot{margin-top:auto;display:flex;gap:9px}
+  .linkout{
+    flex:1;text-align:center;text-decoration:none;border:1px solid var(--ink);border-radius:10px;
+    padding:9px;font-weight:800;font-size:13px;color:var(--ink);display:flex;align-items:center;justify-content:center;gap:6px;
+  }
+  .linkout:hover{background:var(--paper)}
+  .linkout--ghost{border-color:var(--line);color:var(--ink-soft);flex:0 0 auto;padding:9px 12px}
+
+  .perf-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:0;overflow:hidden;display:flex}
+  .perf-card__date{flex:0 0 84px;background:var(--ink);color:#fff;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:2px;padding:14px 0}
+  .perf-card__date .m{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--brass)}
+  .perf-card__date .d{font-family:var(--display);font-size:30px;font-weight:600;line-height:.95}
+  .perf-card__date .y{font-size:11px;color:#b9c9cf;font-weight:600}
+  .perf-card__body{padding:14px 16px;flex:1;min-width:0}
+  .perf-card__org{font-size:12px;font-weight:800;color:var(--ink-soft)}
+  .perf-card__title{font-family:var(--display);font-size:17px;font-weight:600;margin:2px 0 0}
+  .perf-card__sub{font-size:12.5px;color:var(--ink-soft);margin:6px 0 0}
+  .perf-card__price{margin-top:8px;font-size:12.5px;font-weight:800}
+
+  .empty{padding:60px 24px;text-align:center;color:var(--ink-soft)}
+  .empty svg{color:var(--line);margin-bottom:10px}
+  .empty h3{font-family:var(--display);color:var(--ink-soft);font-weight:600;margin:0 0 5px;font-size:19px}
+  .empty p{margin:0;font-size:13.5px}
+
+  /* ---------- Modal shell (compare + submit) ---------- */
+  .modal{
+    position:fixed;inset:0;z-index:800;display:none;align-items:center;justify-content:center;
+    padding:24px;background:rgba(30,46,55,.42);
+  }
+  .modal.is-open{display:flex}
+  .modal__panel{
+    background:var(--surface);border-radius:18px;box-shadow:var(--shadow);
+    width:100%;max-width:880px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;
+  }
+  .modal__head{
+    display:flex;align-items:flex-start;justify-content:space-between;gap:14px;
+    padding:20px 24px 14px;border-bottom:1px solid var(--line);
+  }
+  .modal__title{font-family:var(--display);font-size:22px;font-weight:600;margin:0}
+  .modal__sub{font-size:13px;color:var(--ink-soft);margin:5px 0 0;max-width:60ch}
+  .modal__close{
+    border:1px solid var(--line);background:var(--surface);width:36px;height:36px;border-radius:50%;
+    display:grid;place-items:center;color:var(--ink-soft);flex:0 0 auto;
+  }
+  .modal__close:hover{color:var(--ink);border-color:var(--ink-soft)}
+  .modal__body{overflow:auto;padding:18px 24px 24px}
+
+  /* compare table */
+  .cmp-scroll{overflow-x:auto}
+  .cmp-table{border-collapse:separate;border-spacing:0;width:100%;min-width:520px;font-size:13px}
+  .cmp-table th,.cmp-table td{padding:11px 13px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line-soft)}
+  .cmp-table thead th{position:sticky;top:0;background:var(--surface);z-index:2;border-bottom:1px solid var(--line)}
+  .cmp-table tbody th{
+    position:sticky;left:0;background:var(--surface);font-size:11px;font-weight:800;letter-spacing:.04em;
+    text-transform:uppercase;color:var(--ink-soft);white-space:nowrap;z-index:1;
+  }
+  .cmp-org{font-family:var(--display);font-size:16px;font-weight:600;line-height:1.2;margin:0 0 6px}
+  .cmp-org__area{font-size:12px;color:var(--ink-soft);font-weight:600;font-family:var(--sans)}
+  .cmp-table td b{color:var(--ink)}
+  .cmp-best{background:rgba(46,110,106,.09)}
+  .cmp-best td{font-weight:700}
+  .cmp-cell-apply{display:inline-flex;align-items:center;gap:6px;color:var(--brass-deep);font-weight:800;text-decoration:none;font-size:12.5px}
+  .cmp-empty{padding:40px 10px;text-align:center;color:var(--ink-soft)}
+
+  /* submit form */
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px}
+  .field{display:flex;flex-direction:column;gap:5px}
+  .field--full{grid-column:1/-1}
+  .field label{font-size:12px;font-weight:800;color:var(--ink);letter-spacing:.01em}
+  .field label .req{color:var(--garnet)}
+  .field .hint{font-size:11.5px;color:var(--ink-soft);font-weight:600}
+  .field input,.field select,.field textarea{
+    font-family:inherit;font-size:13.5px;color:var(--ink);background:var(--surface);
+    border:1px solid var(--line);border-radius:10px;padding:9px 11px;width:100%;
+  }
+  .field textarea{resize:vertical;min-height:66px}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--brass);box-shadow:0 0 0 3px rgba(181,131,42,.16)}
+  .field.has-error input,.field.has-error select,.field.has-error textarea{border-color:var(--garnet)}
+  .field__err{font-size:11.5px;color:var(--garnet);font-weight:700;display:none}
+  .field.has-error .field__err{display:block}
+  .form-sect{margin-top:22px;border-top:1px solid var(--line-soft);padding-top:16px}
+  .form-sect__h{font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--brass-deep);margin:0 0 4px}
+  .form-sect__note{font-size:12px;color:var(--ink-soft);margin:0 0 12px}
+  .checks{display:flex;flex-wrap:wrap;gap:8px}
+  .checks label{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--ink-soft);
+    border:1px solid var(--line);border-radius:999px;padding:6px 12px;cursor:pointer}
+  .checks input{width:auto;accent-color:var(--brass-deep)}
+  .switchline{display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:700;color:var(--ink)}
+  .switchline input{width:auto;accent-color:var(--brass-deep);transform:scale(1.15)}
+  .repeat{border:1px solid var(--line);border-radius:12px;padding:13px;margin-bottom:10px;position:relative;background:var(--paper)}
+  .repeat__rm{position:absolute;top:9px;right:9px;border:1px solid var(--line);background:var(--surface);
+    border-radius:8px;font-size:11.5px;font-weight:800;color:var(--ink-soft);padding:3px 8px}
+  .repeat__rm:hover{color:var(--garnet);border-color:var(--garnet)}
+  .add-row{border:1px dashed var(--line);background:var(--surface);color:var(--brass-deep);
+    border-radius:10px;padding:9px;font-weight:800;font-size:13px;width:100%;display:flex;align-items:center;justify-content:center;gap:7px}
+  .add-row:hover{border-color:var(--brass);background:rgba(181,131,42,.06)}
+  .modal__foot{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:14px 24px;border-top:1px solid var(--line);background:var(--surface)}
+  .modal__foot .note{font-size:12px;color:var(--ink-soft);max-width:42ch}
+  .btn--submit{background:var(--brass-deep);border:1px solid var(--brass-deep);color:#fff;border-radius:11px;
+    padding:11px 22px;font-weight:800;font-size:14px}
+  .btn--submit:hover{background:#7d590f}
+  .form-success{text-align:center;padding:34px 20px}
+  .form-success__mark{width:58px;height:58px;border-radius:50%;background:rgba(46,110,106,.14);color:var(--teal);
+    display:grid;place-items:center;margin:0 auto 14px}
+  .form-success h3{font-family:var(--display);font-size:22px;font-weight:600;margin:0 0 6px}
+  .form-success p{font-size:13.5px;color:var(--ink-soft);margin:0 auto 6px;max-width:46ch;line-height:1.5}
+  .form-success__actions{display:flex;gap:10px;justify-content:center;margin-top:18px}
+
+  /* sample-data ribbon */
+  .ribbon{
+    position:fixed;bottom:14px;right:16px;z-index:700;background:var(--ink);color:#e6edef;
+    border-radius:11px;padding:9px 12px 9px 14px;font-size:12px;font-weight:600;display:flex;
+    align-items:center;gap:10px;box-shadow:var(--shadow);max-width:280px;
+  }
+  .ribbon b{color:#fff}
+  .ribbon button{border:0;background:rgba(255,255,255,.14);color:#fff;border-radius:6px;
+    width:22px;height:22px;flex:0 0 auto;font-weight:800}
+  .ribbon button:hover{background:rgba(255,255,255,.28)}
+
+  /* mobile */
+  @media(max-width:760px){
+    :root{--rail:100%}
+    .rail{position:absolute;inset:0;z-index:400;border-right:0}
+    #view-explore.show-map .rail{display:none}
+    #view-explore .map-wrap{display:none}
+    #view-explore.show-map .map-wrap{display:block}
+    .map-toggle{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);z-index:460}
+    .cmp-tray{right:0}
+    #view-explore.show-map .cmp-tray{bottom:0}
+    .form-grid{grid-template-columns:1fr}
+    .factgrid{grid-template-columns:1fr}
+  }
+  @media(min-width:761px){.map-toggle{display:none}}
+  .map-toggle{
+    background:var(--ink);color:#fff;border:0;border-radius:999px;padding:11px 20px;font-weight:800;
+    font-size:13px;box-shadow:var(--shadow);display:flex;align-items:center;gap:8px;
+  }
+
+  /* focus + motion */
+  :focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+  .modal__panel :focus-visible{outline-offset:1px}
+  @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.check-site{color:var(--brass-deep);font-weight:700;text-decoration:underline;text-underline-offset:2px}
+.check-site:hover{opacity:.82}
+</style>
+
+<div class="app">
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand__mark">Tutti<span class="dot">.</span></span>
+      <span class="brand__tag">find an ensemble near you</span>
+    </div>
+    <div class="search" role="search">
+      <div class="search__field">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <label for="locSearch" class="visually-hidden">Search for a location</label>
+        <input id="locSearch" type="text" placeholder="Enter a city, neighborhood, or ZIP…" autocomplete="off" />
+        <button class="search__near" id="nearMe">Near me</button>
+      </div>
+    </div>
+    <div class="topbar__right">
+      <button class="ghost ghost--accent" id="listBtn">List your organization</button>
+      <button class="ghost ghost--plain" id="helpBtn">How it works</button>
+    </div>
+  </header>
+
+  <div class="body">
+    <!-- ICON NAV -->
+    <nav class="nav" aria-label="Sections">
+      <button class="nav__btn is-active" data-view="explore" aria-pressed="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="m9 4 6 2 5-2v14l-5 2-6-2-5 2V6z"/><path d="M9 4v14M15 6v14"/></svg>
+        Explore
+      </button>
+      <button class="nav__btn" data-view="auditions" aria-pressed="false">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>
+        Auditions
+      </button>
+      <button class="nav__btn" data-view="performances" aria-pressed="false">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
+        Concerts
+      </button>
+      <button class="nav__btn" data-view="saved" aria-pressed="false">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M19 14c1.5-1.5 3-3.4 3-5.5A4.5 4.5 0 0 0 12 6 4.5 4.5 0 0 0 2 8.5c0 2.1 1.5 4 3 5.5l7 7Z"/></svg>
+        Saved
+        <span class="nav__count" id="savedCount" style="display:none" aria-hidden="true">0</span>
+      </button>
+      <div class="nav__spacer"></div>
+    </nav>
+
+    <!-- EXPLORE VIEW -->
+    <section class="view is-active show-map" id="view-explore" aria-label="Explore orchestras on a map">
+      <aside class="rail" aria-label="Results">
+        <div class="rail__head">
+          <h2 class="rail__title" id="railTitle">Orchestras near you</h2>
+          <p class="rail__sub" id="railSub">Greater Los Angeles · curated listings</p>
+        </div>
+        <div class="filters" id="typeFilters" role="group" aria-label="Filter by type">
+          <button class="chip is-on" data-type="all" aria-pressed="true">All</button>
+          <button class="chip" data-type="youth" aria-pressed="false">Youth</button>
+          <button class="chip" data-type="professional" aria-pressed="false">Professional</button>
+          <button class="chip" data-type="community" aria-pressed="false">Community</button>
+        </div>
+        <div class="controls">
+          <div class="ctl">
+            <label for="ageSel">Player age</label>
+            <select id="ageSel">
+              <option value="any">Any age</option>
+              <option value="u12">Under 12</option>
+              <option value="12-15">12 – 15</option>
+              <option value="16-18">16 – 18</option>
+              <option value="adult">18 and up</option>
+            </select>
+          </div>
+          <div class="ctl">
+            <label for="instSel">Instrument</label>
+            <select id="instSel">
+              <option value="any">Any instrument</option>
+              <option value="Strings">Strings</option>
+              <option value="Winds">Winds</option>
+              <option value="Brass">Brass</option>
+              <option value="Percussion">Percussion</option>
+              <option value="Harp">Harp</option>
+            </select>
+          </div>
+          <div class="ctl">
+            <label for="sortSel">Sort by</label>
+            <select id="sortSel">
+              <option value="featured">Featured</option>
+              <option value="nearest">Nearest first</option>
+              <option value="name">Name (A–Z)</option>
+            </select>
+          </div>
+          <div class="ctl" style="gap:0">
+            <button class="chip chip--toggle" id="openNowToggle" aria-pressed="false"><span class="dot"></span>Auditions open now</button>
+          </div>
+        </div>
+        <div class="results" id="results"></div>
+      </aside>
+
+      <div class="map-wrap">
+        <div id="map"></div>
+        <div class="presets" id="presets" role="group" aria-label="Quick locations"></div>
+        <div class="legend" aria-hidden="true">
+          <div class="legend__row"><span class="legend__dot" style="background:var(--brass)"></span>Youth / pre-professional</div>
+          <div class="legend__row"><span class="legend__dot" style="background:var(--garnet)"></span>Professional</div>
+          <div class="legend__row"><span class="legend__dot" style="background:var(--teal)"></span>Community</div>
+        </div>
+        <button class="map-toggle" id="mapToggle">View list</button>
+      </div>
+
+      <!-- compare tray -->
+      <div class="cmp-tray" id="cmpTray" role="region" aria-label="Compare selection">
+        <span class="cmp-tray__txt"><b id="cmpCount">0</b> selected · pick 2–3 to compare</span>
+        <div class="cmp-tray__chips" id="cmpChips"></div>
+        <button class="cmp-tray__clear" id="cmpClear">Clear</button>
+        <button class="cmp-tray__go" id="cmpGo" disabled>Compare</button>
+      </div>
+
+      <!-- detail slide-over -->
+      <div class="detail" id="detail" role="dialog" aria-modal="true" aria-labelledby="detailName" aria-hidden="true"></div>
+    </section>
+
+    <!-- AUDITIONS VIEW -->
+    <section class="view board" id="view-auditions" aria-label="Auditions">
+      <div class="board__head">
+        <h2 class="board__title">Auditions</h2>
+        <p class="board__sub">Open and upcoming auditions across every level — from a child's first ensemble to professional seats. Each card links straight to the organization's audition page.</p>
+        <div class="board__filters" role="group" aria-label="Filter auditions">
+          <button class="chip is-on" data-aud-status="all" aria-pressed="true">All</button>
+          <button class="chip" data-aud-status="open" aria-pressed="false">Open now</button>
+          <button class="chip" data-aud-status="upcoming" aria-pressed="false">Upcoming</button>
+          <button class="chip" data-aud-status="rolling" aria-pressed="false">Rolling</button>
+          <span style="width:1px;height:22px;background:var(--line);margin:0 4px" aria-hidden="true"></span>
+          <label for="audLevel" class="visually-hidden">Filter by level</label>
+          <select id="audLevel" style="font-family:inherit;font-size:13px;font-weight:600;border:1px solid var(--line);border-radius:999px;padding:8px 12px;background:var(--surface);color:var(--ink)">
+            <option value="all">All levels</option>
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+            <option value="Pre-professional">Pre-professional</option>
+            <option value="Professional">Professional</option>
+          </select>
+          <div class="board__search">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <label for="audSearch" class="visually-hidden">Search auditions</label>
+            <input id="audSearch" placeholder="Instrument or organization…" />
+          </div>
+        </div>
+      </div>
+      <div class="board__scroll"><div class="board__grid" id="audGrid"></div></div>
+    </section>
+
+    <!-- PERFORMANCES VIEW -->
+    <section class="view board" id="view-performances" aria-label="Concerts">
+      <div class="board__head">
+        <h2 class="board__title">Upcoming concerts</h2>
+        <p class="board__sub">Every performance in the current season, soonest first — with ticket pricing and venue at a glance.</p>
+      </div>
+      <div class="board__scroll"><div class="board__grid" id="perfGrid"></div></div>
+    </section>
+
+    <!-- SAVED VIEW -->
+    <section class="view board" id="view-saved" aria-label="Saved organizations">
+      <div class="board__head">
+        <h2 class="board__title">Saved</h2>
+        <p class="board__sub">Organizations you've starred. Saved for this session only.</p>
+      </div>
+      <div class="board__scroll"><div class="board__grid" id="savedGrid"></div></div>
+    </section>
+  </div>
+</div>
+
+<!-- COMPARE MODAL -->
+<div class="modal" id="cmpModal" role="dialog" aria-modal="true" aria-labelledby="cmpModalTitle" aria-hidden="true">
+  <div class="modal__panel">
+    <div class="modal__head">
+      <div>
+        <h2 class="modal__title" id="cmpModalTitle">Compare organizations</h2>
+        <p class="modal__sub" id="cmpModalSub">Side by side. Confirmed details are sourced; unconfirmed ones link out to each org. Distances are measured from your searched location.</p>
+      </div>
+      <button class="modal__close" id="cmpModalClose" aria-label="Close comparison">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal__body"><div class="cmp-scroll" id="cmpTableWrap"></div></div>
+  </div>
+</div>
+
+<!-- SUBMIT MODAL -->
+<div class="modal" id="subModal" role="dialog" aria-modal="true" aria-labelledby="subModalTitle" aria-hidden="true">
+  <div class="modal__panel">
+    <div class="modal__head">
+      <div>
+        <h2 class="modal__title" id="subModalTitle">List your organization</h2>
+        <p class="modal__sub">Tell parents and players about your ensemble. We review every submission before it appears on the map.</p>
+      </div>
+      <button class="modal__close" id="subModalClose" aria-label="Close form">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal__body" id="subBody"><!-- form injected --></div>
+  </div>
+</div>
+
+<div class="ribbon" id="ribbon">
+  <span><b>Curated listings.</b> Confirmed details cite a source; anything unconfirmed shows “Check their site.”</span>
+  <button id="ribbonClose" aria-label="Dismiss notice">×</button>
+</div>
+
+<script type="application/json" id="bootstrap-data">
+{
+  "version": "2.0.0",
+  "metro": "Greater Los Angeles",
+  "generatedAt": "2026-06-22",
+  "organizations": [
+    {
+      "id": "yola",
+      "name": "Youth Orchestra Los Angeles (YOLA)",
+      "type": "youth",
+      "lat": 33.9596,
+      "lng": -118.3517,
+      "area": "Inglewood",
+      "metro": "Greater Los Angeles",
+      "website": "https://www.laphil.com/learn/yola",
+      "applyUrl": null,
+      "blurb": "The LA Phil's free music program: instruments, instruction, and orchestras for young musicians aged 6–18 across five LA County sites, including the Beckmen YOLA Center in Inglewood.",
+      "season": {
+        "status": "unverified"
+      },
+      "ages": [
+        6,
+        18
+      ],
+      "instruments": [
+        "Strings",
+        "Winds",
+        "Brass",
+        "Percussion"
+      ],
+      "rehearsal": {
+        "status": "unverified"
+      },
+      "commitment": {
+        "status": "verified",
+        "value": "Several hours per week, after school",
+        "source": "https://heartofla.org/yola/",
+        "asOf": "2026-06-22"
+      },
+      "financialAid": {
+        "status": "unverified"
+      },
+      "tuition": {
+        "status": "verified",
+        "value": "Free — instruments and instruction provided",
+        "source": "https://www.laphil.com/learn/yola",
+        "asOf": "2026-06-22"
+      },
+      "goodFit": "Good fit if you want a free, high-support program and live near a YOLA site.",
+      "reviews": null,
+      "ensembles": [
+        {
+          "name": "Beginning Orchestra",
+          "level": "Beginner",
+          "ages": [
+            6,
+            10
+          ],
+          "desc": "First-instrument and early ensemble training; no experience needed."
+        },
+        {
+          "name": "Intermediate Orchestra",
+          "level": "Intermediate",
+          "ages": [
+            9,
+            13
+          ],
+          "desc": "Full ensemble repertoire and sectionals."
+        },
+        {
+          "name": "Advanced Orchestra",
+          "level": "Advanced",
+          "ages": [
+            13,
+            18
+          ],
+          "desc": "Flagship-level players; performances at the Hollywood Bowl and Walt Disney Concert Hall."
+        }
+      ],
+      "performances": [],
+      "auditions": [
+        {
+          "level": "Beginner",
+          "instruments": "All — no experience required",
+          "window": {
+            "status": "unverified"
+          },
+          "status": "rolling",
+          "ages": [
+            6,
+            10
+          ],
+          "note": "Start via the YOLA Interest Form; placement is by interview, not a formal audition. Space varies by site.",
+          "source": "https://www.laphil.com/learn/yola"
+        },
+        {
+          "level": "Advanced",
+          "instruments": "Strings, winds, brass, percussion",
+          "window": {
+            "status": "unverified"
+          },
+          "status": "upcoming",
+          "ages": [
+            13,
+            18
+          ],
+          "note": "Advanced placement is audition-based; check the site for the current window.",
+          "source": "https://www.laphil.com/learn/yola"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://www.laphil.com/learn/yola",
+          "label": "LA Phil — YOLA",
+          "retrievedAt": "2026-06-22"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Youth_Orchestra_Los_Angeles",
+          "label": "Wikipedia — YOLA",
+          "retrievedAt": "2026-06-22"
+        }
+      ],
+      "lastVerified": "2026-06-22",
+      "listingStatus": "published",
+      "provenanceType": "curated"
+    },
+    {
+      "id": "colburn",
+      "name": "Colburn Community School of Performing Arts — Youth Orchestras",
+      "type": "youth",
+      "lat": 34.0537,
+      "lng": -118.2497,
+      "area": "Downtown LA",
+      "metro": "Greater Los Angeles",
+      "website": "https://www.colburnschool.edu",
+      "applyUrl": "https://colburnschool.edu/community-school/by-program/ensembles/",
+      "blurb": "The Community School of Performing Arts at Colburn runs graded youth orchestras and a new advanced performance program feeding its renowned conservatory, in the Music Center district.",
+      "season": {
+        "status": "unverified"
+      },
+      "ages": [
+        8,
+        18
+      ],
+      "instruments": [
+        "Strings",
+        "Winds",
+        "Brass",
+        "Percussion",
+        "Harp"
+      ],
+      "rehearsal": {
+        "status": "unverified"
+      },
+      "commitment": {
+        "status": "unverified"
+      },
+      "financialAid": {
+        "status": "verified",
+        "value": true,
+        "source": "https://colburnschool.edu/community-school/by-program/ensembles/",
+        "asOf": "2026-06-22"
+      },
+      "tuition": {
+        "status": "unverified"
+      },
+      "goodFit": "Good fit for a serious, conservatory-track student; scholarships help with cost.",
+      "reviews": null,
+      "ensembles": [
+        {
+          "name": "Violin / Cello Ensembles",
+          "level": "Beginner",
+          "ages": [
+            6,
+            12
+          ],
+          "desc": "Entry-level ensembles building reading and ensemble fundamentals."
+        },
+        {
+          "name": "String Orchestra",
+          "level": "Intermediate",
+          "ages": [
+            11,
+            16
+          ],
+          "desc": "Intermediate/advanced strings; placement by audition."
+        },
+        {
+          "name": "Colburn Youth Philharmonic",
+          "level": "Advanced",
+          "ages": [
+            13,
+            18
+          ],
+          "desc": "Top symphonic ensemble (replacing the Colburn Youth Orchestra for 2026–27)."
+        },
+        {
+          "name": "Advanced Music Performance Program",
+          "level": "Pre-professional",
+          "ages": [
+            13,
+            18
+          ],
+          "desc": "Highly selective Sunday program: orchestra, chamber music, theory, college-audition prep."
+        }
+      ],
+      "performances": [],
+      "auditions": [
+        {
+          "level": "Intermediate",
+          "instruments": "Strings",
+          "window": {
+            "status": "unverified"
+          },
+          "status": "rolling",
+          "ages": [
+            11,
+            16
+          ],
+          "note": "By application + video prescreen, then live audition (most recent round was held June 6–7, 2026). Check the site for the next window.",
+          "source": "https://colburnschool.edu/community-school/by-program/ensembles/string-orchestra/"
+        },
+        {
+          "level": "Pre-professional",
+          "instruments": "Piano, strings, winds, brass, percussion",
+          "window": {
+            "status": "unverified"
+          },
+          "status": "rolling",
+          "ages": [
+            13,
+            18
+          ],
+          "note": "Advanced Music Performance Program — selective audition; one day a week (Sundays).",
+          "source": "https://colburnschool.edu/community-school/by-program/advanced_music_program/"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://www.colburnschool.edu",
+          "label": "Colburn School",
+          "retrievedAt": "2026-06-22"
+        },
+        {
+          "url": "https://colburnschool.edu/community-school/by-program/ensembles/",
+          "label": "Community School ensembles",
+          "retrievedAt": "2026-06-22"
+        },
+        {
+          "url": "https://colburnschool.edu/community-school/by-program/advanced_music_program/",
+          "label": "Advanced Music Performance Program",
+          "retrievedAt": "2026-06-22"
+        }
+      ],
+      "lastVerified": "2026-06-22",
+      "listingStatus": "published",
+      "provenanceType": "curated"
+    },
+    {
+      "id": "ays",
+      "name": "American Youth Symphony",
+      "type": "youth",
+      "lat": 34.0701,
+      "lng": -118.4441,
+      "area": "Westwood",
+      "metro": "Greater Los Angeles",
+      "website": "https://www.aysymphony.org",
+      "applyUrl": null,
+      "blurb": "A tuition-free, audition-only pre-professional orchestra for advanced young players (15 and up, no upper age limit), known for film-score concerts and free performances at Royce Hall.",
+      "season": {
+        "status": "unverified"
+      },
+      "ages": [
+        15,
+        30
+      ],
+      "instruments": [
+        "Strings",
+        "Winds",
+        "Brass",
+        "Percussion"
+      ],
+      "rehearsal": {
+        "status": "unverified"
+      },
+      "commitment": {
+        "status": "unverified"
+      },
+      "financialAid": {
+        "status": "unverified"
+      },
+      "tuition": {
+        "status": "verified",
+        "value": "Free — tuition-free fellowship; selected players receive an annual stipend",
+        "source": "https://www.laphil.com/musicdb/artists/290/american-youth-symphony",
+        "asOf": "2026-06-22"
+      },
+      "goodFit": "Good fit for advanced teens and young adults ready for professional-level repertoire.",
+      "reviews": null,
+      "ensembles": [
+        {
+          "name": "American Youth Symphony",
+          "level": "Pre-professional",
+          "ages": [
+            15,
+            30
+          ],
+          "desc": "Single advanced orchestra of ~100 musicians; conservatory-level repertoire."
+        }
+      ],
+      "performances": [],
+      "auditions": [
+        {
+          "level": "Pre-professional",
+          "instruments": "All orchestral instruments",
+          "window": {
+            "status": "unverified"
+          },
+          "status": "upcoming",
+          "ages": [
+            15,
+            30
+          ],
+          "note": "Competitive; roughly 35 seats open each year. Solo + orchestral excerpts. Check the site for current dates.",
+          "source": "https://www.aysymphony.org"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://www.aysymphony.org",
+          "label": "American Youth Symphony",
+          "retrievedAt": "2026-06-22"
+        },
+        {
+          "url": "https://www.laphil.com/musicdb/artists/290/american-youth-symphony",
+          "label": "LA Phil — AYS",
+          "retrievedAt": "2026-06-22"
+        }
+      ],
+      "lastVerified": "2026-06-22",
+      "listingStatus": "published",
+      "provenanceType": "curated"
+    },
+    {
+      "id": "layo",
+      "name": "Los Angeles Youth Orchestra",
+      "type": "youth",
+      "lat": 34.1718,
+      "lng": -118.5125,
+      "area": "Encino",
+      "metro": "Greater Los Angeles",
+      "website": "https://losangelesyouthorchestra.org",
+      "applyUrl": "https://losangelesyouthorchestra.org/audition-information/",
+      "blurb": "A welcoming youth orchestra rehearsing Sunday afternoons in Encino, with an intermediate and an advanced ensemble and two concerts each semester.",
+      "season": {
+        "status": "verified",
+        "value": "2026–27 season",
+        "source": "https://losangelesyouthorchestra.org/audition-information/",
+        "asOf": "2026-06-22"
+      },
+      "ages": [
+        8,
+        18
+      ],
+      "instruments": [
+        "Strings",
+        "Winds",
+        "Brass",
+        "Percussion"
+      ],
+      "rehearsal": {
+        "status": "verified",
+        "value": "Sunday afternoons, 1:30–5:00 PM (Encino)",
+        "source": "https://losangelesyouthorchestra.org/audition-information/",
+        "asOf": "2026-06-22"
+      },
+      "commitment": {
+        "status": "verified",
+        "value": "Weekly rehearsals; two fall and two spring concerts",
+        "source": "https://losangelesyouthorchestra.org/audition-information/",
+        "asOf": "2026-06-22"
+      },
+      "financialAid": {
+        "status": "verified",
+        "value": true,
+        "source": "https://losangelesyouthorchestra.org/audition-information/",
+        "asOf": "2026-06-22"
+      },
+      "tuition": {
+        "status": "verified",
+        "value": "$750 per semester (or $1,400 paid in full for the year)",
+        "source": "https://losangelesyouthorchestra.org/audition-information/",
+        "asOf": "2026-06-22"
+      },
+      "goodFit": "Good fit for an intermediate-to-advanced player (about two+ years of lessons) wanting a friendly Sunday orchestra in the Valley.",
+      "reviews": null,
+      "ensembles": [
+        {
+          "name": "Ruth Borun Concert Orchestra",
+          "level": "Intermediate",
+          "ages": [
+            8,
+            18
+          ],
+          "desc": "Intermediate ensemble."
+        },
+        {
+          "name": "Symphony Orchestra",
+          "level": "Advanced",
+          "ages": [
+            8,
+            18
+          ],
+          "desc": "Advanced ensemble; higher expectations for tone, dynamics, and musicianship."
+        }
+      ],
+      "performances": [],
+      "auditions": [
+        {
+          "level": "Advanced",
+          "instruments": "Strings, winds, brass, percussion",
+          "window": {
+            "status": "verified",
+            "value": "August 22 & 23, 2026 (First Presbyterian Church, Encino)",
+            "source": "https://losangelesyouthorchestra.org/audition-information/",
+            "asOf": "2026-06-22"
+          },
+          "status": "upcoming",
+          "ages": [
+            8,
+            18
+          ],
+          "note": "For the Fall 2026 semester. Major & minor scales, LAYO-provided excerpts, and sight-reading. $100 audition fee is applied to tuition on acceptance.",
+          "source": "https://losangelesyouthorchestra.org/audition-information/"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://losangelesyouthorchestra.org/audition-information/",
+          "label": "LAYO — Audition Information",
+          "retrievedAt": "2026-06-22"
+        },
+        {
+          "url": "https://losangelesyouthorchestra.org",
+          "label": "LAYO",
+          "retrievedAt": "2026-06-22"
+        }
+      ],
+      "lastVerified": "2026-06-22",
+      "listingStatus": "published",
+      "provenanceType": "curated"
+    },
+    {
+      "id": "pyso",
+      "name": "Pasadena Youth Symphony Orchestras",
+      "type": "youth",
+      "lat": 34.1478,
+      "lng": -118.1445,
+      "area": "Pasadena",
+      "metro": "Greater Los Angeles",
+      "website": "https://pasadenasymphony-pops.org/education/pyso/",
+      "applyUrl": "https://pasadenasymphony-pops.org/education/pyso/auditions/",
+      "blurb": "The Pasadena Symphony Association's youth program: seven ensembles for grades 4–12, serving 400+ students from across Southern California, with weekly rehearsals and at least two concerts a year.",
+      "season": {
+        "status": "unverified"
+      },
+      "ages": [
+        9,
+        18
+      ],
+      "instruments": [
+        "Strings",
+        "Winds",
+        "Brass",
+        "Percussion"
+      ],
+      "rehearsal": {
+        "status": "verified",
+        "value": "Weekly throughout the season",
+        "source": "https://pasadenasymphony-pops.org/education/pyso/auditions/",
+        "asOf": "2026-06-22"
+      },
+      "commitment": {
+        "status": "verified",
+        "value": "Weekly; students perform in at least two concerts each year",
+        "source": "https://pasadenasymphony-pops.org/education/pyso/auditions/",
+        "asOf": "2026-06-22"
+      },
+      "financialAid": {
+        "status": "verified",
+        "value": true,
+        "source": "https://pasadenasymphony-pops.org/education/pyso/auditions/",
+        "asOf": "2026-06-22"
+      },
+      "tuition": {
+        "status": "unverified"
+      },
+      "goodFit": "Good fit for San Gabriel Valley families wanting a structured, multi-tier path from beginner to youth symphony.",
+      "reviews": null,
+      "ensembles": [
+        {
+          "name": "Beginning Strings",
+          "level": "Beginner",
+          "ages": [
+            9,
+            12
+          ],
+          "desc": "Entry ensemble — one of seven graded PYSO ensembles."
+        },
+        {
+          "name": "Intermediate Orchestra",
+          "level": "Intermediate",
+          "ages": [
+            11,
+            15
+          ],
+          "desc": "Strings, winds, and brass together."
+        },
+        {
+          "name": "Youth Symphony",
+          "level": "Advanced",
+          "ages": [
+            14,
+            18
+          ],
+          "desc": "Top ensemble in the seven-tier program."
+        }
+      ],
+      "performances": [],
+      "auditions": [
+        {
+          "level": "Intermediate",
+          "instruments": "Strings, winds, brass, percussion",
+          "window": {
+            "status": "unverified"
+          },
+          "status": "upcoming",
+          "ages": [
+            9,
+            18
+          ],
+          "note": "2026–27 applications open in early April; placement by audition across seven ensembles. Check the site for in-person dates.",
+          "source": "https://pasadenasymphony-pops.org/education/pyso/auditions/"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://pasadenasymphony-pops.org/education/pyso/auditions/",
+          "label": "PYSO — Auditions",
+          "retrievedAt": "2026-06-22"
+        },
+        {
+          "url": "https://pasadenasymphony-pops.org/education/pyso/",
+          "label": "PYSO",
+          "retrievedAt": "2026-06-22"
+        }
+      ],
+      "lastVerified": "2026-06-22",
+      "listingStatus": "published",
+      "provenanceType": "curated"
+    },
+    {
+      "id": "gyo",
+      "name": "Glendale Youth Orchestra",
+      "type": "youth",
+      "lat": 34.1466,
+      "lng": -118.2551,
+      "area": "Glendale",
+      "metro": "Greater Los Angeles",
+      "website": "https://www.glendaleyouthorchestra.com",
+      "applyUrl": "https://www.glendaleyouthorchestra.com/auditions",
+      "blurb": "An advanced, audition-based youth orchestra founded in 1989, performing three concerts each season at the Alex Theatre, with a members' concerto competition.",
+      "season": {
+        "status": "unverified"
+      },
+      "ages": [
+        12,
+        23
+      ],
+      "instruments": [
+        "Strings",
+        "Winds",
+        "Brass",
+        "Percussion"
+      ],
+      "rehearsal": {
+        "status": "unverified"
+      },
+      "commitment": {
+        "status": "unverified"
+      },
+      "financialAid": {
+        "status": "verified",
+        "value": true,
+        "source": "https://www.glendaleyouthorchestra.com/auditions",
+        "asOf": "2026-06-22"
+      },
+      "tuition": {
+        "status": "verified",
+        "value": "$875 per year (includes 5 concert tickets per concert)",
+        "source": "https://www.glendaleyouthorchestra.com/auditions",
+        "asOf": "2026-06-22"
+      },
+      "goodFit": "Good fit for an advanced Glendale-area player who wants symphonic repertoire and a concerto-competition opportunity.",
+      "reviews": null,
+      "ensembles": [
+        {
+          "name": "Glendale Youth Orchestra",
+          "level": "Advanced",
+          "ages": [
+            12,
+            23
+          ],
+          "desc": "Single full orchestra; classical, film, and world music."
+        }
+      ],
+      "performances": [],
+      "auditions": [
+        {
+          "level": "Advanced",
+          "instruments": "All orchestral instruments",
+          "window": {
+            "status": "unverified"
+          },
+          "status": "upcoming",
+          "ages": [
+            12,
+            23
+          ],
+          "note": "By appointment, typically late August before the season. Two prepared excerpts + two scales; merit-based. Check the site for the current date.",
+          "source": "https://www.glendaleyouthorchestra.com/auditions"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://www.glendaleyouthorchestra.com/auditions",
+          "label": "GYO — Auditions",
+          "retrievedAt": "2026-06-22"
+        },
+        {
+          "url": "https://www.glendaleyouthorchestra.com",
+          "label": "Glendale Youth Orchestra",
+          "retrievedAt": "2026-06-22"
+        }
+      ],
+      "lastVerified": "2026-06-22",
+      "listingStatus": "published",
+      "provenanceType": "curated"
+    },
+    {
+      "id": "smyo",
+      "name": "Santa Monica Youth Orchestra",
+      "type": "youth",
+      "lat": 34.0287,
+      "lng": -118.479,
+      "area": "Santa Monica",
+      "metro": "Greater Los Angeles",
+      "website": "https://soundslikela.org/programs/santa-monica-youth-orchestra/",
+      "applyUrl": null,
+      "blurb": "A tuition-free, audition-free Sunday music program (part of Sounds Like LA) for ages 6–18, with three orchestra levels and a culturally diverse repertoire, rehearsing at Virginia Avenue Park.",
+      "season": {
+        "status": "unverified"
+      },
+      "ages": [
+        6,
+        18
+      ],
+      "instruments": [
+        "Strings",
+        "Winds"
+      ],
+      "rehearsal": {
+        "status": "verified",
+        "value": "Sunday afternoons, roughly 30 weeks Sept–June (Virginia Avenue Park)",
+        "source": "https://arts.ca.gov/grantee/santa-monica-youth-orchestra-2/",
+        "asOf": "2026-06-22"
+      },
+      "commitment": {
+        "status": "verified",
+        "value": "Weekly (Sundays); open to any student who can commit to rehearsals",
+        "source": "https://soundslikela.org/programs/santa-monica-youth-orchestra/",
+        "asOf": "2026-06-22"
+      },
+      "financialAid": {
+        "status": "unverified"
+      },
+      "tuition": {
+        "status": "verified",
+        "value": "Free — tuition-free",
+        "source": "https://soundslikela.org/programs/santa-monica-youth-orchestra/",
+        "asOf": "2026-06-22"
+      },
+      "goodFit": "Good fit for westside and coastal families wanting a free, welcoming first orchestra with no audition.",
+      "reviews": null,
+      "ensembles": [
+        {
+          "name": "Prelude Orchestra",
+          "level": "Beginner",
+          "ages": [
+            6,
+            11
+          ],
+          "desc": "Beginning level."
+        },
+        {
+          "name": "Youth Orchestra",
+          "level": "Intermediate",
+          "ages": [
+            10,
+            14
+          ],
+          "desc": "Intermediate level."
+        },
+        {
+          "name": "Symphonic Orchestra",
+          "level": "Advanced",
+          "ages": [
+            12,
+            18
+          ],
+          "desc": "Most advanced of the three levels; opens for the Westside Chamber Orchestra."
+        }
+      ],
+      "performances": [],
+      "auditions": [
+        {
+          "level": "Beginner",
+          "instruments": "All — no audition",
+          "window": {
+            "status": "verified",
+            "value": "Open enrollment — no audition; register each season",
+            "source": "https://soundslikela.org/programs/santa-monica-youth-orchestra/",
+            "asOf": "2026-06-22"
+          },
+          "status": "rolling",
+          "ages": [
+            6,
+            18
+          ],
+          "note": "Audition-free; students are placed by level. Registration opens each season.",
+          "source": "https://soundslikela.org/programs/santa-monica-youth-orchestra/"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://soundslikela.org/programs/santa-monica-youth-orchestra/",
+          "label": "Sounds Like LA — SMYO",
+          "retrievedAt": "2026-06-22"
+        },
+        {
+          "url": "https://arts.ca.gov/grantee/santa-monica-youth-orchestra-2/",
+          "label": "CA Arts Council — SMYO",
+          "retrievedAt": "2026-06-22"
+        }
+      ],
+      "lastVerified": "2026-06-22",
+      "listingStatus": "published",
+      "provenanceType": "curated"
+    },
+    {
+      "id": "laphil",
+      "name": "Los Angeles Philharmonic",
+      "type": "professional",
+      "lat": 34.0556,
+      "lng": -118.2497,
+      "area": "Downtown LA",
+      "metro": "Greater Los Angeles",
+      "website": "https://www.laphil.com",
+      "applyUrl": null,
+      "blurb": "One of the world's leading orchestras, resident at Walt Disney Concert Hall and the Hollywood Bowl.",
+      "season": {
+        "status": "unverified"
+      },
+      "ages": [
+        22,
+        99
+      ],
+      "instruments": [
+        "Strings",
+        "Winds",
+        "Brass",
+        "Percussion",
+        "Harp"
+      ],
+      "rehearsal": {
+        "status": "not_applicable"
+      },
+      "commitment": {
+        "status": "verified",
+        "value": "Full-time professional",
+        "source": "https://www.laphil.com",
+        "asOf": "2026-06-22"
+      },
+      "financialAid": {
+        "status": "not_applicable"
+      },
+      "tuition": {
+        "status": "not_applicable"
+      },
+      "goodFit": "For professional musicians auditioning for posted vacancies; for families, a world-class concert destination.",
+      "reviews": null,
+      "ensembles": [
+        {
+          "name": "Los Angeles Philharmonic",
+          "level": "Professional",
+          "ages": [
+            22,
+            99
+          ],
+          "desc": "Full professional symphony orchestra."
+        }
+      ],
+      "performances": [],
+      "auditions": [
+        {
+          "level": "Professional",
+          "instruments": "Posted vacancies only",
+          "window": {
+            "status": "unverified"
+          },
+          "status": "rolling",
+          "ages": [
+            22,
+            99
+          ],
+          "note": "Union audition process; sealed-round excerpts. See the LA Phil site for current openings.",
+          "source": "https://www.laphil.com"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://www.laphil.com",
+          "label": "Los Angeles Philharmonic",
+          "retrievedAt": "2026-06-22"
+        }
+      ],
+      "lastVerified": "2026-06-22",
+      "listingStatus": "published",
+      "provenanceType": "curated"
+    },
+    {
+      "id": "laco",
+      "name": "Los Angeles Chamber Orchestra",
+      "type": "professional",
+      "lat": 34.0556,
+      "lng": -118.2468,
+      "area": "Downtown LA",
+      "metro": "Greater Los Angeles",
+      "website": "https://www.laco.org",
+      "applyUrl": null,
+      "blurb": "Founded in 1968, a preeminent professional chamber orchestra performing orchestral, chamber, and Baroque programs across greater Los Angeles, led by Music Director Jaime Martín.",
+      "season": {
+        "status": "verified",
+        "value": "2026/27 season",
+        "source": "https://www.laco.org/2627season/",
+        "asOf": "2026-06-22"
+      },
+      "ages": [
+        22,
+        99
+      ],
+      "instruments": [
+        "Strings",
+        "Winds",
+        "Brass"
+      ],
+      "rehearsal": {
+        "status": "not_applicable"
+      },
+      "commitment": {
+        "status": "verified",
+        "value": "Full-time professional",
+        "source": "https://www.laco.org",
+        "asOf": "2026-06-22"
+      },
+      "financialAid": {
+        "status": "not_applicable"
+      },
+      "tuition": {
+        "status": "not_applicable"
+      },
+      "goodFit": "For professional players; for families, intimate, high-craft chamber concerts in DTLA and Beverly Hills.",
+      "reviews": null,
+      "ensembles": [
+        {
+          "name": "Los Angeles Chamber Orchestra",
+          "level": "Professional",
+          "ages": [
+            22,
+            99
+          ],
+          "desc": "Professional chamber-scale orchestra."
+        }
+      ],
+      "performances": [
+        {
+          "date": "2026-09-26",
+          "title": "MOVEMENT(S)!",
+          "venue": "Walt Disney Concert Hall (DTLA) & Wallis Annenberg Center (Beverly Hills)",
+          "program": "Kodály; Carlos Simon (world premiere); Gabriela Lena Frank; de Falla",
+          "from": {
+            "status": "unverified"
+          },
+          "source": "https://www.laco.org/events/movements/"
+        },
+        {
+          "date": "2026-11-19",
+          "title": "East Meets West",
+          "venue": "Orchestral Series",
+          "program": null,
+          "from": {
+            "status": "unverified"
+          },
+          "source": "https://www.laco.org/2627season/subscribe/"
+        },
+        {
+          "date": "2027-05-15",
+          "title": "Brahms, Beethoven, Ravaei (season finale)",
+          "venue": "Orchestral Series",
+          "program": "Brahms Violin Concerto (James Ehnes); Beethoven Symphony No. 7; world premiere by Kian Ravaei",
+          "from": {
+            "status": "unverified"
+          },
+          "source": "https://www.laco.org/laco-2627-pr/"
+        }
+      ],
+      "auditions": [
+        {
+          "level": "Professional",
+          "instruments": "Posted vacancies only",
+          "window": {
+            "status": "unverified"
+          },
+          "status": "rolling",
+          "ages": [
+            22,
+            99
+          ],
+          "note": "Excerpts + chamber round. See the LACO site for current openings.",
+          "source": "https://www.laco.org"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://www.laco.org/2627season/",
+          "label": "LACO — 2026/27 season",
+          "retrievedAt": "2026-06-22"
+        },
+        {
+          "url": "https://www.laco.org/events/movements/",
+          "label": "LACO — MOVEMENT(S)!",
+          "retrievedAt": "2026-06-22"
+        },
+        {
+          "url": "https://www.laco.org/laco-2627-pr/",
+          "label": "LACO — 2026/27 announcement",
+          "retrievedAt": "2026-06-22"
+        }
+      ],
+      "lastVerified": "2026-06-22",
+      "listingStatus": "published",
+      "provenanceType": "curated"
+    },
+    {
+      "id": "passym",
+      "name": "Pasadena Symphony and POPS",
+      "type": "professional",
+      "lat": 34.1452,
+      "lng": -118.139,
+      "area": "Pasadena",
+      "metro": "Greater Los Angeles",
+      "website": "https://pasadenasymphony-pops.org",
+      "applyUrl": null,
+      "blurb": "The San Gabriel Valley's professional orchestra: a classical season (Oct–May) at Ambassador Auditorium and a summer POPS series at the LA County Arboretum.",
+      "season": {
+        "status": "verified",
+        "value": "Classical season Oct–May at Ambassador Auditorium; POPS Jun–Sep at the LA County Arboretum",
+        "source": "https://pasadenasymphony-pops.org",
+        "asOf": "2026-06-22"
+      },
+      "ages": [
+        22,
+        99
+      ],
+      "instruments": [
+        "Strings",
+        "Winds",
+        "Brass",
+        "Percussion"
+      ],
+      "rehearsal": {
+        "status": "not_applicable"
+      },
+      "commitment": {
+        "status": "verified",
+        "value": "Per-service professional",
+        "source": "https://pasadenasymphony-pops.org",
+        "asOf": "2026-06-22"
+      },
+      "financialAid": {
+        "status": "not_applicable"
+      },
+      "tuition": {
+        "status": "not_applicable"
+      },
+      "goodFit": "For professional players seeking section/sub work; for families, a regional classical and POPS concert series.",
+      "reviews": null,
+      "ensembles": [
+        {
+          "name": "Pasadena Symphony",
+          "level": "Professional",
+          "ages": [
+            22,
+            99
+          ],
+          "desc": "Professional regional orchestra."
+        }
+      ],
+      "performances": [],
+      "auditions": [
+        {
+          "level": "Professional",
+          "instruments": "Substitute & section list",
+          "window": {
+            "status": "unverified"
+          },
+          "status": "rolling",
+          "ages": [
+            22,
+            99
+          ],
+          "note": "Resume + excerpts by posted vacancy.",
+          "source": "https://pasadenasymphony-pops.org"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://pasadenasymphony-pops.org",
+          "label": "Pasadena Symphony and POPS",
+          "retrievedAt": "2026-06-22"
+        }
+      ],
+      "lastVerified": "2026-06-22",
+      "listingStatus": "published",
+      "provenanceType": "curated"
+    },
+    {
+      "id": "lbso",
+      "name": "Long Beach Symphony",
+      "type": "professional",
+      "lat": 33.7686,
+      "lng": -118.1923,
+      "area": "Long Beach",
+      "metro": "Greater Los Angeles",
+      "website": "https://longbeachsymphony.org",
+      "applyUrl": null,
+      "blurb": "Long Beach's professional orchestra since 1934, led by Music Director Eckart Preu, with a five-concert Classical Series at the Terrace Theater plus a POPS series and youth concerts.",
+      "season": {
+        "status": "verified",
+        "value": "2026–27 Classical Series — five concerts at the Terrace Theater",
+        "source": "https://longbeachsymphony.org/classical-2026-27/",
+        "asOf": "2026-06-22"
+      },
+      "ages": [
+        22,
+        99
+      ],
+      "instruments": [
+        "Strings",
+        "Winds",
+        "Brass",
+        "Percussion"
+      ],
+      "rehearsal": {
+        "status": "not_applicable"
+      },
+      "commitment": {
+        "status": "verified",
+        "value": "Per-service professional",
+        "source": "https://longbeachsymphony.org",
+        "asOf": "2026-06-22"
+      },
+      "financialAid": {
+        "status": "not_applicable"
+      },
+      "tuition": {
+        "status": "not_applicable"
+      },
+      "goodFit": "For professional players; for families, a relaxed Classical Series in Long Beach with free pre-concert talks.",
+      "reviews": null,
+      "ensembles": [
+        {
+          "name": "Long Beach Symphony",
+          "level": "Professional",
+          "ages": [
+            22,
+            99
+          ],
+          "desc": "Professional orchestra."
+        }
+      ],
+      "performances": [
+        {
+          "date": "2026-10-10",
+          "title": "Faces of America at 250",
+          "venue": "Terrace Theater",
+          "program": "Copland Fanfare for the Common Man; James P. Johnson Harlem Symphony; Gershwin Strike Up the Band",
+          "from": {
+            "status": "unverified"
+          },
+          "source": "https://longbeachsymphony.org/classical-2026-27/"
+        },
+        {
+          "date": "2026-11-14",
+          "title": "Entangled in Passion",
+          "venue": "Terrace Theater",
+          "program": "Ravel Boléro; R. Strauss Don Juan; Rachmaninoff Piano Concerto No. 2 (Michelle Cann)",
+          "from": {
+            "status": "unverified"
+          },
+          "source": "https://longbeachsymphony.org/classical-2026-27/"
+        },
+        {
+          "date": "2027-03-06",
+          "title": "Heaven & Earth",
+          "venue": "Terrace Theater",
+          "program": "Gabriela Lena Frank; Brahms Violin Concerto (Randall Goosby); Mozart Symphony No. 41 'Jupiter'",
+          "from": {
+            "status": "unverified"
+          },
+          "source": "https://longbeachsymphony.org/classical-2026-27/"
+        }
+      ],
+      "auditions": [
+        {
+          "level": "Professional",
+          "instruments": "Posted vacancies only",
+          "window": {
+            "status": "unverified"
+          },
+          "status": "rolling",
+          "ages": [
+            22,
+            99
+          ],
+          "note": "Union audition; excerpts provided by posted vacancy.",
+          "source": "https://longbeachsymphony.org"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://longbeachsymphony.org/classical-2026-27/",
+          "label": "Long Beach Symphony — 2026–27 Classical",
+          "retrievedAt": "2026-06-22"
+        },
+        {
+          "url": "https://longbeachsymphony.org",
+          "label": "Long Beach Symphony",
+          "retrievedAt": "2026-06-22"
+        }
+      ],
+      "lastVerified": "2026-06-22",
+      "listingStatus": "published",
+      "provenanceType": "curated"
+    },
+    {
+      "id": "culver",
+      "name": "Culver City Symphony Orchestra",
+      "type": "community",
+      "lat": 34.0211,
+      "lng": -118.3965,
+      "area": "Culver City",
+      "metro": "Greater Los Angeles",
+      "website": "https://www.culvercitysymphony.org",
+      "applyUrl": null,
+      "blurb": "Founded in 1964 (originally the Westchester String Symphony), an orchestra that pairs professional players with talented amateurs and students, presenting free concerts in Culver City and a summer series as the Marina del Rey Summer Symphony.",
+      "season": {
+        "status": "verified",
+        "value": "3–4 free concerts each season in Culver City; summers as the Marina del Rey Summer Symphony at Burton Chace Park",
+        "source": "https://www.culvercitysymphony.org",
+        "asOf": "2026-06-22"
+      },
+      "ages": [
+        16,
+        99
+      ],
+      "instruments": [
+        "Strings",
+        "Winds",
+        "Brass"
+      ],
+      "rehearsal": {
+        "status": "unverified"
+      },
+      "commitment": {
+        "status": "unverified"
+      },
+      "financialAid": {
+        "status": "unverified"
+      },
+      "tuition": {
+        "status": "unverified"
+      },
+      "goodFit": "Good fit for adult amateurs and advanced students who want to play alongside professionals, or for families wanting free local concerts.",
+      "reviews": null,
+      "ensembles": [
+        {
+          "name": "Culver City Symphony Orchestra",
+          "level": "Intermediate",
+          "ages": [
+            16,
+            99
+          ],
+          "desc": "Mixed professional/amateur/student orchestra; becomes the Marina del Rey Summer Symphony in summer."
+        }
+      ],
+      "performances": [],
+      "auditions": [
+        {
+          "level": "Intermediate",
+          "instruments": "Strings, winds, brass",
+          "window": {
+            "status": "unverified"
+          },
+          "status": "rolling",
+          "ages": [
+            16,
+            99
+          ],
+          "note": "Includes professional, amateur, and student players; contact the orchestra to inquire about joining.",
+          "source": "https://www.culvercitysymphony.org"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://www.culvercitysymphony.org",
+          "label": "Culver City Symphony Orchestra",
+          "retrievedAt": "2026-06-22"
+        },
+        {
+          "url": "https://www.eventbrite.com/o/culver-city-symphony-orchestra-119912435181",
+          "label": "CCSO — about (Eventbrite)",
+          "retrievedAt": "2026-06-22"
+        }
+      ],
+      "lastVerified": "2026-06-22",
+      "listingStatus": "published",
+      "provenanceType": "curated"
+    }
+  ]
+}
+</script>
+<script>
+/* ===================== DATA LOADER (Phase 2.3) =====================
+   Listings live in data.json (curated + cited). Served over HTTP we
+   fetch it; as a standalone Claude artifact (file://) fetch is blocked,
+   so we fall back to the dataset embedded in <script id="bootstrap-data">.
+   Honesty rule: we render a field's value ONLY when it is verified with a
+   source. Unverified fields never get an invented value — they link out
+   to the org's own site instead. */
+let DATA = [];
+let DATA_READY = false;
+let DATA_ERROR = false;
+
+function bootstrapDataset(){
+  try{
+    const el = document.getElementById("bootstrap-data");
+    if(!el) return null;
+    return JSON.parse(el.textContent);
+  }catch(e){ console.warn("Bootstrap parse failed", e); return null; }
+}
+function publishedOrgs(ds){
+  if(!ds || !Array.isArray(ds.organizations)) return [];
+  return ds.organizations.filter(o => o.listingStatus === "published");
+}
+async function loadData(){
+  DATA_ERROR = false; DATA_READY = false;
+  let ds = null;
+  try{
+    const res = await fetch("data.json", {cache:"no-store"});
+    if(res && res.ok) ds = await res.json();
+  }catch(e){ /* file:// or offline — fall through to embedded bootstrap */ }
+  if(!ds) ds = bootstrapDataset();
+  if(!ds){ DATA_ERROR = true; DATA = []; return; }
+  DATA = publishedOrgs(ds);
+  DATA_READY = true;
+}
+function showResultsLoading(){
+  const wrap = $("#results");
+  if(wrap) wrap.innerHTML = `<div class="empty"><h3>Loading listings…</h3><p>Fetching curated orchestra data.</p></div>`;
+}
+
+/* ---- verifiable-field helpers ----
+   A field is either a plain value (id, name, lat…) or a verifiable object
+   {status:"verified",value,source} | {status:"unverified"} | {status:"not_applicable"}. */
+function checkSite(url){
+  const href = url ? esc(url) : "";
+  return href
+    ? `<a class="check-site" href="${href}" target="_blank" rel="noopener">Check their site</a>`
+    : `<span class="check-site">Check their site</span>`;
+}
+// HTML for a verifiable string: verified→value · not_applicable→null (caller hides) · else→link out
+function vHTML(field, url){
+  if(field == null) return checkSite(url);
+  if(typeof field !== "object") return esc(field);
+  if(field.status === "verified") return esc(field.value);
+  if(field.status === "not_applicable") return null;
+  return checkSite(url);
+}
+// plain text for a verifiable string: verified→value, otherwise null
+function vText(field){
+  if(field == null) return null;
+  if(typeof field !== "object") return String(field);
+  if(field.status === "verified") return field.value;
+  return null;
+}
+function isFreePerf(field){
+  return !!(field && field.status === "verified" && Number(field.value) === 0);
+}
+// HTML for a ticket price: verified 0→"Free admission", verified n→"Tickets from $n", NA→null, else→link
+function priceHTML(field, url){
+  if(!field || typeof field !== "object") return null;
+  if(field.status === "verified") return Number(field.value) === 0 ? "Free admission" : "Tickets from $" + field.value;
+  if(field.status === "not_applicable") return null;
+  return checkSite(url);
+}
+function hasReviews(o){ return !!(o && o.reviews && typeof o.reviews.rating === "number"); }
+
+const PRESETS = [
+  {label:"Downtown LA", lat:34.0537, lng:-118.2497, z:13},
+  {label:"Pasadena", lat:34.1466, lng:-118.1445, z:13},
+  {label:"Santa Monica", lat:34.0195, lng:-118.4912, z:13},
+  {label:"Long Beach", lat:33.7700, lng:-118.1900, z:12},
+  {label:"Westside", lat:34.0561, lng:-118.45, z:12},
+];
+
+const INSTRUMENTS = ["Strings","Winds","Brass","Percussion","Harp"];
+const LEVELS = ["Beginner","Intermediate","Advanced","Pre-professional","Professional"];
+
+/* ============================ STATE ============================ */
+const saved = new Set();
+let activeType = "all";
+let activeAge = "any";
+let activeInstrument = "any";
+let activeSort = "featured";
+let openNowOnly = false;
+let activeOrgId = null;
+let map, markerLayer, markers = {};
+let homePoint = {lat:34.05, lng:-118.30, label:"Greater Los Angeles"}; // "home" for distance — last searched location
+const compareSet = new Set();             // org ids picked for compare (max 3)
+let lastFocus = null;                      // element to restore focus to when a dialog closes
+
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const fmtDate = iso => { const d=new Date(iso+"T00:00:00"); return {m:MONTHS[d.getMonth()], day:d.getDate(), year:d.getFullYear()}; };
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s==null?"":s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* great-circle distance in miles */
+function distanceMi(aLat,aLng,bLat,bLng){
+  const R=3958.8, toRad=d=>d*Math.PI/180;
+  const dLat=toRad(bLat-aLat), dLng=toRad(bLng-aLng);
+  const s=Math.sin(dLat/2)**2 + Math.cos(toRad(aLat))*Math.cos(toRad(bLat))*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.sqrt(s));
+}
+function orgDistance(o){ return distanceMi(homePoint.lat, homePoint.lng, o.lat, o.lng); }
+function fmtDist(mi){ return mi<10 ? mi.toFixed(1)+" mi" : Math.round(mi)+" mi"; }
+function hasOpenAudition(o){ return o.auditions.some(a=>a.status==="open"); }
+
+/* ============================ FILTER + SORT LOGIC ============================ */
+function ageOverlap(org){
+  if(activeAge==="any") return true;
+  const ranges = {u12:[0,11], "12-15":[12,15], "16-18":[16,18], adult:[18,99]}[activeAge];
+  return org.ensembles.some(e => e.ages[0] <= ranges[1] && e.ages[1] >= ranges[0]);
+}
+function filteredOrgs(){
+  let list = DATA.filter(o =>
+    (activeType==="all" || o.type===activeType) &&
+    ageOverlap(o) &&
+    (activeInstrument==="any" || (o.instruments||[]).includes(activeInstrument)) &&
+    (!openNowOnly || hasOpenAudition(o))
+  );
+  if(activeSort==="nearest")      list = list.slice().sort((a,b)=>orgDistance(a)-orgDistance(b));
+  else if(activeSort==="name")    list = list.slice().sort((a,b)=>a.name.localeCompare(b.name));
+  return list;
+}
+
+/* ============================ RESULTS RAIL ============================ */
+function renderResults(){
+  const wrap = $("#results");
+  if(DATA_ERROR){
+    $("#railSub").textContent = "Couldn’t load listings";
+    wrap.innerHTML = `<div class="empty"><h3>Couldn’t load listings</h3><p>The curated data didn’t load. <button class="btn btn--ghost" id="retryLoad" type="button" style="margin-top:10px">Retry</button></p></div>`;
+    const rb = $("#retryLoad");
+    if(rb) rb.addEventListener("click", async ()=>{ showResultsLoading(); await loadData(); renderResults(); });
+    return;
+  }
+  if(!DATA_READY){ showResultsLoading(); return; }
+  const list = filteredOrgs();
+  const showDist = activeSort==="nearest";
+  $("#railSub").textContent = `${list.length} listing${list.length!==1?"s":""} · curated${showDist?` · from ${homePoint.label}`:""}`;
+  if(!list.length){
+    wrap.innerHTML = `<div class="empty"><h3>No matches</h3><p>Try widening the age range, instrument, or type, or turn off “open now”.</p></div>`;
+    refreshMarkers(list); return;
+  }
+  wrap.innerHTML =
+    `<div class="results__count">${list.length} result${list.length!==1?"s":""}</div>` +
+    list.map(o=>{
+      const ageTxt = o.type==="professional" ? "Adult / pro" : `Ages ${o.ages[0]}–${o.ages[1]}`;
+      const open = o.auditions.filter(a=>a.status==="open").length;
+      const dist = fmtDist(orgDistance(o));
+      const cmpOn = compareSet.has(o.id);
+      return `<div class="card${o.id===activeOrgId?" is-active":""}${cmpOn?" is-compared":""}" data-id="${o.id}" tabindex="0" role="button" aria-label="${esc(o.name)}, ${esc(o.area)}. Open details.">
+        <div class="card__top">
+          <div>
+            <h3 class="card__name">${esc(o.name)}</h3>
+            <p class="card__area">${pinSvg()} ${esc(o.area)}${showDist?` · <span class="card__dist">${dist}</span>`:""}</p>
+          </div>
+          <span class="badge badge--${o.type}">${typeLabel(o.type)}</span>
+        </div>
+        <div class="card__meta">
+          ${hasReviews(o)?`<span class="stars">${starSvg()} ${o.reviews.rating.toFixed(1)} <span style="color:var(--ink-soft);font-weight:600">(${o.reviews.count})</span></span>`:""}
+          <span><b>${o.ensembles.length}</b> ensemble${o.ensembles.length!==1?"s":""}</span>
+          <span>${ageTxt}</span>
+          ${open?`<span style="color:var(--teal);font-weight:700">● ${open} audition${open!==1?"s":""} open</span>`:""}
+        </div>
+        <button class="card__cmp${cmpOn?" is-on":""}" data-cmp="${o.id}" aria-pressed="${cmpOn}" aria-label="${cmpOn?"Remove from":"Add to"} comparison">
+          ${cmpOn?checkSvg():plusSvg()} Compare
+        </button>
+        <button class="card__heart${saved.has(o.id)?" is-saved":""}" data-heart="${o.id}" aria-label="${saved.has(o.id)?"Remove from saved":"Save"} ${esc(o.name)}" aria-pressed="${saved.has(o.id)}">
+          ${heartSvg(saved.has(o.id))}
+        </button>
+      </div>`;
+    }).join("");
+  refreshMarkers(list);
+}
+function typeLabel(t){return {youth:"Youth",professional:"Professional",community:"Community",collegiate:"Collegiate"}[t]||t;}
+function pinSvg(){return `<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>`;}
+function heartSvg(f){return `<svg width="19" height="19" viewBox="0 0 24 24" fill="${f?'currentColor':'none'}" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 14c1.5-1.5 3-3.4 3-5.5A4.5 4.5 0 0 0 12 6 4.5 4.5 0 0 0 2 8.5c0 2.1 1.5 4 3 5.5l7 7Z"/></svg>`;}
+function starSvg(){return `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2 2.9 6.3 6.8.7-5 4.6 1.4 6.7L12 17.8 5.9 20.6l1.4-6.7-5-4.6 6.8-.7z"/></svg>`;}
+function plusSvg(){return `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>`;}
+function checkSvg(){return `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg>`;}
+
+/* ============================ MAP ============================ */
+function makeIcon(org, active){
+  const glyph = org.type==="professional" ? "♫" : "♪";
+  return L.divIcon({
+    className:`pin-icon${active?" is-active":""}`,
+    html:`<div class="pin pin--${org.type}"><span class="pin__glyph" aria-hidden="true">${glyph}</span></div>`,
+    iconSize:[30,30], iconAnchor:[6,30], popupAnchor:[8,-28],
+  });
+}
+function refreshMarkers(list){
+  if(!map) return;
+  markerLayer.clearLayers(); markers = {};
+  list.forEach(o=>{
+    const mk = L.marker([o.lat,o.lng], {icon:makeIcon(o, o.id===activeOrgId), title:o.name, keyboard:true, alt:`${o.name} — ${typeLabel(o.type)} orchestra in ${o.area}`});
+    mk.on("click", ()=>openDetail(o.id, false));
+    mk.on("add", ()=>{
+      const el = mk.getElement();
+      if(el){
+        el.setAttribute("role","button");
+        el.setAttribute("tabindex","0");
+        el.setAttribute("aria-label",`${o.name}, ${typeLabel(o.type)} orchestra in ${o.area}. Open details.`);
+        el.addEventListener("keydown", e=>{
+          if(e.key==="Enter"||e.key===" "){ e.preventDefault(); openDetail(o.id, false); }
+        });
+      }
+    });
+    mk.addTo(markerLayer); markers[o.id]=mk;
+  });
+}
+function initMap(){
+  map = L.map("map",{zoomControl:true, attributionControl:true}).setView([34.05,-118.30], 11);
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{
+    maxZoom:19, subdomains:"abcd",
+    attribution:'&copy; OpenStreetMap &copy; CARTO',
+  }).addTo(map);
+  markerLayer = L.layerGroup().addTo(map);
+  renderResults();
+  $("#presets").innerHTML = PRESETS.map((p,i)=>`<button class="preset" data-preset="${i}">${esc(p.label)}</button>`).join("");
+  setTimeout(()=>map.invalidateSize(), 200);
+}
+/* update the "home" point used for distance + re-render */
+function setHome(lat,lng,label){
+  homePoint = {lat, lng, label: label || "your location"};
+  if(activeSort==="nearest") renderResults();
+}
+
+/* ============================ DETAIL PANEL ============================ */
+function applyUrlFor(o){ return o.applyUrl || o.website; }
+
+function openDetail(id, recenter=true){
+  const o = DATA.find(x=>x.id===id); if(!o) return;
+  if(!$("#detail").classList.contains("is-open")) lastFocus = document.activeElement;
+  activeOrgId = id;
+  $$(".card").forEach(c=>c.classList.toggle("is-active", c.dataset.id===id));
+  if(map){ refreshMarkers(filteredOrgs()); if(recenter) map.flyTo([o.lat,o.lng], 14, {duration:.6}); }
+
+  const tiers = o.ensembles.map(e=>`
+    <div class="tier">
+      <div class="tier__top">
+        <span class="tier__name">${esc(e.name)}</span>
+        <span class="tier__age">Ages ${e.ages[0]}–${e.ages[1]} · ${esc(e.level)}</span>
+      </div>
+      <p class="tier__desc">${esc(e.desc)}</p>
+    </div>`).join("");
+
+  const perfs = o.performances.map(p=>{
+    const d=fmtDate(p.date);
+    const ph=priceHTML(p.from, o.website);
+    return `<div class="perf">
+      <div class="perf__date"><div class="perf__mon">${d.m}</div><div class="perf__day">${d.day}</div></div>
+      <div class="perf__info">
+        <p class="perf__title">${esc(p.title)}</p>
+        <p class="perf__sub">${esc(p.venue)} · ${esc(p.program)}</p>
+        ${ph?`<p class="perf__price">${ph}</p>`:""}
+      </div>
+    </div>`;}).join("");
+
+  const vPrices = o.performances.map(p=>p.from).filter(f=>f&&f.status==="verified").map(f=>Number(f.value));
+  let priceTxt;
+  if(vPrices.length){
+    const lo=Math.min(...vPrices), hi=Math.max(...vPrices);
+    priceTxt = lo===0 && hi===0 ? "Free" : `${lo===0?"Free":"$"+lo} – $${hi}`;
+  } else { priceTxt = checkSite(o.website); }
+
+  const auds = o.auditions.map(a=>`
+    <div class="audrow">
+      <div class="audrow__top">
+        <span class="lvl">${esc(a.level)}</span>
+        <span class="status status--${a.status}"><span class="d"></span>${statusLabel(a.status)}</span>
+      </div>
+      <div class="audrow__meta">
+        <b>${esc(a.instruments)}</b><br>
+        ${vHTML(a.window, o.website)} · ages ${a.ages[0]}–${a.ages[1]}<br>
+        ${esc(a.note)}
+      </div>
+    </div>`).join("");
+
+  const seasonTxt = vText(o.season);
+  const tuitionNA = !!(o.tuition && o.tuition.status==="not_applicable");
+  const tuitionHTML = vHTML(o.tuition, o.website);
+  // Financial aid is a verifiable boolean: verified→Available/Not offered · not_applicable→hide · unverified→link out.
+  let aidVal, aidClass="";
+  const fa=o.financialAid;
+  if(fa && fa.status==="not_applicable"){ aidVal=null; }
+  else if(fa && fa.status==="verified"){ aidVal = fa.value ? "Available" : "Not offered"; aidClass = fa.value ? "aid-yes" : "aid-no"; }
+  else { aidVal = checkSite(o.website); }
+  // Build the at-a-glance grid, dropping rows that are not_applicable (null).
+  const factRows = [
+    [`${clockSvg()} Rehearsals`, vHTML(o.rehearsal, o.website), ""],
+    [`${gaugeSvg()} Commitment`, vHTML(o.commitment, o.website), ""],
+    [`${tagSvg()} Financial aid`, aidVal, aidClass],
+    [`${noteIcon()} Instruments`, (o.instruments||[]).length ? (o.instruments||[]).join(" · ") : null, ""],
+  ];
+  const factGrid = factRows.filter(r=>r[1]!=null).map(r=>`<div class="fact"><p class="fact__k">${r[0]}</p><p class="fact__v ${r[2]}">${r[1]}</p></div>`).join("");
+
+  $("#detail").innerHTML = `
+    <div class="detail__head">
+      <div class="detail__staff" aria-hidden="true"></div>
+      <button class="detail__close" id="detailClose" aria-label="Close details">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+      <div class="detail__badges">
+        <span class="badge badge--${o.type}">${typeLabel(o.type)}</span>
+        ${seasonTxt?`<span class="badge badge--collegiate">${esc(seasonTxt)}</span>`:""}
+      </div>
+      <h2 class="detail__name" id="detailName">${esc(o.name)}</h2>
+      <p class="detail__area">
+        ${pinSvg()} ${esc(o.area)}, CA
+        ${hasReviews(o)?`<span style="color:var(--line)">·</span>
+        <span class="detail__rating">${starSvg()} ${o.reviews.rating.toFixed(1)}</span>
+        <span style="color:var(--ink-soft);font-weight:600">${o.reviews.count} reviews · ${esc(o.reviews.source)}</span>`:""}
+      </p>
+    </div>
+    <div class="detail__body">
+      <p class="detail__blurb">${esc(o.blurb)}</p>
+
+      <div class="fit">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        <p><b>Good fit if…</b> ${esc(o.goodFit)}</p>
+      </div>
+
+      <div class="sect">
+        <h3 class="sect__h">At a glance</h3>
+        <div class="factgrid">${factGrid}</div>
+      </div>
+
+      <div class="sect">
+        <h3 class="sect__h">Ensembles &amp; tiers</h3>
+        ${tiers}
+      </div>
+
+      <div class="sect">
+        <h3 class="sect__h">Upcoming performances</h3>
+        ${perfs || '<p class="tier__desc">No dates announced yet.</p>'}
+      </div>
+
+      <div class="sect">
+        <h3 class="sect__h">Tickets &amp; ${tuitionNA?"pricing":"cost to join"}</h3>
+        <div class="pricerow"><span>Concert tickets</span><b>${priceTxt}</b></div>
+        ${tuitionNA?"":`<div class="pricerow" style="margin-top:8px"><span>Program tuition</span><b>${tuitionHTML}</b></div>`}
+      </div>
+
+      <div class="sect">
+        <h3 class="sect__h">Auditions</h3>
+        ${auds}
+      </div>
+    </div>
+    <div class="detail__cta">
+      <button class="btn btn--save${saved.has(o.id)?" is-saved":""}" id="detailSave" aria-label="${saved.has(o.id)?"Remove from saved":"Save"}" aria-pressed="${saved.has(o.id)}">
+        ${heartSvg(saved.has(o.id))}
+      </button>
+      <a class="btn btn--primary" href="${esc(applyUrlFor(o))}" target="_blank" rel="noopener">
+        Apply on their site
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg>
+      </a>
+      <a class="btn btn--ghost detail__cta-row2" href="${esc(o.website)}" target="_blank" rel="noopener">
+        Visit website
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg>
+      </a>
+    </div>`;
+
+  const panel = $("#detail");
+  panel.classList.add("is-open"); panel.setAttribute("aria-hidden","false");
+  $("#detailClose").onclick = closeDetail;
+  $("#detailSave").onclick = ()=>{ toggleSave(o.id); openDetail(o.id, false); };
+  $("#detailClose").focus();
+}
+function statusLabel(s){return {open:"Open now",upcoming:"Upcoming",rolling:"Rolling"}[s]||s;}
+function clockSvg(){return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`;}
+function gaugeSvg(){return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 13a3 3 0 1 0 3 3"/><path d="M12 3a9 9 0 0 1 9 9"/><path d="M3 12a9 9 0 0 1 4-7.5"/></svg>`;}
+function tagSvg(){return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11V5a2 2 0 0 1 2-2h6l9 9-8 8z"/><circle cx="7.5" cy="7.5" r="1.2" fill="currentColor"/></svg>`;}
+function closeDetail(){
+  const p=$("#detail"); p.classList.remove("is-open"); p.setAttribute("aria-hidden","true");
+  activeOrgId=null; $$(".card").forEach(c=>c.classList.remove("is-active"));
+  if(map) refreshMarkers(filteredOrgs());
+  if(lastFocus && document.contains(lastFocus)) lastFocus.focus();
+  lastFocus = null;
+}
+
+/* ============================ SAVED ============================ */
+function toggleSave(id){
+  saved.has(id) ? saved.delete(id) : saved.add(id);
+  const c=$("#savedCount"); c.textContent=saved.size; c.style.display=saved.size?"grid":"none";
+  renderResults(); renderSaved();
+}
+function renderSaved(){
+  const list = DATA.filter(o=>saved.has(o.id));
+  const grid = $("#savedGrid");
+  if(!list.length){ grid.innerHTML = `<div class="empty" style="grid-column:1/-1">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M19 14c1.5-1.5 3-3.4 3-5.5A4.5 4.5 0 0 0 12 6 4.5 4.5 0 0 0 2 8.5c0 2.1 1.5 4 3 5.5l7 7Z"/></svg>
+    <h3>Nothing saved yet</h3><p>Tap the heart on any organization to keep it here.</p></div>`; return; }
+  grid.innerHTML = list.map(o=>orgMiniCard(o)).join("");
+}
+function orgMiniCard(o){
+  return `<div class="aud-card">
+    <div class="aud-card__top">
+      <div><div class="aud-card__org">${esc(o.area)}</div><div class="aud-card__title">${esc(o.name)}</div></div>
+      <span class="badge badge--${o.type}">${typeLabel(o.type)}</span>
+    </div>
+    <div class="aud-card__rows">
+      ${hasReviews(o)?`<div class="kv">${starSvgStroke()}<span><b>${o.reviews.rating.toFixed(1)}</b> · ${o.reviews.count} reviews</span></div>`:""}
+      <div class="kv">${noteIcon()}<span><b>${o.ensembles.length}</b> ensembles · ${o.type==="professional"?"adult/pro":"ages "+o.ages[0]+"–"+o.ages[1]}</span></div>
+    </div>
+    <div class="aud-card__foot">
+      <button class="linkout" data-open="${o.id}">View details</button>
+      <a class="linkout linkout--ghost" href="${esc(applyUrlFor(o))}" target="_blank" rel="noopener">Apply</a>
+    </div>
+  </div>`;
+}
+function noteIcon(){return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>`;}
+function calIcon(){return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>`;}
+function userIcon(){return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a7 7 0 0 1 14 0v1"/></svg>`;}
+function starSvgStroke(){return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m12 2 2.9 6.3 6.8.7-5 4.6 1.4 6.7L12 17.8 5.9 20.6l1.4-6.7-5-4.6 6.8-.7z"/></svg>`;}
+
+/* ============================ COMPARE (1.1) ============================ */
+function toggleCompare(id){
+  if(compareSet.has(id)) compareSet.delete(id);
+  else { if(compareSet.size>=3){ flashTray("You can compare up to 3 at a time."); return; } compareSet.add(id); }
+  renderResults(); renderCmpTray();
+}
+function flashTray(msg){
+  const t=$("#cmpTray .cmp-tray__txt"); const prev=t.innerHTML;
+  t.textContent=msg; setTimeout(()=>renderCmpTray(), 1600);
+}
+function renderCmpTray(){
+  const tray=$("#cmpTray"), n=compareSet.size;
+  $("#cmpCount").textContent=n;
+  $("#cmpTray .cmp-tray__txt").innerHTML = `<b id="cmpCount">${n}</b> selected · pick 2–3 to compare`;
+  tray.classList.toggle("is-up", n>0);
+  $("#cmpChips").innerHTML = [...compareSet].map(id=>{
+    const o=DATA.find(x=>x.id===id);
+    return `<span class="cmp-pill">${esc(o.name)}<button data-cmp-rm="${id}" aria-label="Remove ${esc(o.name)}">×</button></span>`;
+  }).join("");
+  const go=$("#cmpGo"); go.disabled = n<2; go.textContent = n>=2?`Compare ${n}`:"Compare";
+}
+function openCompare(){
+  if(compareSet.size<2) return;
+  lastFocus = document.activeElement;
+  const orgs=[...compareSet].map(id=>DATA.find(x=>x.id===id));
+  const dists=orgs.map(orgDistance);
+  const rows = [
+    ["Type", o=>`<span class="badge badge--${o.type}">${typeLabel(o.type)}</span>`],
+    [`Distance from ${esc(homePoint.label)}`, o=>fmtDist(orgDistance(o)), {bestLow:dists}],
+    ["Rating", o=>hasReviews(o)?`<b>${o.reviews.rating.toFixed(1)}</b> / 5 <span style="color:var(--ink-soft)">(${o.reviews.count} reviews)</span>`:`<span style="color:var(--ink-soft)">No aggregated rating yet</span>`],
+    ["Program tuition", o=>(o.tuition&&o.tuition.status==="not_applicable")?"No tuition (professional)":(vHTML(o.tuition,o.website)||"—")],
+    ["Financial aid", o=>{const f=o.financialAid; if(f&&f.status==="not_applicable")return "—"; if(f&&f.status==="verified")return f.value?"<b style='color:var(--teal)'>Available</b>":"Not offered"; return checkSite(o.website);}],
+    ["Concerts this season", o=>`<b>${o.performances.length}</b>`, {bestHigh:orgs.map(x=>x.performances.length)}],
+    ["Ensembles / tiers", o=>`<b>${o.ensembles.length}</b>`, {bestHigh:orgs.map(x=>x.ensembles.length)}],
+    ["Player ages", o=>o.type==="professional"?"Adult / pro":`${o.ages[0]}–${o.ages[1]}`],
+    ["Instruments", o=>(o.instruments||[]).join(", ")],
+    ["Rehearsals", o=>vHTML(o.rehearsal,o.website)||"—"],
+    ["Commitment", o=>vHTML(o.commitment,o.website)||"—"],
+    ["Open auditions", o=>{const n=o.auditions.filter(a=>a.status==="open").length; return n?`<b style="color:var(--teal)">${n} open now</b>`:"None open now";}],
+    ["", o=>`<a class="cmp-cell-apply" href="${esc(applyUrlFor(o))}" target="_blank" rel="noopener">Apply ${extSvg()}</a>`],
+  ];
+  const head = `<tr><th></th>${orgs.map(o=>`<th><p class="cmp-org">${esc(o.name)}</p><span class="cmp-org__area">${pinSvg()} ${esc(o.area)}</span></th>`).join("")}</tr>`;
+  const body = rows.map(([label, fn, opt])=>{
+    let bestIdx=-1;
+    if(opt&&opt.bestLow){ bestIdx=opt.bestLow.indexOf(Math.min(...opt.bestLow)); }
+    if(opt&&opt.bestHigh){ const mx=Math.max(...opt.bestHigh); if(opt.bestHigh.filter(v=>v===mx).length===1) bestIdx=opt.bestHigh.indexOf(mx); }
+    const cells=orgs.map((o,i)=>`<td${i===bestIdx?' class="cmp-best"':''}>${fn(o)}</td>`).join("");
+    return `<tr><th scope="row">${label}</th>${cells}</tr>`;
+  }).join("");
+  $("#cmpTableWrap").innerHTML = `<table class="cmp-table"><thead>${head}</thead><tbody>${body}</tbody></table>`;
+  openModal("#cmpModal");
+}
+
+/* ============================ AUDITIONS BOARD ============================ */
+let audStatus="all", audLevel="all", audQuery="";
+function allAuditions(){
+  const rows=[];
+  DATA.forEach(o=>o.auditions.forEach(a=>rows.push({...a, org:o.name, orgId:o.id, area:o.area, website:o.website, applyUrl:o.applyUrl, type:o.type})));
+  const order={open:0,upcoming:1,rolling:2};
+  return rows.sort((a,b)=>order[a.status]-order[b.status]);
+}
+function renderAuditions(){
+  const q=audQuery.trim().toLowerCase();
+  const rows = allAuditions().filter(a=>
+    (audStatus==="all"||a.status===audStatus) &&
+    (audLevel==="all"||a.level===audLevel) &&
+    (!q || a.instruments.toLowerCase().includes(q) || a.org.toLowerCase().includes(q))
+  );
+  const grid=$("#audGrid");
+  if(!rows.length){ grid.innerHTML=`<div class="empty" style="grid-column:1/-1"><h3>No auditions match</h3><p>Try a different level or clear the search.</p></div>`; return; }
+  grid.innerHTML = rows.map(a=>`
+    <div class="aud-card">
+      <div class="aud-card__top">
+        <div>
+          <div class="aud-card__org">${esc(a.org)} · ${esc(a.area)}</div>
+          <div class="aud-card__title">${esc(a.level)} audition</div>
+        </div>
+        <span class="status status--${a.status}"><span class="d"></span>${statusLabel(a.status)}</span>
+      </div>
+      <div class="aud-card__rows">
+        <div class="kv">${noteIcon()}<span><b>Instruments:</b> ${esc(a.instruments)}</span></div>
+        <div class="kv">${calIcon()}<span><b>When:</b> ${vHTML(a.window, a.website)}</span></div>
+        <div class="kv">${userIcon()}<span><b>Ages ${a.ages[0]}–${a.ages[1]}.</b> ${esc(a.note)}</span></div>
+      </div>
+      <div class="aud-card__foot">
+        <a class="linkout" href="${esc(a.applyUrl||a.website)}" target="_blank" rel="noopener">Audition info ${extSvg()}</a>
+        <button class="linkout linkout--ghost" data-open="${a.orgId}">Org</button>
+      </div>
+    </div>`).join("");
+}
+function extSvg(){return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg>`;}
+
+/* ============================ PERFORMANCES BOARD ============================ */
+function renderPerformances(){
+  const rows=[];
+  DATA.forEach(o=>o.performances.forEach(p=>rows.push({...p, org:o.name, orgId:o.id, type:o.type, website:o.website})));
+  rows.sort((a,b)=>a.date.localeCompare(b.date));
+  $("#perfGrid").innerHTML = rows.map(p=>{
+    const d=fmtDate(p.date);
+    return `<div class="perf-card">
+      <div class="perf-card__date"><span class="m">${d.m}</span><span class="d">${d.day}</span><span class="y">${d.year}</span></div>
+      <div class="perf-card__body">
+        <div class="perf-card__org">${esc(p.org)}</div>
+        <div class="perf-card__title">${esc(p.title)}</div>
+        <div class="perf-card__sub">${esc(p.venue)} · ${esc(p.program)}</div>
+        ${(()=>{const ph=priceHTML(p.from,p.website);return ph?`<div class="perf-card__price" style="color:${isFreePerf(p.from)?'var(--teal)':'var(--ink)'}">${ph}</div>`:"";})()}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+/* ============================ VIEW SWITCHING ============================ */
+function switchView(name){
+  $$(".nav__btn").forEach(b=>{
+    const on=b.dataset.view===name; b.classList.toggle("is-active",on); b.setAttribute("aria-pressed",on);
+  });
+  $$(".view").forEach(v=>v.classList.toggle("is-active", v.id===`view-${name}`));
+  if(name==="explore" && map) setTimeout(()=>map.invalidateSize(),60);
+  if(name==="auditions") renderAuditions();
+  if(name==="performances") renderPerformances();
+  if(name==="saved") renderSaved();
+}
+
+/* ============================ MODAL HELPERS (focus-managed) ============================ */
+function trapTab(e, panel){
+  if(e.key!=="Tab") return;
+  const f=panel.querySelectorAll('a[href],button:not([disabled]),input,select,textarea,[tabindex]:not([tabindex="-1"])');
+  if(!f.length) return;
+  const first=f[0], last=f[f.length-1];
+  if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+  else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+}
+function openModal(sel){
+  const m=$(sel); m.classList.add("is-open"); m.setAttribute("aria-hidden","false");
+  if(sel!=="#cmpModal" || !lastFocus) lastFocus = lastFocus || document.activeElement;
+  const focusable=m.querySelector('button,a[href],input,select,textarea');
+  if(focusable) focusable.focus();
+  m._trap = e=>{ if(e.key==="Escape") closeModal(sel); trapTab(e, m.querySelector(".modal__panel")); };
+  m.addEventListener("keydown", m._trap);
+}
+function closeModal(sel){
+  const m=$(sel); m.classList.remove("is-open"); m.setAttribute("aria-hidden","true");
+  if(m._trap) m.removeEventListener("keydown", m._trap);
+  if(lastFocus && document.contains(lastFocus)) lastFocus.focus();
+  lastFocus=null;
+}
+
+/* ============================ SUBMIT FORM (1.2) ============================ */
+function instChecks(prefix){
+  return INSTRUMENTS.map(i=>`<label><input type="checkbox" name="${prefix}" value="${i}"> ${i}</label>`).join("");
+}
+function levelOptions(){ return LEVELS.map(l=>`<option value="${l}">${l}</option>`).join(""); }
+
+function ensembleRow(){
+  return `<div class="repeat" data-ens>
+    <button type="button" class="repeat__rm" data-rm>Remove</button>
+    <div class="form-grid">
+      <div class="field"><label>Ensemble name <span class="req">*</span></label><input data-f="name" placeholder="e.g. Junior Strings"></div>
+      <div class="field"><label>Level</label><select data-f="level">${levelOptions()}</select></div>
+      <div class="field"><label>Min age</label><input data-f="ageMin" type="number" min="3" max="99" placeholder="8"></div>
+      <div class="field"><label>Max age</label><input data-f="ageMax" type="number" min="3" max="99" placeholder="12"></div>
+      <div class="field field--full"><label>Short description</label><input data-f="desc" placeholder="What this ensemble plays and who it's for"></div>
+    </div>
+  </div>`;
+}
+function perfRow(){
+  return `<div class="repeat" data-perf>
+    <button type="button" class="repeat__rm" data-rm>Remove</button>
+    <div class="form-grid">
+      <div class="field"><label>Date</label><input data-f="date" type="date"></div>
+      <div class="field"><label>Title</label><input data-f="title" placeholder="Fall Concert"></div>
+      <div class="field"><label>Venue</label><input data-f="venue" placeholder="Zipper Hall"></div>
+      <div class="field"><label>Program</label><input data-f="program" placeholder="Brahms · Sibelius"></div>
+      <div class="field"><label>Tickets from ($)</label><input data-f="from" type="number" min="0" placeholder="0 = free"></div>
+    </div>
+  </div>`;
+}
+function audRow(){
+  return `<div class="repeat" data-aud>
+    <button type="button" class="repeat__rm" data-rm>Remove</button>
+    <div class="form-grid">
+      <div class="field"><label>Level</label><select data-f="level">${levelOptions()}</select></div>
+      <div class="field"><label>Status</label><select data-f="status"><option value="open">Open now</option><option value="upcoming">Upcoming</option><option value="rolling">Rolling</option></select></div>
+      <div class="field field--full"><label>Instruments</label><input data-f="instruments" placeholder="Strings, winds, brass…"></div>
+      <div class="field"><label>When</label><input data-f="window" placeholder="Aug 22, 2026"></div>
+      <div class="field"><label>Min age</label><input data-f="ageMin" type="number" min="3" max="99"></div>
+      <div class="field"><label>Max age</label><input data-f="ageMax" type="number" min="3" max="99"></div>
+      <div class="field field--full"><label>Note</label><input data-f="note" placeholder="Prepared excerpt + scales"></div>
+    </div>
+  </div>`;
+}
+
+function buildForm(){
+  $("#subBody").innerHTML = `
+  <form id="orgForm" novalidate>
+    <div class="form-grid">
+      <div class="field field--full"><label for="f-name">Organization name <span class="req">*</span></label>
+        <input id="f-name" data-f="name" placeholder="Los Angeles Youth Orchestra"><span class="field__err">Please add a name.</span></div>
+
+      <div class="field"><label for="f-type">Type <span class="req">*</span></label>
+        <select id="f-type" data-f="type"><option value="">Choose…</option><option value="youth">Youth</option><option value="professional">Professional</option><option value="community">Community</option><option value="collegiate">Collegiate</option></select>
+        <span class="field__err">Please choose a type.</span></div>
+
+      <div class="field"><label for="f-area">Area / neighborhood <span class="req">*</span></label>
+        <input id="f-area" data-f="area" placeholder="West LA"><span class="field__err">Please add an area.</span></div>
+
+      <div class="field"><label for="f-website">Official website <span class="req">*</span></label>
+        <input id="f-website" data-f="website" type="url" placeholder="https://…"><span class="field__err">Please add a valid URL (https://…).</span></div>
+
+      <div class="field"><label for="f-apply">Apply / audition link</label>
+        <input id="f-apply" data-f="applyUrl" type="url" placeholder="Optional — defaults to website"><span class="hint">Where the “Apply” button should send people.</span></div>
+
+      <div class="field"><label for="f-lat">Latitude</label><input id="f-lat" data-f="lat" type="number" step="0.0001" placeholder="34.0561"></div>
+      <div class="field"><label for="f-lng">Longitude</label><input id="f-lng" data-f="lng" type="number" step="0.0001" placeholder="-118.4715"></div>
+
+      <div class="field"><label for="f-season">Season label</label><input id="f-season" data-f="season" placeholder="2026–27 Season"></div>
+      <div class="field"><label for="f-tuition">Program tuition</label><input id="f-tuition" data-f="tuition" placeholder="$650 / semester — leave blank if none"></div>
+
+      <div class="field"><label for="f-ageMin">Youngest player age</label><input id="f-ageMin" data-f="ageMin" type="number" min="3" max="99" placeholder="7"></div>
+      <div class="field"><label for="f-ageMax">Oldest player age</label><input id="f-ageMax" data-f="ageMax" type="number" min="3" max="99" placeholder="18"></div>
+
+      <div class="field field--full"><label for="f-blurb">About the organization <span class="req">*</span></label>
+        <textarea id="f-blurb" data-f="blurb" placeholder="A short, parent-friendly description."></textarea><span class="field__err">Please add a short description.</span></div>
+
+      <div class="field field--full"><label for="f-fit">“Good fit if…” summary</label>
+        <input id="f-fit" data-f="goodFit" placeholder="Good fit if your child wants a friendly first orchestra."></div>
+
+      <div class="field"><label for="f-reh">Rehearsals</label><input id="f-reh" data-f="rehearsal" placeholder="Sunday afternoons"></div>
+      <div class="field"><label for="f-com">Commitment</label><input id="f-com" data-f="commitment" placeholder="Weekly · ~2 hrs"></div>
+
+      <div class="field field--full"><label>Instruments accepted</label>
+        <div class="checks" id="f-instruments">${instChecks("inst")}</div></div>
+
+      <div class="field field--full"><label class="switchline"><input type="checkbox" id="f-aid" data-f="financialAid"> Financial aid / scholarships available</label></div>
+    </div>
+
+    <div class="form-sect">
+      <p class="form-sect__h">Ensembles &amp; tiers <span class="req">*</span></p>
+      <p class="form-sect__note">Add at least one ensemble. Use a row per tier (e.g. beginner strings, youth symphony).</p>
+      <div id="ensList">${ensembleRow()}</div>
+      <button type="button" class="add-row" data-add="ens">${plusSvg()} Add an ensemble</button>
+    </div>
+
+    <div class="form-sect">
+      <p class="form-sect__h">Upcoming performances</p>
+      <p class="form-sect__note">Optional. Add concerts so parents can see what's on.</p>
+      <div id="perfList"></div>
+      <button type="button" class="add-row" data-add="perf">${plusSvg()} Add a performance</button>
+    </div>
+
+    <div class="form-sect">
+      <p class="form-sect__h">Auditions</p>
+      <p class="form-sect__note">Optional. Each one appears on the Auditions board.</p>
+      <div id="audList"></div>
+      <button type="button" class="add-row" data-add="aud">${plusSvg()} Add an audition</button>
+    </div>
+  </form>`;
+
+  // re-add the footer each time we (re)build, so "submit another" works
+  let foot = $("#subModal .modal__foot");
+  if(!foot){
+    foot=document.createElement("div"); foot.className="modal__foot";
+    $("#subModal .modal__panel").appendChild(foot);
+  }
+  foot.innerHTML = `
+    <span class="note">Reviewed before listing. Ratings aren't self-reported — they come from aggregated reviews once you're live.</span>
+    <button type="button" class="btn--submit" id="subSubmit">Submit for review</button>`;
+  $("#subSubmit").onclick = submitOrgForm;
+}
+
+function collectRepeat(scope, fields){
+  return $$(`${scope} .repeat`).map(r=>{
+    const obj={};
+    fields.forEach(f=>{ const el=r.querySelector(`[data-f="${f}"]`); obj[f]=el?el.value.trim():""; });
+    return obj;
+  });
+}
+function submitOrgForm(){
+  const form=$("#orgForm");
+  $$(".field.has-error").forEach(f=>f.classList.remove("has-error"));
+  const get=k=>{ const el=form.querySelector(`[data-f="${k}"]`); return el?el.value.trim():""; };
+
+  // required validation
+  let firstBad=null;
+  const required=[["name"],["type"],["area"],["website"],["blurb"]];
+  required.forEach(([k])=>{
+    const el=form.querySelector(`[data-f="${k}"]`);
+    if(!el.value.trim()){ el.closest(".field").classList.add("has-error"); firstBad=firstBad||el; }
+  });
+  // url sanity
+  const site=get("website");
+  if(site && !/^https?:\/\//i.test(site)){ form.querySelector('[data-f="website"]').closest(".field").classList.add("has-error"); firstBad=firstBad||form.querySelector('[data-f="website"]'); }
+  // at least one ensemble with a name
+  const ensembles=collectRepeat("#ensList", ["name","level","ageMin","ageMax","desc"])
+    .filter(e=>e.name)
+    .map(e=>({name:e.name, level:e.level||"Intermediate", ages:[+e.ageMin||0,+e.ageMax||0], desc:e.desc||""}));
+  if(!ensembles.length){ $("#ensList .repeat:first-child")?.classList.add("has-error"); firstBad=firstBad||$("#ensList input"); }
+
+  if(firstBad){ firstBad.focus(); firstBad.scrollIntoView({block:"center",behavior:"smooth"}); return; }
+
+  const instruments=$$('#f-instruments input:checked').map(c=>c.value);
+  const performances=collectRepeat("#perfList", ["date","title","venue","program","from"])
+    .filter(p=>p.title||p.date)
+    .map(p=>({date:p.date||"", title:p.title||"", venue:p.venue||"", program:p.program||"", from:+p.from||0}));
+  const auditions=collectRepeat("#audList", ["level","status","instruments","window","ageMin","ageMax","note"])
+    .filter(a=>a.instruments||a.window)
+    .map(a=>({level:a.level||"Intermediate", instruments:a.instruments||"", window:a.window||"", status:a.status||"upcoming", ages:[+a.ageMin||0,+a.ageMax||0], note:a.note||""}));
+
+  const tuition=get("tuition");
+  const org = {
+    id: get("name").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,40) || ("org-"+Date.now()),
+    name:get("name"), type:get("type"),
+    lat:+get("lat")||null, lng:+get("lng")||null,
+    area:get("area"), website:site, applyUrl:get("applyUrl")||null,
+    blurb:get("blurb"),
+    ages:[+get("ageMin")||null, +get("ageMax")||null],
+    season:get("season")||"",
+    // rating/reviewCount intentionally omitted — aggregated post-launch, not self-reported
+    instruments,
+    rehearsal:get("rehearsal")||"", commitment:get("commitment")||"",
+    financialAid: $("#f-aid").checked,
+    goodFit:get("goodFit")||"",
+    ensembles,
+    tuition: tuition || null,
+    performances,
+    auditions,
+  };
+
+  console.log("Tutti — submitted organization (prototype, not persisted):", org);
+
+  $("#subBody").innerHTML = `
+    <div class="form-success">
+      <div class="form-success__mark">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg>
+      </div>
+      <h3>Thanks — we've got ${esc(org.name)}</h3>
+      <p>Your listing is in the review queue. Once it's approved it'll appear on the map for parents and players in ${esc(org.area)}.</p>
+      <p style="color:var(--ink-faint);font-size:12px">Prototype: nothing is saved to a server yet — the full record was logged to the browser console.</p>
+      <div class="form-success__actions">
+        <button class="btn--submit" id="subAnother">Submit another</button>
+        <button class="ghost" id="subDone">Done</button>
+      </div>
+    </div>`;
+  const foot=$("#subModal .modal__foot"); if(foot) foot.style.display="none";
+  $("#subAnother").onclick = ()=>{ buildForm(); const f=$("#subModal .modal__foot"); if(f) f.style.display="flex"; $("#orgForm").querySelector("input").focus(); };
+  $("#subDone").onclick = ()=>closeModal("#subModal");
+}
+
+/* ============================ SEARCH / GEOCODE ============================ */
+async function geocode(q){
+  try{
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`,
+      {headers:{"Accept":"application/json"}});
+    const j = await r.json();
+    if(j && j[0]) return {lat:+j[0].lat, lng:+j[0].lon};
+  }catch(e){/* fall through */}
+  return null;
+}
+async function doSearch(q){
+  if(!q.trim()) return;
+  const local = DATA.find(o=>o.area.toLowerCase().includes(q.toLowerCase()));
+  if(local && map){ setHome(local.lat, local.lng, q.trim()); map.flyTo([local.lat,local.lng],13,{duration:.7}); return; }
+  const hit = await geocode(q);
+  if(hit && map){ setHome(hit.lat, hit.lng, q.trim()); map.flyTo([hit.lat,hit.lng],13,{duration:.7}); }
+  else { alert("Couldn't find that location. Try a nearby city or use one of the quick locations on the map."); }
+}
+
+/* ============================ EVENTS ============================ */
+document.addEventListener("click", e=>{
+  const card = e.target.closest(".card[data-id]");
+  const heart = e.target.closest("[data-heart]");
+  const cmp = e.target.closest("[data-cmp]");
+  const cmpRm = e.target.closest("[data-cmp-rm]");
+  const openBtn = e.target.closest("[data-open]");
+  const preset = e.target.closest("[data-preset]");
+  const addBtn = e.target.closest("[data-add]");
+  const rmBtn = e.target.closest("[data-rm]");
+
+  if(rmBtn){ rmBtn.closest(".repeat").remove(); return; }
+  if(addBtn){
+    const t=addBtn.dataset.add;
+    if(t==="ens") $("#ensList").insertAdjacentHTML("beforeend", ensembleRow());
+    if(t==="perf") $("#perfList").insertAdjacentHTML("beforeend", perfRow());
+    if(t==="aud") $("#audList").insertAdjacentHTML("beforeend", audRow());
+    return;
+  }
+  if(cmpRm){ compareSet.delete(cmpRm.dataset.cmpRm); renderResults(); renderCmpTray(); return; }
+  if(cmp){ e.stopPropagation(); toggleCompare(cmp.dataset.cmp); return; }
+  if(heart){ e.stopPropagation(); toggleSave(heart.dataset.heart); return; }
+  if(card){ openDetail(card.dataset.id); return; }
+  if(openBtn){ switchView("explore"); openDetail(openBtn.dataset.open); return; }
+  if(preset){ const p=PRESETS[+preset.dataset.preset]; if(map){ setHome(p.lat,p.lng,p.label); map.flyTo([p.lat,p.lng],p.z,{duration:.7}); } return; }
+});
+document.addEventListener("keydown", e=>{
+  if(e.key==="Enter"){ const c=e.target.closest(".card[data-id]"); if(c){ openDetail(c.dataset.id);} }
+  if(e.key==="Escape"){ if($("#detail").classList.contains("is-open")) closeDetail(); }
+});
+
+$$(".nav__btn").forEach(b=>b.addEventListener("click",()=>switchView(b.dataset.view)));
+
+$("#typeFilters").addEventListener("click", e=>{
+  const chip=e.target.closest(".chip"); if(!chip) return;
+  activeType=chip.dataset.type;
+  $$("#typeFilters .chip").forEach(c=>{const on=c===chip;c.classList.toggle("is-on",on);c.setAttribute("aria-pressed",on);});
+  renderResults();
+});
+$("#ageSel").addEventListener("change", e=>{ activeAge=e.target.value; renderResults(); });
+$("#instSel").addEventListener("change", e=>{ activeInstrument=e.target.value; renderResults(); });
+$("#sortSel").addEventListener("change", e=>{ activeSort=e.target.value; renderResults(); });
+$("#openNowToggle").addEventListener("click", e=>{
+  openNowOnly=!openNowOnly;
+  e.currentTarget.classList.toggle("is-on", openNowOnly);
+  e.currentTarget.setAttribute("aria-pressed", openNowOnly);
+  renderResults();
+});
+
+$("#locSearch").addEventListener("keydown", e=>{ if(e.key==="Enter") doSearch(e.target.value); });
+$("#nearMe").addEventListener("click", ()=>{
+  if(!navigator.geolocation){ alert("Location isn't available in this browser."); return; }
+  navigator.geolocation.getCurrentPosition(
+    pos=>{ setHome(pos.coords.latitude,pos.coords.longitude,"your location"); if(map) map.flyTo([pos.coords.latitude,pos.coords.longitude],13,{duration:.7}); },
+    ()=>alert("Couldn't get your location. Type a city instead.")
+  );
+});
+
+// compare tray
+$("#cmpGo").addEventListener("click", openCompare);
+$("#cmpClear").addEventListener("click", ()=>{ compareSet.clear(); renderResults(); renderCmpTray(); });
+$("#cmpModalClose").addEventListener("click", ()=>closeModal("#cmpModal"));
+$("#cmpModal").addEventListener("click", e=>{ if(e.target.id==="cmpModal") closeModal("#cmpModal"); });
+
+// submit modal
+$("#listBtn").addEventListener("click", ()=>{ buildForm(); const f=$("#subModal .modal__foot"); if(f) f.style.display="flex"; openModal("#subModal"); });
+$("#subModalClose").addEventListener("click", ()=>closeModal("#subModal"));
+$("#subModal").addEventListener("click", e=>{ if(e.target.id==="subModal") closeModal("#subModal"); });
+
+// auditions board controls
+$("#view-auditions").addEventListener("click", e=>{
+  const chip=e.target.closest("[data-aud-status]"); if(!chip) return;
+  audStatus=chip.dataset.audStatus;
+  $$("#view-auditions .board__filters .chip").forEach(c=>{const on=c===chip;c.classList.toggle("is-on",on);c.setAttribute("aria-pressed",on);});
+  renderAuditions();
+});
+$("#audLevel").addEventListener("change", e=>{ audLevel=e.target.value; renderAuditions(); });
+$("#audSearch").addEventListener("input", e=>{ audQuery=e.target.value; renderAuditions(); });
+
+// mobile map/list toggle
+$("#mapToggle").addEventListener("click", ()=>{
+  const v=$("#view-explore"); v.classList.toggle("show-map");
+  $("#mapToggle").textContent = v.classList.contains("show-map") ? "View list" : "View map";
+  if(map) setTimeout(()=>map.invalidateSize(),60);
+});
+
+$("#helpBtn").addEventListener("click", ()=>alert(
+  "Tutti — how it works\n\n"+
+  "1. Search a city or tap “Near me” to centre the map.\n"+
+  "2. Coloured pins show orchestras: brass = youth, garnet = professional, teal = community.\n"+
+  "3. Tap a pin or a card for season, ensembles by age/tier, ticket prices and auditions.\n"+
+  "4. Use “Compare” on cards to put 2–3 orgs side by side.\n"+
+  "5. The Auditions tab gathers every open and upcoming audition, by level, with links out.\n\n"+
+  "Listings are curated. Confirmed details cite a source; anything we couldn’t confirm shows ‘Check their site’ so you can verify directly."
+));
+$("#ribbonClose").addEventListener("click", ()=>$("#ribbon").style.display="none");
+
+/* ============================ BOOT ============================ */
+window.addEventListener("load", async ()=>{
+  renderCmpTray();
+  showResultsLoading();
+  await loadData();
+  if(window.L){ initMap(); }
+  else { $("#map").innerHTML='<div style="padding:40px;text-align:center;color:#888">Map library failed to load.</div>'; renderResults(); }
+});
+</script>

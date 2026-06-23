@@ -1,0 +1,274 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tutti.app/schema/dataset.schema.json",
+  "title": "Tutti dataset",
+  "description": "Canonical schema for Tutti's organization listings (Phase 2). Scope: Greater Los Angeles. Sourcing model: manual curation now, with self-serve submissions and scrape-then-review able to plug in later via the lifecycle/provenance fields. Verifiable facts carry a status so the UI can render confirmed values, fall back to 'Check their site' when unconfirmed, or hide when not applicable.",
+  "type": "object",
+  "required": ["version", "metro", "generatedAt", "organizations"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Dataset version, e.g. \"2.0.0\". Bump when the shape changes."
+    },
+    "metro": {
+      "type": "string",
+      "enum": ["Greater Los Angeles"],
+      "description": "Scope guard for v1. Add a metro to this enum deliberately when expanding — keeps accidental scope creep out of the data."
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date",
+      "description": "Date this dataset file was assembled."
+    },
+    "organizations": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/organization" }
+    }
+  },
+
+  "$defs": {
+    "verifiableString": {
+      "type": "object",
+      "description": "A textual fact that may or may not be confirmed. status drives the UI: 'verified' -> show value; 'unverified' -> show 'Check their site'; 'not_applicable' -> hide the row.",
+      "required": ["status"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "enum": ["verified", "unverified", "not_applicable"] },
+        "value": { "type": ["string", "null"] },
+        "source": { "type": ["string", "null"], "format": "uri", "description": "Public URL the value was confirmed from. Required when status is 'verified'." },
+        "asOf": { "type": ["string", "null"], "format": "date", "description": "Date the value was confirmed." }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "const": "verified" } } },
+          "then": {
+            "required": ["value", "source"],
+            "properties": {
+              "value": { "type": "string", "minLength": 1 },
+              "source": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "status": { "const": "unverified" } } },
+          "then": { "properties": { "value": { "type": "null" } } }
+        }
+      ]
+    },
+
+    "verifiableNumber": {
+      "type": "object",
+      "description": "A numeric fact (e.g. a ticket price; 0 = free) that may or may not be confirmed. Same status semantics as verifiableString.",
+      "required": ["status"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "enum": ["verified", "unverified", "not_applicable"] },
+        "value": { "type": ["number", "null"], "minimum": 0 },
+        "source": { "type": ["string", "null"], "format": "uri" },
+        "asOf": { "type": ["string", "null"], "format": "date" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "const": "verified" } } },
+          "then": {
+            "required": ["value", "source"],
+            "properties": {
+              "value": { "type": "number", "minimum": 0 },
+              "source": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "status": { "const": "unverified" } } },
+          "then": { "properties": { "value": { "type": "null" } } }
+        }
+      ]
+    },
+
+    "verifiableBool": {
+      "type": "object",
+      "description": "A yes/no fact (e.g. financial aid offered). 'not_applicable' is used for organizations where the question doesn't apply (e.g. tuition/aid for a professional orchestra).",
+      "required": ["status"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "enum": ["verified", "unverified", "not_applicable"] },
+        "value": { "type": ["boolean", "null"] },
+        "source": { "type": ["string", "null"], "format": "uri" },
+        "asOf": { "type": ["string", "null"], "format": "date" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "const": "verified" } } },
+          "then": {
+            "required": ["value", "source"],
+            "properties": {
+              "value": { "type": "boolean" },
+              "source": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      ]
+    },
+
+    "ageRange": {
+      "type": "array",
+      "description": "[min, max] inclusive. Rule (not enforceable in pure JSON Schema): min <= max.",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": { "type": "integer", "minimum": 0, "maximum": 99 }
+    },
+
+    "reviews": {
+      "type": ["object", "null"],
+      "description": "Aggregated ratings. IMPORTANT: leave null/omitted until a REAL aggregated source exists. Never invent a rating or count. Ratings are not self-reported by orgs.",
+      "required": ["rating", "count", "source"],
+      "additionalProperties": false,
+      "properties": {
+        "rating": { "type": "number", "minimum": 0, "maximum": 5 },
+        "count": { "type": "integer", "minimum": 0 },
+        "source": { "type": "string", "minLength": 1, "description": "What the rating is aggregated from." }
+      }
+    },
+
+    "ensemble": {
+      "type": "object",
+      "required": ["name", "level", "ages"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "level": { "enum": ["Beginner", "Intermediate", "Advanced", "Pre-professional", "Professional"] },
+        "ages": { "$ref": "#/$defs/ageRange" },
+        "desc": { "type": ["string", "null"] }
+      }
+    },
+
+    "performance": {
+      "type": "object",
+      "description": "A concert. If it's listed at all, 'date' and 'title' should be real. Price ('from') is verifiable so we can show the concert while still saying 'Check their site' for ticket cost when unconfirmed. from.value = 0 means free.",
+      "required": ["date", "title", "from"],
+      "additionalProperties": false,
+      "properties": {
+        "date": { "type": "string", "format": "date" },
+        "title": { "type": "string", "minLength": 1 },
+        "venue": { "type": ["string", "null"] },
+        "program": { "type": ["string", "null"] },
+        "from": { "$ref": "#/$defs/verifiableNumber" },
+        "source": { "type": ["string", "null"], "format": "uri" }
+      }
+    },
+
+    "audition": {
+      "type": "object",
+      "description": "An audition opportunity. 'window' (the dates) is the single most volatile field in the whole dataset and is verifiable; expect it to be 'unverified' often. 'status' is also time-sensitive.",
+      "required": ["level", "instruments", "window", "status", "ages"],
+      "additionalProperties": false,
+      "properties": {
+        "level": { "enum": ["Beginner", "Intermediate", "Advanced", "Pre-professional", "Professional"] },
+        "instruments": { "type": "string", "minLength": 1 },
+        "window": { "$ref": "#/$defs/verifiableString" },
+        "status": { "enum": ["open", "upcoming", "rolling"] },
+        "ages": { "$ref": "#/$defs/ageRange" },
+        "note": { "type": ["string", "null"] },
+        "source": { "type": ["string", "null"], "format": "uri" }
+      }
+    },
+
+    "source": {
+      "type": "object",
+      "description": "A page consulted when curating this org. The audit trail behind the listing.",
+      "required": ["url"],
+      "additionalProperties": false,
+      "properties": {
+        "url": { "type": "string", "format": "uri" },
+        "label": { "type": ["string", "null"] },
+        "retrievedAt": { "type": ["string", "null"], "format": "date" }
+      }
+    },
+
+    "submitter": {
+      "type": ["object", "null"],
+      "description": "Only present when provenanceType is 'self_submitted'. Null for curated/scraped listings. Reserved for the Phase 3 self-serve flow.",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": ["string", "null"] },
+        "email": { "type": ["string", "null"], "format": "email" },
+        "role": { "type": ["string", "null"] },
+        "submittedAt": { "type": ["string", "null"], "format": "date-time" }
+      }
+    },
+
+    "organization": {
+      "type": "object",
+      "required": [
+        "id", "name", "type", "lat", "lng", "area", "metro",
+        "website", "blurb", "ages", "ensembles",
+        "listingStatus", "provenanceType"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "maxLength": 40,
+          "description": "Unique slug. Lowercase, digits, hyphens."
+        },
+        "name": { "type": "string", "minLength": 1 },
+        "type": { "enum": ["youth", "professional", "community", "collegiate"] },
+        "lat": { "type": "number", "minimum": -90, "maximum": 90 },
+        "lng": { "type": "number", "minimum": -180, "maximum": 180 },
+        "area": { "type": "string", "minLength": 1, "description": "Neighborhood/city label, e.g. 'Pasadena'." },
+        "metro": { "type": "string", "enum": ["Greater Los Angeles"] },
+        "website": { "type": "string", "format": "uri", "description": "Official homepage. The authoritative source we route parents to." },
+        "applyUrl": { "type": ["string", "null"], "format": "uri", "description": "Where the 'Apply' button goes. Falls back to website when null." },
+        "blurb": { "type": "string", "minLength": 1, "description": "Editorial, parent-friendly description. Written by us, so not verifiable." },
+        "season": { "$ref": "#/$defs/verifiableString" },
+        "ages": { "$ref": "#/$defs/ageRange" },
+        "instruments": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "enum": ["Strings", "Winds", "Brass", "Percussion", "Harp"] }
+        },
+        "rehearsal": { "$ref": "#/$defs/verifiableString" },
+        "commitment": { "$ref": "#/$defs/verifiableString" },
+        "financialAid": { "$ref": "#/$defs/verifiableBool" },
+        "tuition": {
+          "$ref": "#/$defs/verifiableString",
+          "description": "Program cost as a human string (e.g. '$650 / semester'). Use status 'not_applicable' ONLY for professional orgs (no tuition). For youth/community/collegiate, use verified or unverified."
+        },
+        "goodFit": { "type": ["string", "null"], "description": "Editorial 'Good fit if...' summary. Written by us; optional." },
+        "reviews": { "$ref": "#/$defs/reviews" },
+        "ensembles": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/ensemble" }
+        },
+        "performances": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/performance" }
+        },
+        "auditions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/audition" }
+        },
+        "sources": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/source" },
+          "description": "Pages consulted to build this listing. Recommended for every curated org."
+        },
+        "lastVerified": { "type": ["string", "null"], "format": "date" },
+        "listingStatus": {
+          "enum": ["draft", "in_review", "published"],
+          "default": "draft",
+          "description": "Lifecycle for the review queue. Only 'published' should reach parents. Your approval moves a listing to 'published'."
+        },
+        "provenanceType": {
+          "enum": ["curated", "self_submitted", "scraped"],
+          "default": "curated",
+          "description": "How the listing originated. 'curated' for Phase 2; the other two let self-serve and scraping plug in later."
+        },
+        "submittedBy": { "$ref": "#/$defs/submitter" }
+      }
+    }
+  }
+}

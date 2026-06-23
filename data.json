@@ -1,0 +1,1250 @@
+{
+  "version": "2.0.0",
+  "metro": "Greater Los Angeles",
+  "generatedAt": "2026-06-22",
+  "organizations": [
+    {
+      "id": "yola",
+      "name": "Youth Orchestra Los Angeles (YOLA)",
+      "type": "youth",
+      "lat": 33.9596,
+      "lng": -118.3517,
+      "area": "Inglewood",
+      "metro": "Greater Los Angeles",
+      "website": "https://www.laphil.com/learn/yola",
+      "applyUrl": null,
+      "blurb": "The LA Phil's free music program: instruments, instruction, and orchestras for young musicians aged 6–18 across five LA County sites, including the Beckmen YOLA Center in Inglewood.",
+      "season": {
+        "status": "unverified"
+      },
+      "ages": [
+        6,
+        18
+      ],
+      "instruments": [
+        "Strings",
+        "Winds",
+        "Brass",
+        "Percussion"
+      ],
+      "rehearsal": {
+        "status": "unverified"
+      },
+      "commitment": {
+        "status": "verified",
+        "value": "Several hours per week, after school",
+        "source": "https://heartofla.org/yola/",
+        "asOf": "2026-06-22"
+      },
+      "financialAid": {
+        "status": "unverified"
+      },
+      "tuition": {
+        "status": "verified",
+        "value": "Free — instruments and instruction provided",
+        "source": "https://www.laphil.com/learn/yola",
+        "asOf": "2026-06-22"
+      },
+      "goodFit": "Good fit if you want a free, high-support program and live near a YOLA site.",
+      "reviews": null,
+      "ensembles": [
+        {
+          "name": "Beginning Orchestra",
+          "level": "Beginner",
+          "ages": [
+            6,
+            10
+          ],
+          "desc": "First-instrument and early ensemble training; no experience needed."
+        },
+        {
+          "name": "Intermediate Orchestra",
+          "level": "Intermediate",
+          "ages": [
+            9,
+            13
+          ],
+          "desc": "Full ensemble repertoire and sectionals."
+        },
+        {
+          "name": "Advanced Orchestra",
+          "level": "Advanced",
+          "ages": [
+            13,
+            18
+          ],
+          "desc": "Flagship-level players; performances at the Hollywood Bowl and Walt Disney Concert Hall."
+        }
+      ],
+      "performances": [],
+      "auditions": [
+        {
+          "level": "Beginner",
+          "instruments": "All — no experience required",
+          "window": {
+            "status": "unverified"
+          },
+          "status": "rolling",
+          "ages": [
+            6,
+            10
+          ],
+          "note": "Start via the YOLA Interest Form; placement is by interview, not a formal audition. Space varies by site.",
+          "source": "https://www.laphil.com/learn/yola"
+        },
+        {
+          "level": "Advanced",
+          "instruments": "Strings, winds, brass, percussion",
+          "window": {
+            "status": "unverified"
+          },
+          "status": "upcoming",
+          "ages": [
+            13,
+            18
+          ],
+          "note": "Advanced placement is audition-based; check the site for the current window.",
+          "source": "https://www.laphil.com/learn/yola"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://www.laphil.com/learn/yola",
+          "label": "LA Phil — YOLA",
+          "retrievedAt": "2026-06-22"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/Youth_Orchestra_Los_Angeles",
+          "label": "Wikipedia — YOLA",
+          "retrievedAt": "2026-06-22"
+        }
+      ],
+      "lastVerified": "2026-06-22",
+      "listingStatus": "published",
+      "provenanceType": "curated"
+    },
+    {
+      "id": "colburn",
+      "name": "Colburn Community School of Performing Arts — Youth Orchestras",
+      "type": "youth",
+      "lat": 34.0537,
+      "lng": -118.2497,
+      "area": "Downtown LA",
+      "metro": "Greater Los Angeles",
+      "website": "https://www.colburnschool.edu",
+      "applyUrl": "https://colburnschool.edu/community-school/by-program/ensembles/",
+      "blurb": "The Community School of Performing Arts at Colburn runs graded youth orchestras and a new advanced performance program feeding its renowned conservatory, in the Music Center district.",
+      "season": {
+        "status": "unverified"
+      },
+      "ages": [
+        8,
+        18
+      ],
+      "instruments": [
+        "Strings",
+        "Winds",
+        "Brass",
+        "Percussion",
+        "Harp"
+      ],
+      "rehearsal": {
+        "status": "unverified"
+      },
+      "commitment": {
+        "status": "unverified"
+      },
+      "financialAid": {
+        "status": "verified",
+        "value": true,
+        "source": "https://colburnschool.edu/community-school/by-program/ensembles/",
+        "asOf": "2026-06-22"
+      },
+      "tuition": {
+        "status": "unverified"
+      },
+      "goodFit": "Good fit for a serious, conservatory-track student; scholarships help with cost.",
+      "reviews": null,
+      "ensembles": [
+        {
+          "name": "Violin / Cello Ensembles",
+          "level": "Beginner",
+          "ages": [
+            6,
+            12
+          ],
+          "desc": "Entry-level ensembles building reading and ensemble fundamentals."
+        },
+        {
+          "name": "String Orchestra",
+          "level": "Intermediate",
+          "ages": [
+            11,
+            16
+          ],
+          "desc": "Intermediate/advanced strings; placement by audition."
+        },
+        {
+          "name": "Colburn Youth Philharmonic",
+          "level": "Advanced",
+          "ages": [
+            13,
+            18
+          ],
+          "desc": "Top symphonic ensemble (replacing the Colburn Youth Orchestra for 2026–27)."
+        },
+        {
+          "name": "Advanced Music Performance Program",
+          "level": "Pre-professional",
+          "ages": [
+            13,
+            18
+          ],
+          "desc": "Highly selective Sunday program: orchestra, chamber music, theory, college-audition prep."
+        }
+      ],
+      "performances": [],
+      "auditions": [
+        {
+          "level": "Intermediate",
+          "instruments": "Strings",
+          "window": {
+            "status": "unverified"
+          },
+          "status": "rolling",
+          "ages": [
+            11,
+            16
+          ],
+          "note": "By application + video prescreen, then live audition (most recent round was held June 6–7, 2026). Check the site for the next window.",
+          "source": "https://colburnschool.edu/community-school/by-program/ensembles/string-orchestra/"
+        },
+        {
+          "level": "Pre-professional",
+          "instruments": "Piano, strings, winds, brass, percussion",
+          "window": {
+            "status": "unverified"
+          },
+          "status": "rolling",
+          "ages": [
+            13,
+            18
+          ],
+          "note": "Advanced Music Performance Program — selective audition; one day a week (Sundays).",
+          "source": "https://colburnschool.edu/community-school/by-program/advanced_music_program/"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://www.colburnschool.edu",
+          "label": "Colburn School",
+          "retrievedAt": "2026-06-22"
+        },
+        {
+          "url": "https://colburnschool.edu/community-school/by-program/ensembles/",
+          "label": "Community School ensembles",
+          "retrievedAt": "2026-06-22"
+        },
+        {
+          "url": "https://colburnschool.edu/community-school/by-program/advanced_music_program/",
+          "label": "Advanced Music Performance Program",
+          "retrievedAt": "2026-06-22"
+        }
+      ],
+      "lastVerified": "2026-06-22",
+      "listingStatus": "published",
+      "provenanceType": "curated"
+    },
+    {
+      "id": "ays",
+      "name": "American Youth Symphony",
+      "type": "youth",
+      "lat": 34.0701,
+      "lng": -118.4441,
+      "area": "Westwood",
+      "metro": "Greater Los Angeles",
+      "website": "https://www.aysymphony.org",
+      "applyUrl": null,
+      "blurb": "A tuition-free, audition-only pre-professional orchestra for advanced young players (15 and up, no upper age limit), known for film-score concerts and free performances at Royce Hall.",
+      "season": {
+        "status": "unverified"
+      },
+      "ages": [
+        15,
+        30
+      ],
+      "instruments": [
+        "Strings",
+        "Winds",
+        "Brass",
+        "Percussion"
+      ],
+      "rehearsal": {
+        "status": "unverified"
+      },
+      "commitment": {
+        "status": "unverified"
+      },
+      "financialAid": {
+        "status": "unverified"
+      },
+      "tuition": {
+        "status": "verified",
+        "value": "Free — tuition-free fellowship; selected players receive an annual stipend",
+        "source": "https://www.laphil.com/musicdb/artists/290/american-youth-symphony",
+        "asOf": "2026-06-22"
+      },
+      "goodFit": "Good fit for advanced teens and young adults ready for professional-level repertoire.",
+      "reviews": null,
+      "ensembles": [
+        {
+          "name": "American Youth Symphony",
+          "level": "Pre-professional",
+          "ages": [
+            15,
+            30
+          ],
+          "desc": "Single advanced orchestra of ~100 musicians; conservatory-level repertoire."
+        }
+      ],
+      "performances": [],
+      "auditions": [
+        {
+          "level": "Pre-professional",
+          "instruments": "All orchestral instruments",
+          "window": {
+            "status": "unverified"
+          },
+          "status": "upcoming",
+          "ages": [
+            15,
+            30
+          ],
+          "note": "Competitive; roughly 35 seats open each year. Solo + orchestral excerpts. Check the site for current dates.",
+          "source": "https://www.aysymphony.org"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://www.aysymphony.org",
+          "label": "American Youth Symphony",
+          "retrievedAt": "2026-06-22"
+        },
+        {
+          "url": "https://www.laphil.com/musicdb/artists/290/american-youth-symphony",
+          "label": "LA Phil — AYS",
+          "retrievedAt": "2026-06-22"
+        }
+      ],
+      "lastVerified": "2026-06-22",
+      "listingStatus": "published",
+      "provenanceType": "curated"
+    },
+    {
+      "id": "layo",
+      "name": "Los Angeles Youth Orchestra",
+      "type": "youth",
+      "lat": 34.1718,
+      "lng": -118.5125,
+      "area": "Encino",
+      "metro": "Greater Los Angeles",
+      "website": "https://losangelesyouthorchestra.org",
+      "applyUrl": "https://losangelesyouthorchestra.org/audition-information/",
+      "blurb": "A welcoming youth orchestra rehearsing Sunday afternoons in Encino, with an intermediate and an advanced ensemble and two concerts each semester.",
+      "season": {
+        "status": "verified",
+        "value": "2026–27 season",
+        "source": "https://losangelesyouthorchestra.org/audition-information/",
+        "asOf": "2026-06-22"
+      },
+      "ages": [
+        8,
+        18
+      ],
+      "instruments": [
+        "Strings",
+        "Winds",
+        "Brass",
+        "Percussion"
+      ],
+      "rehearsal": {
+        "status": "verified",
+        "value": "Sunday afternoons, 1:30–5:00 PM (Encino)",
+        "source": "https://losangelesyouthorchestra.org/audition-information/",
+        "asOf": "2026-06-22"
+      },
+      "commitment": {
+        "status": "verified",
+        "value": "Weekly rehearsals; two fall and two spring concerts",
+        "source": "https://losangelesyouthorchestra.org/audition-information/",
+        "asOf": "2026-06-22"
+      },
+      "financialAid": {
+        "status": "verified",
+        "value": true,
+        "source": "https://losangelesyouthorchestra.org/audition-information/",
+        "asOf": "2026-06-22"
+      },
+      "tuition": {
+        "status": "verified",
+        "value": "$750 per semester (or $1,400 paid in full for the year)",
+        "source": "https://losangelesyouthorchestra.org/audition-information/",
+        "asOf": "2026-06-22"
+      },
+      "goodFit": "Good fit for an intermediate-to-advanced player (about two+ years of lessons) wanting a friendly Sunday orchestra in the Valley.",
+      "reviews": null,
+      "ensembles": [
+        {
+          "name": "Ruth Borun Concert Orchestra",
+          "level": "Intermediate",
+          "ages": [
+            8,
+            18
+          ],
+          "desc": "Intermediate ensemble."
+        },
+        {
+          "name": "Symphony Orchestra",
+          "level": "Advanced",
+          "ages": [
+            8,
+            18
+          ],
+          "desc": "Advanced ensemble; higher expectations for tone, dynamics, and musicianship."
+        }
+      ],
+      "performances": [],
+      "auditions": [
+        {
+          "level": "Advanced",
+          "instruments": "Strings, winds, brass, percussion",
+          "window": {
+            "status": "verified",
+            "value": "August 22 & 23, 2026 (First Presbyterian Church, Encino)",
+            "source": "https://losangelesyouthorchestra.org/audition-information/",
+            "asOf": "2026-06-22"
+          },
+          "status": "upcoming",
+          "ages": [
+            8,
+            18
+          ],
+          "note": "For the Fall 2026 semester. Major & minor scales, LAYO-provided excerpts, and sight-reading. $100 audition fee is applied to tuition on acceptance.",
+          "source": "https://losangelesyouthorchestra.org/audition-information/"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://losangelesyouthorchestra.org/audition-information/",
+          "label": "LAYO — Audition Information",
+          "retrievedAt": "2026-06-22"
+        },
+        {
+          "url": "https://losangelesyouthorchestra.org",
+          "label": "LAYO",
+          "retrievedAt": "2026-06-22"
+        }
+      ],
+      "lastVerified": "2026-06-22",
+      "listingStatus": "published",
+      "provenanceType": "curated"
+    },
+    {
+      "id": "pyso",
+      "name": "Pasadena Youth Symphony Orchestras",
+      "type": "youth",
+      "lat": 34.1478,
+      "lng": -118.1445,
+      "area": "Pasadena",
+      "metro": "Greater Los Angeles",
+      "website": "https://pasadenasymphony-pops.org/education/pyso/",
+      "applyUrl": "https://pasadenasymphony-pops.org/education/pyso/auditions/",
+      "blurb": "The Pasadena Symphony Association's youth program: seven ensembles for grades 4–12, serving 400+ students from across Southern California, with weekly rehearsals and at least two concerts a year.",
+      "season": {
+        "status": "unverified"
+      },
+      "ages": [
+        9,
+        18
+      ],
+      "instruments": [
+        "Strings",
+        "Winds",
+        "Brass",
+        "Percussion"
+      ],
+      "rehearsal": {
+        "status": "verified",
+        "value": "Weekly throughout the season",
+        "source": "https://pasadenasymphony-pops.org/education/pyso/auditions/",
+        "asOf": "2026-06-22"
+      },
+      "commitment": {
+        "status": "verified",
+        "value": "Weekly; students perform in at least two concerts each year",
+        "source": "https://pasadenasymphony-pops.org/education/pyso/auditions/",
+        "asOf": "2026-06-22"
+      },
+      "financialAid": {
+        "status": "verified",
+        "value": true,
+        "source": "https://pasadenasymphony-pops.org/education/pyso/auditions/",
+        "asOf": "2026-06-22"
+      },
+      "tuition": {
+        "status": "unverified"
+      },
+      "goodFit": "Good fit for San Gabriel Valley families wanting a structured, multi-tier path from beginner to youth symphony.",
+      "reviews": null,
+      "ensembles": [
+        {
+          "name": "Beginning Strings",
+          "level": "Beginner",
+          "ages": [
+            9,
+            12
+          ],
+          "desc": "Entry ensemble — one of seven graded PYSO ensembles."
+        },
+        {
+          "name": "Intermediate Orchestra",
+          "level": "Intermediate",
+          "ages": [
+            11,
+            15
+          ],
+          "desc": "Strings, winds, and brass together."
+        },
+        {
+          "name": "Youth Symphony",
+          "level": "Advanced",
+          "ages": [
+            14,
+            18
+          ],
+          "desc": "Top ensemble in the seven-tier program."
+        }
+      ],
+      "performances": [],
+      "auditions": [
+        {
+          "level": "Intermediate",
+          "instruments": "Strings, winds, brass, percussion",
+          "window": {
+            "status": "unverified"
+          },
+          "status": "upcoming",
+          "ages": [
+            9,
+            18
+          ],
+          "note": "2026–27 applications open in early April; placement by audition across seven ensembles. Check the site for in-person dates.",
+          "source": "https://pasadenasymphony-pops.org/education/pyso/auditions/"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://pasadenasymphony-pops.org/education/pyso/auditions/",
+          "label": "PYSO — Auditions",
+          "retrievedAt": "2026-06-22"
+        },
+        {
+          "url": "https://pasadenasymphony-pops.org/education/pyso/",
+          "label": "PYSO",
+          "retrievedAt": "2026-06-22"
+        }
+      ],
+      "lastVerified": "2026-06-22",
+      "listingStatus": "published",
+      "provenanceType": "curated"
+    },
+    {
+      "id": "gyo",
+      "name": "Glendale Youth Orchestra",
+      "type": "youth",
+      "lat": 34.1466,
+      "lng": -118.2551,
+      "area": "Glendale",
+      "metro": "Greater Los Angeles",
+      "website": "https://www.glendaleyouthorchestra.com",
+      "applyUrl": "https://www.glendaleyouthorchestra.com/auditions",
+      "blurb": "An advanced, audition-based youth orchestra founded in 1989, performing three concerts each season at the Alex Theatre, with a members' concerto competition.",
+      "season": {
+        "status": "unverified"
+      },
+      "ages": [
+        12,
+        23
+      ],
+      "instruments": [
+        "Strings",
+        "Winds",
+        "Brass",
+        "Percussion"
+      ],
+      "rehearsal": {
+        "status": "unverified"
+      },
+      "commitment": {
+        "status": "unverified"
+      },
+      "financialAid": {
+        "status": "verified",
+        "value": true,
+        "source": "https://www.glendaleyouthorchestra.com/auditions",
+        "asOf": "2026-06-22"
+      },
+      "tuition": {
+        "status": "verified",
+        "value": "$875 per year (includes 5 concert tickets per concert)",
+        "source": "https://www.glendaleyouthorchestra.com/auditions",
+        "asOf": "2026-06-22"
+      },
+      "goodFit": "Good fit for an advanced Glendale-area player who wants symphonic repertoire and a concerto-competition opportunity.",
+      "reviews": null,
+      "ensembles": [
+        {
+          "name": "Glendale Youth Orchestra",
+          "level": "Advanced",
+          "ages": [
+            12,
+            23
+          ],
+          "desc": "Single full orchestra; classical, film, and world music."
+        }
+      ],
+      "performances": [],
+      "auditions": [
+        {
+          "level": "Advanced",
+          "instruments": "All orchestral instruments",
+          "window": {
+            "status": "unverified"
+          },
+          "status": "upcoming",
+          "ages": [
+            12,
+            23
+          ],
+          "note": "By appointment, typically late August before the season. Two prepared excerpts + two scales; merit-based. Check the site for the current date.",
+          "source": "https://www.glendaleyouthorchestra.com/auditions"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://www.glendaleyouthorchestra.com/auditions",
+          "label": "GYO — Auditions",
+          "retrievedAt": "2026-06-22"
+        },
+        {
+          "url": "https://www.glendaleyouthorchestra.com",
+          "label": "Glendale Youth Orchestra",
+          "retrievedAt": "2026-06-22"
+        }
+      ],
+      "lastVerified": "2026-06-22",
+      "listingStatus": "published",
+      "provenanceType": "curated"
+    },
+    {
+      "id": "smyo",
+      "name": "Santa Monica Youth Orchestra",
+      "type": "youth",
+      "lat": 34.0287,
+      "lng": -118.479,
+      "area": "Santa Monica",
+      "metro": "Greater Los Angeles",
+      "website": "https://soundslikela.org/programs/santa-monica-youth-orchestra/",
+      "applyUrl": null,
+      "blurb": "A tuition-free, audition-free Sunday music program (part of Sounds Like LA) for ages 6–18, with three orchestra levels and a culturally diverse repertoire, rehearsing at Virginia Avenue Park.",
+      "season": {
+        "status": "unverified"
+      },
+      "ages": [
+        6,
+        18
+      ],
+      "instruments": [
+        "Strings",
+        "Winds"
+      ],
+      "rehearsal": {
+        "status": "verified",
+        "value": "Sunday afternoons, roughly 30 weeks Sept–June (Virginia Avenue Park)",
+        "source": "https://arts.ca.gov/grantee/santa-monica-youth-orchestra-2/",
+        "asOf": "2026-06-22"
+      },
+      "commitment": {
+        "status": "verified",
+        "value": "Weekly (Sundays); open to any student who can commit to rehearsals",
+        "source": "https://soundslikela.org/programs/santa-monica-youth-orchestra/",
+        "asOf": "2026-06-22"
+      },
+      "financialAid": {
+        "status": "unverified"
+      },
+      "tuition": {
+        "status": "verified",
+        "value": "Free — tuition-free",
+        "source": "https://soundslikela.org/programs/santa-monica-youth-orchestra/",
+        "asOf": "2026-06-22"
+      },
+      "goodFit": "Good fit for westside and coastal families wanting a free, welcoming first orchestra with no audition.",
+      "reviews": null,
+      "ensembles": [
+        {
+          "name": "Prelude Orchestra",
+          "level": "Beginner",
+          "ages": [
+            6,
+            11
+          ],
+          "desc": "Beginning level."
+        },
+        {
+          "name": "Youth Orchestra",
+          "level": "Intermediate",
+          "ages": [
+            10,
+            14
+          ],
+          "desc": "Intermediate level."
+        },
+        {
+          "name": "Symphonic Orchestra",
+          "level": "Advanced",
+          "ages": [
+            12,
+            18
+          ],
+          "desc": "Most advanced of the three levels; opens for the Westside Chamber Orchestra."
+        }
+      ],
+      "performances": [],
+      "auditions": [
+        {
+          "level": "Beginner",
+          "instruments": "All — no audition",
+          "window": {
+            "status": "verified",
+            "value": "Open enrollment — no audition; register each season",
+            "source": "https://soundslikela.org/programs/santa-monica-youth-orchestra/",
+            "asOf": "2026-06-22"
+          },
+          "status": "rolling",
+          "ages": [
+            6,
+            18
+          ],
+          "note": "Audition-free; students are placed by level. Registration opens each season.",
+          "source": "https://soundslikela.org/programs/santa-monica-youth-orchestra/"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://soundslikela.org/programs/santa-monica-youth-orchestra/",
+          "label": "Sounds Like LA — SMYO",
+          "retrievedAt": "2026-06-22"
+        },
+        {
+          "url": "https://arts.ca.gov/grantee/santa-monica-youth-orchestra-2/",
+          "label": "CA Arts Council — SMYO",
+          "retrievedAt": "2026-06-22"
+        }
+      ],
+      "lastVerified": "2026-06-22",
+      "listingStatus": "published",
+      "provenanceType": "curated"
+    },
+    {
+      "id": "laphil",
+      "name": "Los Angeles Philharmonic",
+      "type": "professional",
+      "lat": 34.0556,
+      "lng": -118.2497,
+      "area": "Downtown LA",
+      "metro": "Greater Los Angeles",
+      "website": "https://www.laphil.com",
+      "applyUrl": null,
+      "blurb": "One of the world's leading orchestras, resident at Walt Disney Concert Hall and the Hollywood Bowl.",
+      "season": {
+        "status": "unverified"
+      },
+      "ages": [
+        22,
+        99
+      ],
+      "instruments": [
+        "Strings",
+        "Winds",
+        "Brass",
+        "Percussion",
+        "Harp"
+      ],
+      "rehearsal": {
+        "status": "not_applicable"
+      },
+      "commitment": {
+        "status": "verified",
+        "value": "Full-time professional",
+        "source": "https://www.laphil.com",
+        "asOf": "2026-06-22"
+      },
+      "financialAid": {
+        "status": "not_applicable"
+      },
+      "tuition": {
+        "status": "not_applicable"
+      },
+      "goodFit": "For professional musicians auditioning for posted vacancies; for families, a world-class concert destination.",
+      "reviews": null,
+      "ensembles": [
+        {
+          "name": "Los Angeles Philharmonic",
+          "level": "Professional",
+          "ages": [
+            22,
+            99
+          ],
+          "desc": "Full professional symphony orchestra."
+        }
+      ],
+      "performances": [],
+      "auditions": [
+        {
+          "level": "Professional",
+          "instruments": "Posted vacancies only",
+          "window": {
+            "status": "unverified"
+          },
+          "status": "rolling",
+          "ages": [
+            22,
+            99
+          ],
+          "note": "Union audition process; sealed-round excerpts. See the LA Phil site for current openings.",
+          "source": "https://www.laphil.com"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://www.laphil.com",
+          "label": "Los Angeles Philharmonic",
+          "retrievedAt": "2026-06-22"
+        }
+      ],
+      "lastVerified": "2026-06-22",
+      "listingStatus": "published",
+      "provenanceType": "curated"
+    },
+    {
+      "id": "laco",
+      "name": "Los Angeles Chamber Orchestra",
+      "type": "professional",
+      "lat": 34.0556,
+      "lng": -118.2468,
+      "area": "Downtown LA",
+      "metro": "Greater Los Angeles",
+      "website": "https://www.laco.org",
+      "applyUrl": null,
+      "blurb": "Founded in 1968, a preeminent professional chamber orchestra performing orchestral, chamber, and Baroque programs across greater Los Angeles, led by Music Director Jaime Martín.",
+      "season": {
+        "status": "verified",
+        "value": "2026/27 season",
+        "source": "https://www.laco.org/2627season/",
+        "asOf": "2026-06-22"
+      },
+      "ages": [
+        22,
+        99
+      ],
+      "instruments": [
+        "Strings",
+        "Winds",
+        "Brass"
+      ],
+      "rehearsal": {
+        "status": "not_applicable"
+      },
+      "commitment": {
+        "status": "verified",
+        "value": "Full-time professional",
+        "source": "https://www.laco.org",
+        "asOf": "2026-06-22"
+      },
+      "financialAid": {
+        "status": "not_applicable"
+      },
+      "tuition": {
+        "status": "not_applicable"
+      },
+      "goodFit": "For professional players; for families, intimate, high-craft chamber concerts in DTLA and Beverly Hills.",
+      "reviews": null,
+      "ensembles": [
+        {
+          "name": "Los Angeles Chamber Orchestra",
+          "level": "Professional",
+          "ages": [
+            22,
+            99
+          ],
+          "desc": "Professional chamber-scale orchestra."
+        }
+      ],
+      "performances": [
+        {
+          "date": "2026-09-26",
+          "title": "MOVEMENT(S)!",
+          "venue": "Walt Disney Concert Hall (DTLA) & Wallis Annenberg Center (Beverly Hills)",
+          "program": "Kodály; Carlos Simon (world premiere); Gabriela Lena Frank; de Falla",
+          "from": {
+            "status": "unverified"
+          },
+          "source": "https://www.laco.org/events/movements/"
+        },
+        {
+          "date": "2026-11-19",
+          "title": "East Meets West",
+          "venue": "Orchestral Series",
+          "program": null,
+          "from": {
+            "status": "unverified"
+          },
+          "source": "https://www.laco.org/2627season/subscribe/"
+        },
+        {
+          "date": "2027-05-15",
+          "title": "Brahms, Beethoven, Ravaei (season finale)",
+          "venue": "Orchestral Series",
+          "program": "Brahms Violin Concerto (James Ehnes); Beethoven Symphony No. 7; world premiere by Kian Ravaei",
+          "from": {
+            "status": "unverified"
+          },
+          "source": "https://www.laco.org/laco-2627-pr/"
+        }
+      ],
+      "auditions": [
+        {
+          "level": "Professional",
+          "instruments": "Posted vacancies only",
+          "window": {
+            "status": "unverified"
+          },
+          "status": "rolling",
+          "ages": [
+            22,
+            99
+          ],
+          "note": "Excerpts + chamber round. See the LACO site for current openings.",
+          "source": "https://www.laco.org"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://www.laco.org/2627season/",
+          "label": "LACO — 2026/27 season",
+          "retrievedAt": "2026-06-22"
+        },
+        {
+          "url": "https://www.laco.org/events/movements/",
+          "label": "LACO — MOVEMENT(S)!",
+          "retrievedAt": "2026-06-22"
+        },
+        {
+          "url": "https://www.laco.org/laco-2627-pr/",
+          "label": "LACO — 2026/27 announcement",
+          "retrievedAt": "2026-06-22"
+        }
+      ],
+      "lastVerified": "2026-06-22",
+      "listingStatus": "published",
+      "provenanceType": "curated"
+    },
+    {
+      "id": "passym",
+      "name": "Pasadena Symphony and POPS",
+      "type": "professional",
+      "lat": 34.1452,
+      "lng": -118.139,
+      "area": "Pasadena",
+      "metro": "Greater Los Angeles",
+      "website": "https://pasadenasymphony-pops.org",
+      "applyUrl": null,
+      "blurb": "The San Gabriel Valley's professional orchestra: a classical season (Oct–May) at Ambassador Auditorium and a summer POPS series at the LA County Arboretum.",
+      "season": {
+        "status": "verified",
+        "value": "Classical season Oct–May at Ambassador Auditorium; POPS Jun–Sep at the LA County Arboretum",
+        "source": "https://pasadenasymphony-pops.org",
+        "asOf": "2026-06-22"
+      },
+      "ages": [
+        22,
+        99
+      ],
+      "instruments": [
+        "Strings",
+        "Winds",
+        "Brass",
+        "Percussion"
+      ],
+      "rehearsal": {
+        "status": "not_applicable"
+      },
+      "commitment": {
+        "status": "verified",
+        "value": "Per-service professional",
+        "source": "https://pasadenasymphony-pops.org",
+        "asOf": "2026-06-22"
+      },
+      "financialAid": {
+        "status": "not_applicable"
+      },
+      "tuition": {
+        "status": "not_applicable"
+      },
+      "goodFit": "For professional players seeking section/sub work; for families, a regional classical and POPS concert series.",
+      "reviews": null,
+      "ensembles": [
+        {
+          "name": "Pasadena Symphony",
+          "level": "Professional",
+          "ages": [
+            22,
+            99
+          ],
+          "desc": "Professional regional orchestra."
+        }
+      ],
+      "performances": [],
+      "auditions": [
+        {
+          "level": "Professional",
+          "instruments": "Substitute & section list",
+          "window": {
+            "status": "unverified"
+          },
+          "status": "rolling",
+          "ages": [
+            22,
+            99
+          ],
+          "note": "Resume + excerpts by posted vacancy.",
+          "source": "https://pasadenasymphony-pops.org"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://pasadenasymphony-pops.org",
+          "label": "Pasadena Symphony and POPS",
+          "retrievedAt": "2026-06-22"
+        }
+      ],
+      "lastVerified": "2026-06-22",
+      "listingStatus": "published",
+      "provenanceType": "curated"
+    },
+    {
+      "id": "lbso",
+      "name": "Long Beach Symphony",
+      "type": "professional",
+      "lat": 33.7686,
+      "lng": -118.1923,
+      "area": "Long Beach",
+      "metro": "Greater Los Angeles",
+      "website": "https://longbeachsymphony.org",
+      "applyUrl": null,
+      "blurb": "Long Beach's professional orchestra since 1934, led by Music Director Eckart Preu, with a five-concert Classical Series at the Terrace Theater plus a POPS series and youth concerts.",
+      "season": {
+        "status": "verified",
+        "value": "2026–27 Classical Series — five concerts at the Terrace Theater",
+        "source": "https://longbeachsymphony.org/classical-2026-27/",
+        "asOf": "2026-06-22"
+      },
+      "ages": [
+        22,
+        99
+      ],
+      "instruments": [
+        "Strings",
+        "Winds",
+        "Brass",
+        "Percussion"
+      ],
+      "rehearsal": {
+        "status": "not_applicable"
+      },
+      "commitment": {
+        "status": "verified",
+        "value": "Per-service professional",
+        "source": "https://longbeachsymphony.org",
+        "asOf": "2026-06-22"
+      },
+      "financialAid": {
+        "status": "not_applicable"
+      },
+      "tuition": {
+        "status": "not_applicable"
+      },
+      "goodFit": "For professional players; for families, a relaxed Classical Series in Long Beach with free pre-concert talks.",
+      "reviews": null,
+      "ensembles": [
+        {
+          "name": "Long Beach Symphony",
+          "level": "Professional",
+          "ages": [
+            22,
+            99
+          ],
+          "desc": "Professional orchestra."
+        }
+      ],
+      "performances": [
+        {
+          "date": "2026-10-10",
+          "title": "Faces of America at 250",
+          "venue": "Terrace Theater",
+          "program": "Copland Fanfare for the Common Man; James P. Johnson Harlem Symphony; Gershwin Strike Up the Band",
+          "from": {
+            "status": "unverified"
+          },
+          "source": "https://longbeachsymphony.org/classical-2026-27/"
+        },
+        {
+          "date": "2026-11-14",
+          "title": "Entangled in Passion",
+          "venue": "Terrace Theater",
+          "program": "Ravel Boléro; R. Strauss Don Juan; Rachmaninoff Piano Concerto No. 2 (Michelle Cann)",
+          "from": {
+            "status": "unverified"
+          },
+          "source": "https://longbeachsymphony.org/classical-2026-27/"
+        },
+        {
+          "date": "2027-03-06",
+          "title": "Heaven & Earth",
+          "venue": "Terrace Theater",
+          "program": "Gabriela Lena Frank; Brahms Violin Concerto (Randall Goosby); Mozart Symphony No. 41 'Jupiter'",
+          "from": {
+            "status": "unverified"
+          },
+          "source": "https://longbeachsymphony.org/classical-2026-27/"
+        }
+      ],
+      "auditions": [
+        {
+          "level": "Professional",
+          "instruments": "Posted vacancies only",
+          "window": {
+            "status": "unverified"
+          },
+          "status": "rolling",
+          "ages": [
+            22,
+            99
+          ],
+          "note": "Union audition; excerpts provided by posted vacancy.",
+          "source": "https://longbeachsymphony.org"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://longbeachsymphony.org/classical-2026-27/",
+          "label": "Long Beach Symphony — 2026–27 Classical",
+          "retrievedAt": "2026-06-22"
+        },
+        {
+          "url": "https://longbeachsymphony.org",
+          "label": "Long Beach Symphony",
+          "retrievedAt": "2026-06-22"
+        }
+      ],
+      "lastVerified": "2026-06-22",
+      "listingStatus": "published",
+      "provenanceType": "curated"
+    },
+    {
+      "id": "culver",
+      "name": "Culver City Symphony Orchestra",
+      "type": "community",
+      "lat": 34.0211,
+      "lng": -118.3965,
+      "area": "Culver City",
+      "metro": "Greater Los Angeles",
+      "website": "https://www.culvercitysymphony.org",
+      "applyUrl": null,
+      "blurb": "Founded in 1964 (originally the Westchester String Symphony), an orchestra that pairs professional players with talented amateurs and students, presenting free concerts in Culver City and a summer series as the Marina del Rey Summer Symphony.",
+      "season": {
+        "status": "verified",
+        "value": "3–4 free concerts each season in Culver City; summers as the Marina del Rey Summer Symphony at Burton Chace Park",
+        "source": "https://www.culvercitysymphony.org",
+        "asOf": "2026-06-22"
+      },
+      "ages": [
+        16,
+        99
+      ],
+      "instruments": [
+        "Strings",
+        "Winds",
+        "Brass"
+      ],
+      "rehearsal": {
+        "status": "unverified"
+      },
+      "commitment": {
+        "status": "unverified"
+      },
+      "financialAid": {
+        "status": "unverified"
+      },
+      "tuition": {
+        "status": "unverified"
+      },
+      "goodFit": "Good fit for adult amateurs and advanced students who want to play alongside professionals, or for families wanting free local concerts.",
+      "reviews": null,
+      "ensembles": [
+        {
+          "name": "Culver City Symphony Orchestra",
+          "level": "Intermediate",
+          "ages": [
+            16,
+            99
+          ],
+          "desc": "Mixed professional/amateur/student orchestra; becomes the Marina del Rey Summer Symphony in summer."
+        }
+      ],
+      "performances": [],
+      "auditions": [
+        {
+          "level": "Intermediate",
+          "instruments": "Strings, winds, brass",
+          "window": {
+            "status": "unverified"
+          },
+          "status": "rolling",
+          "ages": [
+            16,
+            99
+          ],
+          "note": "Includes professional, amateur, and student players; contact the orchestra to inquire about joining.",
+          "source": "https://www.culvercitysymphony.org"
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://www.culvercitysymphony.org",
+          "label": "Culver City Symphony Orchestra",
+          "retrievedAt": "2026-06-22"
+        },
+        {
+          "url": "https://www.eventbrite.com/o/culver-city-symphony-orchestra-119912435181",
+          "label": "CCSO — about (Eventbrite)",
+          "retrievedAt": "2026-06-22"
+        }
+      ],
+      "lastVerified": "2026-06-22",
+      "listingStatus": "published",
+      "provenanceType": "curated"
+    }
+  ]
+}
