@@ -19,6 +19,12 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 
+<!-- Phase 3: optional backend. config.js sets window.TUTTI_CONFIG (Supabase URL + anon
+     key); supabase-js powers accounts + persistent Saved. Both are optional — if neither
+     loads, Tutti falls back to the bundled dataset and an in-memory Saved list. -->
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
   :root{
     --paper:#F2F1EC;          /* warm programme paper          */
@@ -537,6 +543,20 @@
   @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 .check-site{color:var(--brass-deep);font-weight:700;text-decoration:underline;text-underline-offset:2px}
 .check-site:hover{opacity:.82}
+  /* ===== Account bar + privacy note (Phase 3.4) ===== */
+  .acct{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:12px;
+    padding:10px 14px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+  .acct__who{font-weight:700;color:var(--ink)}
+  .acct__note{color:var(--ink-soft);font-size:13px}
+  .acct__actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-left:auto}
+  .acct__link{background:none;border:0;color:var(--brass-deep);font:inherit;font-weight:700;
+    text-decoration:underline;cursor:pointer;padding:6px 2px}
+  .acct__link:hover{color:var(--brass)}
+  .privacy{font-size:14px;line-height:1.65;color:var(--ink-soft)}
+  .privacy h3{color:var(--ink);font-weight:700;margin:16px 0 4px;font-size:15px}
+  .privacy ul{margin:4px 0;padding-left:18px}
+  .privacy li{margin:5px 0}
+  .privacy b{color:var(--ink)}
 </style>
 
 <div class="app">
@@ -699,7 +719,8 @@
     <section class="view board" id="view-saved" aria-label="Saved organizations">
       <div class="board__head">
         <h2 class="board__title">Saved</h2>
-        <p class="board__sub">Organizations you've starred. Saved for this session only.</p>
+        <p class="board__sub" id="savedSub">Organizations you've starred. Saved for this session only.</p>
+        <div class="acct" id="accountBar"></div>
       </div>
       <div class="board__scroll"><div class="board__grid" id="savedGrid"></div></div>
     </section>
@@ -735,6 +756,41 @@
       </button>
     </div>
     <div class="modal__body" id="subBody"><!-- form injected --></div>
+  </div>
+</div>
+
+<!-- PRIVACY MODAL (Phase 3.4) -->
+<div class="modal" id="privacyModal" role="dialog" aria-modal="true" aria-labelledby="privacyModalTitle" aria-hidden="true">
+  <div class="modal__panel">
+    <div class="modal__head">
+      <div>
+        <h2 class="modal__title" id="privacyModalTitle">What sign-in stores</h2>
+        <p class="modal__sub">Signing in does one thing: it keeps your Saved list. Here's exactly what that involves.</p>
+      </div>
+      <button class="modal__close" id="privacyModalClose" aria-label="Close privacy note">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal__body">
+      <div class="privacy">
+        <p>You can use all of Tutti without an account. Signing in with Google or Apple is optional — it only exists so the organizations you save follow you across reloads and devices.</p>
+        <h3>What we store</h3>
+        <ul>
+          <li>A basic account identifier from Google or Apple — an ID and the email address on that account.</li>
+          <li>The list of organizations you save (just their IDs).</li>
+        </ul>
+        <h3>What we don't store</h3>
+        <ul>
+          <li>No passwords (Google/Apple handle sign-in), no payment details, no information about your child.</li>
+          <li>No browsing or location history. We never sell or share your information.</li>
+        </ul>
+        <h3>You're in control</h3>
+        <ul>
+          <li>Sign out anytime. Removing a save deletes that entry from your account.</li>
+          <li>Tutti is a discovery layer — it never collects applications. “Apply” always hands you off to the organization's own site.</li>
+        </ul>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -2006,6 +2062,10 @@
 let DATA = [];
 let DATA_READY = false;
 let DATA_ERROR = false;
+let DATA_SOURCE = null;            // 'api' | 'file' | 'bundled' — for diagnostics/messaging
+
+const TUTTI_CFG = window.TUTTI_CONFIG || {};
+function apiConfigured(){ return !!(TUTTI_CFG.useApi && TUTTI_CFG.supabaseUrl && TUTTI_CFG.supabaseAnonKey); }
 
 function bootstrapDataset(){
   try{
@@ -2018,17 +2078,43 @@ function publishedOrgs(ds){
   if(!ds || !Array.isArray(ds.organizations)) return [];
   return ds.organizations.filter(o => o.listingStatus === "published");
 }
+// Read API (Supabase/PostgREST). The org_listings view returns published orgs in this
+// exact shape; RLS guarantees nothing unpublished can come back. 6s timeout so a missing
+// backend fails fast into the local fallback.
+async function fetchFromApi(){
+  const ctrl = new AbortController();
+  const timer = setTimeout(()=>ctrl.abort(), 6000);
+  try{
+    const base = String(TUTTI_CFG.supabaseUrl).replace(/\/+$/,"");
+    const res = await fetch(`${base}/rest/v1/org_listings?select=*`, {
+      headers:{ apikey: TUTTI_CFG.supabaseAnonKey, Authorization:`Bearer ${TUTTI_CFG.supabaseAnonKey}` },
+      signal: ctrl.signal, cache:"no-store"
+    });
+    if(!res.ok) throw new Error("API responded "+res.status);
+    const rows = await res.json();
+    if(!Array.isArray(rows)) throw new Error("Unexpected API response");
+    return rows;
+  } finally { clearTimeout(timer); }
+}
+
+// Load order: backend API → static data.json → embedded bootstrap. The page always renders.
 async function loadData(){
   DATA_ERROR = false; DATA_READY = false;
+  if(apiConfigured()){
+    try{
+      DATA = publishedOrgs({organizations: await fetchFromApi()});
+      DATA_SOURCE = "api"; DATA_READY = true; return;
+    }catch(e){ console.warn("API load failed — falling back to local data.", e); }
+  }
   let ds = null;
   try{
     const res = await fetch("data.json", {cache:"no-store"});
     if(res && res.ok) ds = await res.json();
   }catch(e){ /* file:// or offline — fall through to embedded bootstrap */ }
-  if(!ds) ds = bootstrapDataset();
-  if(!ds){ DATA_ERROR = true; DATA = []; return; }
-  DATA = publishedOrgs(ds);
-  DATA_READY = true;
+  if(ds){ DATA = publishedOrgs(ds); DATA_SOURCE = "file"; DATA_READY = true; return; }
+  ds = bootstrapDataset();
+  if(ds){ DATA = publishedOrgs(ds); DATA_SOURCE = "bundled"; DATA_READY = true; return; }
+  DATA_ERROR = true; DATA = [];
 }
 function showResultsLoading(){
   const wrap = $("#results");
@@ -2083,7 +2169,10 @@ const INSTRUMENTS = ["Strings","Winds","Brass","Percussion","Harp"];
 const LEVELS = ["Beginner","Intermediate","Advanced","Pre-professional","Professional"];
 
 /* ============================ STATE ============================ */
-const saved = new Set();
+const saved = new Set();          // working set of saved org ids (mirrors the DB when signed in)
+let sb = null;                    // Supabase client (null when no backend configured)
+let currentUser = null;           // signed-in user, or null
+let savedSyncing = false;         // guard against re-entrancy while syncing Saved
 let activeType = "all";
 let activeAge = "any";
 let activeInstrument = "any";
@@ -2387,11 +2476,108 @@ function closeDetail(){
 
 /* ============================ SAVED ============================ */
 function toggleSave(id){
-  saved.has(id) ? saved.delete(id) : saved.add(id);
-  const c=$("#savedCount"); c.textContent=saved.size; c.style.display=saved.size?"grid":"none";
+  const adding = !saved.has(id);
+  adding ? saved.add(id) : saved.delete(id);   // optimistic; in-memory for signed-out users
+  updateSavedCount();
   renderResults(); renderSaved();
+  if(currentUser) persistSave(id, adding);      // mirror to the account when signed in
+}
+function updateSavedCount(){
+  const c=$("#savedCount"); if(!c) return;
+  c.textContent=saved.size; c.style.display=saved.size?"grid":"none";
+}
+// Write a single change to the user's saved rows; resync from the DB if it fails.
+async function persistSave(id, adding){
+  if(!sb || !currentUser) return;
+  try{
+    const r = adding
+      ? await sb.from("saved").upsert({ user_id: currentUser.id, org_id: id })
+      : await sb.from("saved").delete().eq("user_id", currentUser.id).eq("org_id", id);
+    if(r.error) throw r.error;
+  }catch(e){
+    console.warn("Couldn't sync Saved — restoring from your account.", e);
+    loadSavedFromDb();
+  }
+}
+
+/* ===================== AUTH & SAVED PERSISTENCE (Phase 3.4) =====================
+   Accounts (Google / Apple) power persistent Saved. Signed-out parents keep an
+   in-memory Saved list so the app still works unauthenticated. */
+function initSupabase(){
+  const c = window.TUTTI_CONFIG;
+  if(c && c.supabaseUrl && c.supabaseAnonKey && window.supabase && window.supabase.createClient){
+    try{ sb = window.supabase.createClient(c.supabaseUrl, c.supabaseAnonKey); }
+    catch(e){ console.warn("Supabase auth unavailable.", e); sb = null; }
+  }
+}
+async function restoreSession(){
+  if(!sb) { renderAccount(); return; }
+  try{
+    const { data:{ session } } = await sb.auth.getSession();
+    currentUser = session ? session.user : null;
+    if(currentUser) await loadSavedFromDb();
+  }catch(e){ console.warn("Couldn't read session.", e); }
+  renderAccount();
+  // React to sign-in / sign-out (including the OAuth redirect back to the app).
+  sb.auth.onAuthStateChange(async (_evt, session)=>{
+    currentUser = session ? session.user : null;
+    if(currentUser){ await loadSavedFromDb(); }
+    else { saved.clear(); updateSavedCount(); renderResults(); renderSaved(); }
+    renderAccount();
+  });
+}
+async function loadSavedFromDb(){
+  if(!sb || !currentUser || savedSyncing) return;
+  savedSyncing = true;
+  try{
+    const { data, error } = await sb.from("saved").select("org_id");
+    if(error) throw error;
+    saved.clear();
+    (data||[]).forEach(r=>saved.add(r.org_id));
+    updateSavedCount(); renderResults(); renderSaved();
+  }catch(e){ console.warn("Couldn't load your Saved list.", e); }
+  finally{ savedSyncing = false; }
+}
+async function signIn(provider){
+  if(!sb) return;
+  const redirectTo = location.origin + location.pathname;
+  try{ await sb.auth.signInWithOAuth({ provider, options:{ redirectTo } }); }
+  catch(e){ console.warn("Sign-in failed.", e); alert("Sorry — sign-in couldn't start. Please try again."); }
+}
+async function signOut(){
+  if(!sb) return;
+  try{ await sb.auth.signOut(); }catch(e){ console.warn("Sign-out failed.", e); }
+}
+// Account bar in the Saved view: sign-in prompt, signed-in identity, and the privacy note.
+function renderAccount(){
+  const bar = $("#accountBar"); const sub = $("#savedSub");
+  if(!bar) return;
+  const privacyLink = `<button class="acct__link" id="privacyLink" type="button">What sign-in stores</button>`;
+  if(!sb){
+    bar.innerHTML = `<span class="acct__note">Saved is kept for this session. Connect a backend to sync it to an account.</span>`;
+    if(sub) sub.textContent = "Organizations you've starred. Saved for this session only.";
+  }else if(currentUser){
+    const who = esc(currentUser.email || currentUser.user_metadata?.name || "your account");
+    bar.innerHTML = `<span class="acct__who">Signed in as <b>${who}</b></span>
+      <span class="acct__actions"><button class="ghost ghost--plain" id="signOutBtn" type="button">Sign out</button>${privacyLink}</span>`;
+    if(sub) sub.textContent = "Organizations you've starred. Synced to your account across devices.";
+  }else{
+    bar.innerHTML = `<span class="acct__who">Sign in to save across devices</span>
+      <span class="acct__actions">
+        <button class="ghost ghost--accent" id="signInGoogle" type="button">Continue with Google</button>
+        <button class="ghost ghost--plain" id="signInApple" type="button">Continue with Apple</button>
+        ${privacyLink}
+      </span>`;
+    if(sub) sub.textContent = "Organizations you've starred. Sign in to keep them across reloads and devices.";
+  }
+  const g=$("#signInGoogle"), a=$("#signInApple"), o=$("#signOutBtn"), p=$("#privacyLink");
+  if(g) g.onclick=()=>signIn("google");
+  if(a) a.onclick=()=>signIn("apple");
+  if(o) o.onclick=signOut;
+  if(p) p.onclick=()=>openModal("#privacyModal");
 }
 function renderSaved(){
+  renderAccount();
   const list = DATA.filter(o=>saved.has(o.id));
   const grid = $("#savedGrid");
   if(!list.length){ grid.innerHTML = `<div class="empty" style="grid-column:1/-1">
@@ -2855,6 +3041,8 @@ $("#cmpModal").addEventListener("click", e=>{ if(e.target.id==="cmpModal") close
 $("#listBtn").addEventListener("click", ()=>{ buildForm(); const f=$("#subModal .modal__foot"); if(f) f.style.display="flex"; openModal("#subModal"); });
 $("#subModalClose").addEventListener("click", ()=>closeModal("#subModal"));
 $("#subModal").addEventListener("click", e=>{ if(e.target.id==="subModal") closeModal("#subModal"); });
+$("#privacyModalClose").addEventListener("click", ()=>closeModal("#privacyModal"));
+$("#privacyModal").addEventListener("click", e=>{ if(e.target.id==="privacyModal") closeModal("#privacyModal"); });
 
 // auditions board controls
 $("#view-auditions").addEventListener("click", e=>{
@@ -2887,9 +3075,11 @@ $("#ribbonClose").addEventListener("click", ()=>$("#ribbon").style.display="none
 /* ============================ BOOT ============================ */
 window.addEventListener("load", async ()=>{
   renderCmpTray();
+  initSupabase();
   showResultsLoading();
   await loadData();
   if(window.L){ initMap(); }
   else { $("#map").innerHTML='<div style="padding:40px;text-align:center;color:#888">Map library failed to load.</div>'; renderResults(); }
+  restoreSession();   // restore any signed-in session and load that account's Saved list
 });
 </script>

@@ -1,0 +1,51 @@
+# Tutti — Supabase local config. Used by the Supabase CLI (`supabase start`).
+# Docs: https://supabase.com/docs/guides/local-development/cli/config
+project_id = "tutti"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+# Cap rows returned by the auto-generated read API.
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+# Postgres major version. 15+ is required for the security_invoker view.
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323
+
+# Local inbucket so OAuth/email flows can be inspected during dev.
+[inbucket]
+enabled = true
+port = 54324
+
+[auth]
+enabled = true
+# The deployed front-end origin. Update for production.
+site_url = "http://127.0.0.1:3000"
+additional_redirect_urls = ["http://127.0.0.1:3000", "http://localhost:3000"]
+jwt_expiry = 3600
+enable_signup = true
+
+# --- Sign in with Google ---
+# Create an OAuth client (Google Cloud Console → Credentials). Authorized redirect URI:
+#   http://127.0.0.1:54321/auth/v1/callback   (local)
+#   https://<project-ref>.supabase.co/auth/v1/callback   (hosted)
+[auth.external.google]
+enabled = true
+client_id = "env(SUPABASE_AUTH_GOOGLE_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_GOOGLE_SECRET)"
+
+# --- Sign in with Apple ---
+# Apple Developer → Certificates, Identifiers & Profiles → Services ID + key.
+# client_id is the Services ID; secret is the signed client-secret JWT.
+[auth.external.apple]
+enabled = true
+client_id = "env(SUPABASE_AUTH_APPLE_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_APPLE_SECRET)"
