@@ -1,6 +1,6 @@
 -- GENERATED FILE — do not edit by hand.
 -- Source: data.json   Regenerate: node scripts/generate-seed.mjs
--- Dataset version 2.0.0 · metro "Greater Los Angeles" · generated 2026-06-22
+-- Dataset version 2.0.0 · metro "Greater Los Angeles" · generated 2026-07-03
 
 begin;
 
@@ -38,8 +38,8 @@ insert into public.organizations (
 ) values (
   'colburn', 'Colburn Community School of Performing Arts — Youth Orchestras', 'youth', 34.0537, -118.2497, 'Downtown LA', 'Greater Los Angeles',
   'https://www.colburnschool.edu', 'https://colburnschool.edu/community-school/by-program/ensembles/', 'The Community School of Performing Arts at Colburn runs graded youth orchestras and a new advanced performance program feeding its renowned conservatory, in the Music Center district.',
-  '{"status":"unverified"}'::jsonb, '{8,18}'::int[], '{"Strings","Winds","Brass","Percussion","Harp"}'::public.instrument[],
-  '{"status":"unverified"}'::jsonb, '{"status":"unverified"}'::jsonb, '{"status":"verified","value":true,"source":"https://colburnschool.edu/community-school/by-program/ensembles/","asOf":"2026-06-22"}'::jsonb, '{"status":"unverified"}'::jsonb,
+  '{"status":"unverified","source":"https://colburnschool.edu/community-school/by-program/ensembles/"}'::jsonb, '{8,18}'::int[], '{"Strings","Winds","Brass","Percussion","Harp"}'::public.instrument[],
+  '{"status":"unverified","source":"https://colburnschool.edu/community-school/by-program/ensembles/"}'::jsonb, '{"status":"unverified","source":"https://colburnschool.edu/community-school/by-program/ensembles/"}'::jsonb, '{"status":"verified","value":true,"source":"https://colburnschool.edu/community-school/by-program/ensembles/","asOf":"2026-06-22"}'::jsonb, '{"status":"unverified","source":"https://colburnschool.edu/community-school/register/"}'::jsonb,
   'Good fit for a serious, conservatory-track student; scholarships help with cost.', NULL, '2026-06-22'::date,
   'published', 'curated', NULL
 );
@@ -52,6 +52,7 @@ insert into public.auditions (org_id, position, level, instruments, "window", st
 insert into public.org_sources (org_id, position, url, label, retrieved_at) values ('colburn', 0, 'https://www.colburnschool.edu', 'Colburn School', '2026-06-22'::date);
 insert into public.org_sources (org_id, position, url, label, retrieved_at) values ('colburn', 1, 'https://colburnschool.edu/community-school/by-program/ensembles/', 'Community School ensembles', '2026-06-22'::date);
 insert into public.org_sources (org_id, position, url, label, retrieved_at) values ('colburn', 2, 'https://colburnschool.edu/community-school/by-program/advanced_music_program/', 'Advanced Music Performance Program', '2026-06-22'::date);
+insert into public.org_sources (org_id, position, url, label, retrieved_at) values ('colburn', 3, 'https://colburnschool.edu/community-school/register/', 'Community School — registration & tuition', '2026-07-03'::date);
 
 -- ays — American Youth Symphony
 insert into public.organizations (
@@ -98,8 +99,8 @@ insert into public.organizations (
 ) values (
   'pyso', 'Pasadena Youth Symphony Orchestras', 'youth', 34.1478, -118.1445, 'Pasadena', 'Greater Los Angeles',
   'https://pasadenasymphony-pops.org/education/pyso/', 'https://pasadenasymphony-pops.org/education/pyso/auditions/', 'The Pasadena Symphony Association''s youth program: seven ensembles for grades 4–12, serving 400+ students from across Southern California, with weekly rehearsals and at least two concerts a year.',
-  '{"status":"unverified"}'::jsonb, '{9,18}'::int[], '{"Strings","Winds","Brass","Percussion"}'::public.instrument[],
-  '{"status":"verified","value":"Weekly throughout the season","source":"https://pasadenasymphony-pops.org/education/pyso/auditions/","asOf":"2026-06-22"}'::jsonb, '{"status":"verified","value":"Weekly; students perform in at least two concerts each year","source":"https://pasadenasymphony-pops.org/education/pyso/auditions/","asOf":"2026-06-22"}'::jsonb, '{"status":"verified","value":true,"source":"https://pasadenasymphony-pops.org/education/pyso/auditions/","asOf":"2026-06-22"}'::jsonb, '{"status":"unverified"}'::jsonb,
+  '{"status":"unverified","source":"https://pasadenasymphony-pops.org/education/pyso/auditions/"}'::jsonb, '{9,18}'::int[], '{"Strings","Winds","Brass","Percussion"}'::public.instrument[],
+  '{"status":"verified","value":"Weekly throughout the season","source":"https://pasadenasymphony-pops.org/education/pyso/auditions/","asOf":"2026-06-22"}'::jsonb, '{"status":"verified","value":"Weekly; students perform in at least two concerts each year","source":"https://pasadenasymphony-pops.org/education/pyso/auditions/","asOf":"2026-06-22"}'::jsonb, '{"status":"verified","value":true,"source":"https://pasadenasymphony-pops.org/education/pyso/auditions/","asOf":"2026-06-22"}'::jsonb, '{"status":"unverified","source":"https://pasadenasymphony-pops.org/education/pyso/auditions/"}'::jsonb,
   'Good fit for San Gabriel Valley families wanting a structured, multi-tier path from beginner to youth symphony.', NULL, '2026-06-22'::date,
   'published', 'curated', NULL
 );
@@ -118,7 +119,7 @@ insert into public.organizations (
 ) values (
   'gyo', 'Glendale Youth Orchestra', 'youth', 34.1466, -118.2551, 'Glendale', 'Greater Los Angeles',
   'https://www.glendaleyouthorchestra.com', 'https://www.glendaleyouthorchestra.com/auditions', 'An advanced, audition-based youth orchestra founded in 1989, performing three concerts each season at the Alex Theatre, with a members'' concerto competition.',
-  '{"status":"unverified"}'::jsonb, '{12,23}'::int[], '{"Strings","Winds","Brass","Percussion"}'::public.instrument[],
+  '{"status":"unverified","source":"https://www.glendaleyouthorchestra.com/auditions"}'::jsonb, '{12,23}'::int[], '{"Strings","Winds","Brass","Percussion"}'::public.instrument[],
   '{"status":"unverified"}'::jsonb, '{"status":"unverified"}'::jsonb, '{"status":"verified","value":true,"source":"https://www.glendaleyouthorchestra.com/auditions","asOf":"2026-06-22"}'::jsonb, '{"status":"verified","value":"$875 per year (includes 5 concert tickets per concert)","source":"https://www.glendaleyouthorchestra.com/auditions","asOf":"2026-06-22"}'::jsonb,
   'Good fit for an advanced Glendale-area player who wants symphonic repertoire and a concerto-competition opportunity.', NULL, '2026-06-22'::date,
   'published', 'curated', NULL

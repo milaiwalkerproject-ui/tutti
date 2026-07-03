@@ -16,7 +16,7 @@ In the prototype every fact was a plain value, with only two states — a value,
 | status | meaning | what the UI shows |
 |---|---|---|
 | `verified` | found and cited | the value (requires `value` + `source`) |
-| `unverified` | applies, but unconfirmed | **"Check their site"** (link to the org's website) |
+| `unverified` | applies, but unconfirmed | **"Check their site"** (links to the field's own `source` page when curation recorded one, else the org's website) |
 | `not_applicable` | the question doesn't apply | hide the row |
 
 Example — a confirmed tuition vs. an unconfirmed one vs. a pro orchestra:
@@ -28,6 +28,8 @@ Example — a confirmed tuition vs. an unconfirmed one vs. a pro orchestra:
 ```
 
 The schema enforces this: a `verified` field **must** carry a `source`, and an `unverified` field **must not** carry a value (so nobody can smuggle a guess in). This is what lets us drop the blanket "sample data" ribbon for confirmed fields while staying truthful about the gaps.
+
+An `unverified` field may also carry a `source` — not a confirmation, just a **pointer**: the page where a parent can check that fact directly. The UI uses it as the "Check their site" link target instead of the homepage. A pointer must be a page we actually consulted (add it to the org's `sources` audit trail too); never guess a URL. `asOf` stays reserved for confirmed values.
 
 **Which fields are verifiable** (the volatile, parent-facing ones):
 `season`, `tuition`, `rehearsal`, `commitment`, `financialAid`, each performance's price (`from`), and each audition's `window`. Everything else is either stable identity (name, location, website, type) or editorial (`blurb`, `goodFit`) and stays a plain value.

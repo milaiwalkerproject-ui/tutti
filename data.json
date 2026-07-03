@@ -1,7 +1,7 @@
 {
   "version": "2.0.0",
   "metro": "Greater Los Angeles",
-  "generatedAt": "2026-06-22",
+  "generatedAt": "2026-07-03",
   "organizations": [
     {
       "id": "yola",
@@ -135,7 +135,8 @@
       "applyUrl": "https://colburnschool.edu/community-school/by-program/ensembles/",
       "blurb": "The Community School of Performing Arts at Colburn runs graded youth orchestras and a new advanced performance program feeding its renowned conservatory, in the Music Center district.",
       "season": {
-        "status": "unverified"
+        "status": "unverified",
+        "source": "https://colburnschool.edu/community-school/by-program/ensembles/"
       },
       "ages": [
         8,
@@ -149,10 +150,12 @@
         "Harp"
       ],
       "rehearsal": {
-        "status": "unverified"
+        "status": "unverified",
+        "source": "https://colburnschool.edu/community-school/by-program/ensembles/"
       },
       "commitment": {
-        "status": "unverified"
+        "status": "unverified",
+        "source": "https://colburnschool.edu/community-school/by-program/ensembles/"
       },
       "financialAid": {
         "status": "verified",
@@ -161,7 +164,8 @@
         "asOf": "2026-06-22"
       },
       "tuition": {
-        "status": "unverified"
+        "status": "unverified",
+        "source": "https://colburnschool.edu/community-school/register/"
       },
       "goodFit": "Good fit for a serious, conservatory-track student; scholarships help with cost.",
       "reviews": null,
@@ -249,6 +253,11 @@
           "url": "https://colburnschool.edu/community-school/by-program/advanced_music_program/",
           "label": "Advanced Music Performance Program",
           "retrievedAt": "2026-06-22"
+        },
+        {
+          "url": "https://colburnschool.edu/community-school/register/",
+          "label": "Community School — registration & tuition",
+          "retrievedAt": "2026-07-03"
         }
       ],
       "lastVerified": "2026-06-22",
@@ -461,7 +470,8 @@
       "applyUrl": "https://pasadenasymphony-pops.org/education/pyso/auditions/",
       "blurb": "The Pasadena Symphony Association's youth program: seven ensembles for grades 4–12, serving 400+ students from across Southern California, with weekly rehearsals and at least two concerts a year.",
       "season": {
-        "status": "unverified"
+        "status": "unverified",
+        "source": "https://pasadenasymphony-pops.org/education/pyso/auditions/"
       },
       "ages": [
         9,
@@ -492,7 +502,8 @@
         "asOf": "2026-06-22"
       },
       "tuition": {
-        "status": "unverified"
+        "status": "unverified",
+        "source": "https://pasadenasymphony-pops.org/education/pyso/auditions/"
       },
       "goodFit": "Good fit for San Gabriel Valley families wanting a structured, multi-tier path from beginner to youth symphony.",
       "reviews": null,
@@ -570,7 +581,8 @@
       "applyUrl": "https://www.glendaleyouthorchestra.com/auditions",
       "blurb": "An advanced, audition-based youth orchestra founded in 1989, performing three concerts each season at the Alex Theatre, with a members' concerto competition.",
       "season": {
-        "status": "unverified"
+        "status": "unverified",
+        "source": "https://www.glendaleyouthorchestra.com/auditions"
       },
       "ages": [
         12,

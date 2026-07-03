@@ -36,7 +36,7 @@
       "properties": {
         "status": { "enum": ["verified", "unverified", "not_applicable"] },
         "value": { "type": ["string", "null"] },
-        "source": { "type": ["string", "null"], "format": "uri", "description": "Public URL the value was confirmed from. Required when status is 'verified'." },
+        "source": { "type": ["string", "null"], "format": "uri", "description": "Public URL the value was confirmed from. Required when status is 'verified'. On an 'unverified' field it may hold the page where the fact can be checked — a pointer, not a confirmation." },
         "asOf": { "type": ["string", "null"], "format": "date", "description": "Date the value was confirmed." }
       },
       "allOf": [
