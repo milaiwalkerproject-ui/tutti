@@ -95,3 +95,28 @@ for performances, hides the price line) rather than displaying an unverified val
   back to the dataset embedded in `<script id="bootstrap-data">`. For a real
   static deploy, ship `data.json` next to the HTML and it loads that instead —
   edit one file, no rebuild.
+
+---
+
+## Pointer pass — 2026-07-04
+
+Unverified fields can now carry a `source` **pointer** — the page a parent should
+check — used as the "Check their site" link target (see SCHEMA.md). Results of
+the research pass across all 12 orgs:
+
+- **Every audition window and unverified ticket price** already deep-links via the
+  audition/performance's own cited `source` (code change, no new data).
+- **Colburn** — tuition → Community School registration page; season/rehearsal/
+  commitment → ensembles page. **PYSO** — season/tuition → auditions page.
+  **GYO** — season → auditions page. **YOLA** — season/rehearsal/financial aid →
+  the YOLA program page (sites, Interest Form, free-instruction model).
+  **LA Phil** — season → the official 2026/27 season page.
+- **SMYO** — no change *on purpose*: its listing URL already **is** the program
+  page carrying registration and the tuition-free model.
+- **Culver City Symphony** — no change *on purpose*: the site has no player-facing
+  info page (its "membership" pages are donor-focused), so the homepage remains
+  the honest pointer.
+- **American Youth Symphony** — found **defunct**: final performance Feb 25, 2024;
+  ceased operations Mar 15, 2024 (Wikipedia; League of American Orchestras,
+  symphony.org, Mar 2024). Site still online. **Removal recommended — awaiting
+  Milai's decision.** No pointers added.

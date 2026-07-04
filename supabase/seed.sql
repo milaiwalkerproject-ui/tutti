@@ -1,6 +1,6 @@
 -- GENERATED FILE — do not edit by hand.
 -- Source: data.json   Regenerate: node scripts/generate-seed.mjs
--- Dataset version 2.0.0 · metro "Greater Los Angeles" · generated 2026-07-03
+-- Dataset version 2.0.0 · metro "Greater Los Angeles" · generated 2026-07-04
 
 begin;
 
@@ -17,8 +17,8 @@ insert into public.organizations (
 ) values (
   'yola', 'Youth Orchestra Los Angeles (YOLA)', 'youth', 33.9596, -118.3517, 'Inglewood', 'Greater Los Angeles',
   'https://www.laphil.com/learn/yola', NULL, 'The LA Phil''s free music program: instruments, instruction, and orchestras for young musicians aged 6–18 across five LA County sites, including the Beckmen YOLA Center in Inglewood.',
-  '{"status":"unverified"}'::jsonb, '{6,18}'::int[], '{"Strings","Winds","Brass","Percussion"}'::public.instrument[],
-  '{"status":"unverified"}'::jsonb, '{"status":"verified","value":"Several hours per week, after school","source":"https://heartofla.org/yola/","asOf":"2026-06-22"}'::jsonb, '{"status":"unverified"}'::jsonb, '{"status":"verified","value":"Free — instruments and instruction provided","source":"https://www.laphil.com/learn/yola","asOf":"2026-06-22"}'::jsonb,
+  '{"status":"unverified","source":"https://www.laphil.com/learn/yola/youth-orchestra-los-angeles"}'::jsonb, '{6,18}'::int[], '{"Strings","Winds","Brass","Percussion"}'::public.instrument[],
+  '{"status":"unverified","source":"https://www.laphil.com/learn/yola/youth-orchestra-los-angeles"}'::jsonb, '{"status":"verified","value":"Several hours per week, after school","source":"https://heartofla.org/yola/","asOf":"2026-06-22"}'::jsonb, '{"status":"unverified","source":"https://www.laphil.com/learn/yola/youth-orchestra-los-angeles"}'::jsonb, '{"status":"verified","value":"Free — instruments and instruction provided","source":"https://www.laphil.com/learn/yola","asOf":"2026-06-22"}'::jsonb,
   'Good fit if you want a free, high-support program and live near a YOLA site.', NULL, '2026-06-22'::date,
   'published', 'curated', NULL
 );
@@ -29,6 +29,7 @@ insert into public.auditions (org_id, position, level, instruments, "window", st
 insert into public.auditions (org_id, position, level, instruments, "window", status, ages, note, source) values ('yola', 1, 'Advanced', 'Strings, winds, brass, percussion', '{"status":"unverified"}'::jsonb, 'upcoming', '{13,18}'::int[], 'Advanced placement is audition-based; check the site for the current window.', 'https://www.laphil.com/learn/yola');
 insert into public.org_sources (org_id, position, url, label, retrieved_at) values ('yola', 0, 'https://www.laphil.com/learn/yola', 'LA Phil — YOLA', '2026-06-22'::date);
 insert into public.org_sources (org_id, position, url, label, retrieved_at) values ('yola', 1, 'https://en.wikipedia.org/wiki/Youth_Orchestra_Los_Angeles', 'Wikipedia — YOLA', '2026-06-22'::date);
+insert into public.org_sources (org_id, position, url, label, retrieved_at) values ('yola', 2, 'https://www.laphil.com/learn/yola/youth-orchestra-los-angeles', 'LA Phil — YOLA program & how to join', '2026-07-04'::date);
 
 -- colburn — Colburn Community School of Performing Arts — Youth Orchestras
 insert into public.organizations (
@@ -157,7 +158,7 @@ insert into public.organizations (
 ) values (
   'laphil', 'Los Angeles Philharmonic', 'professional', 34.0556, -118.2497, 'Downtown LA', 'Greater Los Angeles',
   'https://www.laphil.com', NULL, 'One of the world''s leading orchestras, resident at Walt Disney Concert Hall and the Hollywood Bowl.',
-  '{"status":"unverified"}'::jsonb, '{22,99}'::int[], '{"Strings","Winds","Brass","Percussion","Harp"}'::public.instrument[],
+  '{"status":"unverified","source":"https://www.laphil.com/campaigns/202627-welcome"}'::jsonb, '{22,99}'::int[], '{"Strings","Winds","Brass","Percussion","Harp"}'::public.instrument[],
   '{"status":"not_applicable"}'::jsonb, '{"status":"verified","value":"Full-time professional","source":"https://www.laphil.com","asOf":"2026-06-22"}'::jsonb, '{"status":"not_applicable"}'::jsonb, '{"status":"not_applicable"}'::jsonb,
   'For professional musicians auditioning for posted vacancies; for families, a world-class concert destination.', NULL, '2026-06-22'::date,
   'published', 'curated', NULL
@@ -165,6 +166,7 @@ insert into public.organizations (
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('laphil', 0, 'Los Angeles Philharmonic', 'Professional', '{22,99}'::int[], 'Full professional symphony orchestra.');
 insert into public.auditions (org_id, position, level, instruments, "window", status, ages, note, source) values ('laphil', 0, 'Professional', 'Posted vacancies only', '{"status":"unverified"}'::jsonb, 'rolling', '{22,99}'::int[], 'Union audition process; sealed-round excerpts. See the LA Phil site for current openings.', 'https://www.laphil.com');
 insert into public.org_sources (org_id, position, url, label, retrieved_at) values ('laphil', 0, 'https://www.laphil.com', 'Los Angeles Philharmonic', '2026-06-22'::date);
+insert into public.org_sources (org_id, position, url, label, retrieved_at) values ('laphil', 1, 'https://www.laphil.com/campaigns/202627-welcome', 'LA Phil — 2026/27 season', '2026-07-04'::date);
 
 -- laco — Los Angeles Chamber Orchestra
 insert into public.organizations (
