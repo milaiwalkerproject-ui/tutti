@@ -67,7 +67,7 @@ for performances, hides the price line) rather than displaying an unverified val
 
 - **YOLA** (youth) — season, rehearsal schedule, financial-aid specifics, both audition windows. _(tuition = Free, commitment: verified)_
 - **Colburn Community School — Youth Orchestras** (youth) — season label, rehearsal, commitment, **tuition** (the conservatory is mid-restructure; no quotable youth-orchestra tuition), both audition windows.
-- **American Youth Symphony** (youth) — season, rehearsal, commitment, financial-aid specifics, audition window. _(tuition-free + stipend: verified)_
+- ~~**American Youth Symphony**~~ — **removed 2026-07-04**: org ceased operations Mar 2024 (see Pointer pass below).
 - **LAYO** (youth) — ✅ **nothing outstanding** among displayed fields (tuition, audition window Aug 22–23 2026, etc. all verified).
 - **PYSO** (youth) — season, tuition amount, audition window. _(financial aid available: verified)_
 - **GYO** (youth) — season, rehearsal, commitment, audition window. _(tuition $875/yr + scholarships: verified)_
@@ -118,5 +118,5 @@ the research pass across all 12 orgs:
   the honest pointer.
 - **American Youth Symphony** — found **defunct**: final performance Feb 25, 2024;
   ceased operations Mar 15, 2024 (Wikipedia; League of American Orchestras,
-  symphony.org, Mar 2024). Site still online. **Removal recommended — awaiting
-  Milai's decision.** No pointers added.
+  symphony.org, Mar 2024). Site still online. **Removed from the dataset
+  2026-07-04 with Milai's approval** (git history keeps the full record).

@@ -55,24 +55,6 @@ insert into public.org_sources (org_id, position, url, label, retrieved_at) valu
 insert into public.org_sources (org_id, position, url, label, retrieved_at) values ('colburn', 2, 'https://colburnschool.edu/community-school/by-program/advanced_music_program/', 'Advanced Music Performance Program', '2026-06-22'::date);
 insert into public.org_sources (org_id, position, url, label, retrieved_at) values ('colburn', 3, 'https://colburnschool.edu/community-school/register/', 'Community School — registration & tuition', '2026-07-03'::date);
 
--- ays — American Youth Symphony
-insert into public.organizations (
-  id, name, type, lat, lng, area, metro, website, apply_url, blurb,
-  season, ages, instruments, rehearsal, commitment, financial_aid, tuition,
-  good_fit, reviews, last_verified, listing_status, provenance_type, submitted_by
-) values (
-  'ays', 'American Youth Symphony', 'youth', 34.0701, -118.4441, 'Westwood', 'Greater Los Angeles',
-  'https://www.aysymphony.org', NULL, 'A tuition-free, audition-only pre-professional orchestra for advanced young players (15 and up, no upper age limit), known for film-score concerts and free performances at Royce Hall.',
-  '{"status":"unverified"}'::jsonb, '{15,30}'::int[], '{"Strings","Winds","Brass","Percussion"}'::public.instrument[],
-  '{"status":"unverified"}'::jsonb, '{"status":"unverified"}'::jsonb, '{"status":"unverified"}'::jsonb, '{"status":"verified","value":"Free — tuition-free fellowship; selected players receive an annual stipend","source":"https://www.laphil.com/musicdb/artists/290/american-youth-symphony","asOf":"2026-06-22"}'::jsonb,
-  'Good fit for advanced teens and young adults ready for professional-level repertoire.', NULL, '2026-06-22'::date,
-  'published', 'curated', NULL
-);
-insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('ays', 0, 'American Youth Symphony', 'Pre-professional', '{15,30}'::int[], 'Single advanced orchestra of ~100 musicians; conservatory-level repertoire.');
-insert into public.auditions (org_id, position, level, instruments, "window", status, ages, note, source) values ('ays', 0, 'Pre-professional', 'All orchestral instruments', '{"status":"unverified"}'::jsonb, 'upcoming', '{15,30}'::int[], 'Competitive; roughly 35 seats open each year. Solo + orchestral excerpts. Check the site for current dates.', 'https://www.aysymphony.org');
-insert into public.org_sources (org_id, position, url, label, retrieved_at) values ('ays', 0, 'https://www.aysymphony.org', 'American Youth Symphony', '2026-06-22'::date);
-insert into public.org_sources (org_id, position, url, label, retrieved_at) values ('ays', 1, 'https://www.laphil.com/musicdb/artists/290/american-youth-symphony', 'LA Phil — AYS', '2026-06-22'::date);
-
 -- layo — Los Angeles Youth Orchestra
 insert into public.organizations (
   id, name, type, lat, lng, area, metro, website, apply_url, blurb,
