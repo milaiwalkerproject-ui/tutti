@@ -53,17 +53,22 @@ Both end at the same tables. Pick per task.
 `data.json` is the human-editable source of truth, validated by `schema.json`.
 
 1. Edit `data.json` (add/verify orgs; cite sources; set `listingStatus`).
-2. Regenerate and apply locally:
+2. Sync the generated copies and apply locally:
    ```bash
-   node scripts/generate-seed.mjs
-   supabase db reset
+   node scripts/sync-data.mjs      # validates data.json, then regenerates seed.sql AND the dataset embedded in the HTML
+   npx supabase db reset
    ```
+   The script refuses to write anything if `data.json` fails validation (bad shape, a
+   value on an `unverified` fact, out-of-scope metro, duplicate id, …), so a mistake
+   can't spread to the generated copies.
 3. For the hosted DB, load the regenerated `seed.sql` deliberately (Studio SQL editor or
    `psql`) — and remember it's destructive (it clears listing tables and cascades to `saved`),
    so use this path for initial load / staging, not routine edits on a live DB with accounts.
 
 > Keep `data.json` and the database in sync. Treat `data.json` as canonical for bulk work and
 > Studio for one-off tweaks; if they diverge, reconcile before a reseed.
+> `node scripts/sync-data.mjs --check` tells you instantly whether the generated file copies
+> (seed + the dataset embedded in the HTML) still match `data.json` — it fails if anything drifted.
 
 ---
 
