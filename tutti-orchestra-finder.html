@@ -369,6 +369,9 @@
   .btn--save{flex:0 0 auto;width:48px;padding:12px 0}
   .btn--save.is-saved{background:rgba(140,47,54,.1);border-color:var(--garnet);color:var(--garnet)}
   .detail__cta-row2{grid-column:1/-1;margin-top:-2px}
+  .detail__checked{margin:2px 22px 22px;font-size:12.5px;line-height:1.55;color:var(--ink-soft)}
+  .detail__checked a{color:inherit}
+  .linklike{background:none;border:0;padding:0;font:inherit;color:inherit;text-decoration:underline;cursor:pointer}
   .btn--ghost{border-color:var(--line);color:var(--ink-soft);font-size:13px;padding:10px}
   .btn--ghost:hover{border-color:var(--ink-soft);color:var(--ink);background:var(--paper)}
 
@@ -762,6 +765,40 @@
 </div>
 
 <!-- PRIVACY MODAL (Phase 3.4) -->
+<div class="modal" id="howModal" role="dialog" aria-modal="true" aria-labelledby="howModalTitle" aria-hidden="true">
+  <div class="modal__panel">
+    <div class="modal__head">
+      <div>
+        <h2 class="modal__title" id="howModalTitle">How Tutti works</h2>
+        <p class="modal__sub">The map in five steps — and how listings get checked.</p>
+      </div>
+      <button class="modal__close" id="howModalClose" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal__body">
+      <div class="privacy">
+        <h3>Using the map</h3>
+        <ol>
+          <li>Search a city or tap "Near me" to centre the map.</li>
+          <li>Coloured pins are orchestras: brass = youth, garnet = professional, teal = community, slate = collegiate.</li>
+          <li>Tap a pin or a card for season, ensembles by age, prices and auditions.</li>
+          <li>"Compare" puts two or three organizations side by side.</li>
+          <li>The Auditions tab gathers every open and upcoming audition, with links out.</li>
+        </ol>
+        <h3>How we check listings</h3>
+        <p>Every listing is curated by a person and checked against the organization's own website — nothing is scraped or auto-generated. Confirmed details cite the source we checked; anything we couldn't confirm shows <b>"Check their site,"</b> which takes you straight to the right page to verify it yourself.</p>
+        <p>Each organization's panel shows when its details were last checked. Things change — tuition, dates and audition windows can move without notice — so before you register or pay anything, confirm on the organization's own website. Their site is always the authority; Tutti is the map, not the destination.</p>
+        <p>We never take applications, payments or sign-ups. When you tap "Apply on their site" or "Visit website," you deal directly with the organization.</p>
+        <p id="howReportLine" hidden>Spotted something wrong or out of date? <a id="howReportLink" href="#">Email us</a> — a person reviews every report.</p>
+        <h3>What Tutti costs</h3>
+        <p>Nothing. Tutti is free for families and players — no account needed to browse, and organizations can't pay to change how they appear.</p>
+        <h3>Built openly</h3>
+        <p>Tutti is made by a professional musician and music teacher, with AI assistance under human review. A person checks — and is responsible for — every listing.</p>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="modal" id="privacyModal" role="dialog" aria-modal="true" aria-labelledby="privacyModalTitle" aria-hidden="true">
   <div class="modal__panel">
     <div class="modal__head">
@@ -798,6 +835,7 @@
 
 <div class="ribbon" id="ribbon">
   <span><b>Curated listings.</b> Confirmed details cite a source; anything unconfirmed shows “Check their site.”</span>
+  <button id="ribbonHow">How we check</button>
   <button id="ribbonClose" aria-label="Dismiss notice">×</button>
 </div>
 
@@ -2257,10 +2295,18 @@ function refreshMarkers(list){
 }
 function initMap(){
   map = L.map("map",{zoomControl:true, attributionControl:true}).setView([34.05,-118.30], 11);
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{
-    maxZoom:19, subdomains:"abcd",
-    attribution:'&copy; OpenStreetMap &copy; CARTO',
-  }).addTo(map);
+  /* Production tiles (Decision 1): Stadia's quiet "Alidade Smooth" when a key is
+     configured; otherwise the current Carto basemap so local dev never breaks. */
+  const tiles = TUTTI_CFG.stadiaApiKey
+    ? L.tileLayer("https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png?api_key="+TUTTI_CFG.stadiaApiKey,{
+        maxZoom:19,
+        attribution:'&copy; <a href="https://stadiamaps.com/" target="_blank" rel="noopener">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/" target="_blank" rel="noopener">OpenMapTiles</a> &copy; OpenStreetMap',
+      })
+    : L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{
+        maxZoom:19, subdomains:"abcd",
+        attribution:'&copy; OpenStreetMap &copy; CARTO',
+      });
+  tiles.addTo(map);
   markerLayer = L.layerGroup().addTo(map);
   renderResults();
   $("#presets").innerHTML = PRESETS.map((p,i)=>`<button class="preset" data-preset="${i}">${esc(p.label)}</button>`).join("");
@@ -2275,6 +2321,19 @@ function setHome(lat,lng,label){
 /* ============================ DETAIL PANEL ============================ */
 function applyUrlFor(o){ return o.applyUrl || o.website; }
 
+function checkedLine(o){
+  const bits=[];
+  if(o.lastVerified){
+    const d=new Date(o.lastVerified+"T12:00:00");
+    if(!isNaN(d)) bits.push("Details last checked "+d.toLocaleDateString("en-US",{month:"long",year:"numeric"})+".");
+  }
+  if(TUTTI_CFG.reportEmail){
+    const mail="mailto:"+TUTTI_CFG.reportEmail+"?subject="+encodeURIComponent("Tutti — problem with listing: "+o.name);
+    bits.push('Something off? <a href="'+esc(mail)+'">Report a problem</a>.');
+  }
+  bits.push('<button class="linklike" data-open-how>How we check listings</button>');
+  return bits.join(" ");
+}
 function openDetail(id, recenter=true){
   const o = DATA.find(x=>x.id===id); if(!o) return;
   if(!$("#detail").classList.contains("is-open")) lastFocus = document.activeElement;
@@ -2410,12 +2469,15 @@ function openDetail(id, recenter=true){
         Visit website
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg>
       </a>
-    </div>`;
+    </div>
+    <p class="detail__checked">${checkedLine(o)}</p>`;
 
   const panel = $("#detail");
   panel.classList.add("is-open"); panel.setAttribute("aria-hidden","false");
   $("#detailClose").onclick = closeDetail;
   $("#detailSave").onclick = ()=>{ toggleSave(o.id); openDetail(o.id, false); };
+  const howBtn = document.querySelector("#detail [data-open-how]");
+  if(howBtn) howBtn.onclick = ()=>openModal("#howModal");
   setTimeout(()=>{ if($("#detail").classList.contains("is-open")) $("#detailClose").focus({preventScroll:true}); }, 290);
 }
 function statusLabel(s){return {open:"Open now",upcoming:"Upcoming",rolling:"Rolling"}[s]||s;}
@@ -3018,15 +3080,13 @@ $("#mapToggle").addEventListener("click", ()=>{
   if(map) setTimeout(()=>map.invalidateSize(),60);
 });
 
-$("#helpBtn").addEventListener("click", ()=>alert(
-  "Tutti — how it works\n\n"+
-  "1. Search a city or tap “Near me” to centre the map.\n"+
-  "2. Coloured pins show orchestras: brass = youth, garnet = professional, teal = community.\n"+
-  "3. Tap a pin or a card for season, ensembles by age/tier, ticket prices and auditions.\n"+
-  "4. Use “Compare” on cards to put 2–3 orgs side by side.\n"+
-  "5. The Auditions tab gathers every open and upcoming audition, by level, with links out.\n\n"+
-  "Listings are curated. Confirmed details cite a source; anything we couldn’t confirm shows ‘Check their site’ so you can verify directly."
-));
+$("#helpBtn").addEventListener("click", ()=>openModal("#howModal"));
+$("#howModalClose").addEventListener("click", ()=>closeModal("#howModal"));
+$("#ribbonHow").addEventListener("click", ()=>openModal("#howModal"));
+if(TUTTI_CFG.reportEmail){
+  $("#howReportLink").href = "mailto:"+TUTTI_CFG.reportEmail+"?subject="+encodeURIComponent("Tutti — report a problem");
+  $("#howReportLine").hidden = false;
+}
 $("#ribbonClose").addEventListener("click", ()=>$("#ribbon").style.display="none");
 
 /* ============================ BOOT ============================ */

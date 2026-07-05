@@ -38,7 +38,9 @@ checked by eye on the map. That's a curation step, not infrastructure.
 Needs a free account + key from you when we do it. A is acceptable right up until
 launch; C only if you'd ever trade Tutti's signature look for Google familiarity.
 
-> **Your call:** Stadia or MapTiler (either works), and whether to switch now or at
+> **Decided 2026-07-04: Stadia Maps.** Built same day — the app now uses Stadia's
+> "Alidade Smooth" tiles whenever `stadiaApiKey` is set in config.js, and falls back
+> to the current tiles when it isn't. Milai creates the free Stadia account + key at
 > deploy time.
 
 ---
@@ -63,7 +65,8 @@ be called "verified."
 usage will teach us what orgs and parents actually value before we choose B or C.
 Nothing to build now — the decision just sets the public "How Tutti works" wording.
 
-> **Your call:** confirm "free at launch" (or pick differently).
+> **Decided 2026-07-04: completely free at launch.** Now stated publicly in the
+> "How Tutti works" panel. Revisit only with real usage data.
 
 ---
 
@@ -89,8 +92,9 @@ Cheap, powerful, and it starts the relationship with orgs. Needs the email chann
 first. Alongside it, a **refresh calendar**: audition windows re-checked quarterly,
 everything else twice a year.
 
-> **Your call:** pick the report-a-problem destination (email address vs. form),
-> and whether the launch layer above matches your instincts.
+> **Decided 2026-07-04: dedicated email.** Built same day — report links appear on
+> every org panel and in "How Tutti works" as soon as `reportEmail` is set in
+> config.js. Milai creates/chooses the address (form remains a later option).
 
 ---
 
