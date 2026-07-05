@@ -23,7 +23,11 @@ supabase/
     …_saved.sql                saved table (per-user) + RLS
   seed.sql                     GENERATED from data.json — the curated orgs
 scripts/
-  generate-seed.mjs            regenerates supabase/seed.sql from data.json
+  sync-data.mjs                one command: validates data.json, then regenerates BOTH
+                               generated copies (seed.sql + the dataset embedded in the
+                               HTML). --check verifies without writing and fails on drift.
+  generate-seed.mjs            seed-building logic (library used by sync-data.mjs; running
+                               it directly just points you to the command above)
 config.js                      front-end config: Supabase URL + anon key (public)
 .env.example                   auth secrets template (Google / Apple)
 ```
@@ -80,10 +84,18 @@ curl 'http://127.0.0.1:54321/rest/v1/org_listings?select=id,name,listingStatus' 
 supabase db reset       # drops, re-runs every migration, then re-applies seed.sql
 ```
 
-After editing the curated `data.json`, regenerate the seed and reset:
+After editing the curated `data.json`, one command revalidates it against `schema.json`
+and regenerates both generated copies — `supabase/seed.sql` **and** the dataset embedded
+in `tutti-orchestra-finder.html` — then reset:
 
 ```bash
-node scripts/generate-seed.mjs && supabase db reset
+node scripts/sync-data.mjs && npx supabase db reset
+```
+
+To only verify (nothing written — fails loudly if any copy drifted from `data.json`):
+
+```bash
+node scripts/sync-data.mjs --check
 ```
 
 > `seed.sql` is **destructive** (it truncates the listing tables, which cascades to `saved`).

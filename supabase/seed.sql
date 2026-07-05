@@ -1,5 +1,5 @@
 -- GENERATED FILE — do not edit by hand.
--- Source: data.json   Regenerate: node scripts/generate-seed.mjs
+-- Source: data.json   Regenerate: node scripts/sync-data.mjs
 -- Dataset version 2.0.0 · metro "Greater Los Angeles" · generated 2026-07-04
 
 begin;
