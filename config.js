@@ -17,4 +17,8 @@ window.TUTTI_CONFIG = {
   supabaseAnonKey:
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0",
   useApi: true,
+  // appleSignIn: true,   // uncomment ONLY after Apple sign-in is configured in
+  //                      // Supabase (Services ID + key + domain). Until then the
+  //                      // "Continue with Apple" button stays hidden so nobody
+  //                      // clicks a sign-in that can't work yet.
 };

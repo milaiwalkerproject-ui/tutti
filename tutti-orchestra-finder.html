@@ -2584,7 +2584,7 @@ function renderAccount(){
     bar.innerHTML = `<span class="acct__who">Sign in to save across devices</span>
       <span class="acct__actions">
         <button class="ghost ghost--accent" id="signInGoogle" type="button">Continue with Google</button>
-        <button class="ghost ghost--plain" id="signInApple" type="button">Continue with Apple</button>
+        ${TUTTI_CFG.appleSignIn ? `<button class="ghost ghost--plain" id="signInApple" type="button">Continue with Apple</button>` : ``}
         ${privacyLink}
       </span>`;
     if(sub) sub.textContent = "Organizations you've starred. Sign in to keep them across reloads and devices.";
