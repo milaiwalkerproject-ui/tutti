@@ -47,10 +47,11 @@ convenient: auto-renew is on.
 
 ## Step 2 — ⚑ Create the hosted Supabase project
 
-> **Progress 2026-07-06:** the project exists and is healthy. Project ref
-> `nylnqmpbijalgzkudhgo` · URL `https://nylnqmpbijalgzkudhgo.supabase.co` ·
-> anon key with Claude Code (found inside the key itself — it carries the
-> project ref). Remaining: the link/push commands below and the one-time seed.
+> **✅ Done and verified 2026-07-06:** project `nylnqmpbijalgzkudhgo` at
+> `https://nylnqmpbijalgzkudhgo.supabase.co` — all 6 migrations pushed, seed
+> loaded, public API serves all 11 listings field-for-field identical to
+> data.json, and anonymous writes are refused by the database (checked).
+> The steps below stay as reference in case it's ever redone.
 
 1. Go to **supabase.com** → Sign in (GitHub login is easiest) → **New
    project**.
@@ -95,15 +96,27 @@ curl 'https://nylnqmpbijalgzkudhgo.supabase.co/rest/v1/org_listings?select=id,na
 
 (Netlify works equally well; instructions assume Cloudflare per the plan.)
 
-1. **dash.cloudflare.com** → **Workers & Pages** → **Create** → **Pages** →
-   **Connect to Git**.
-2. Authorize your GitHub account, pick the **tutti** repository.
+> **Gotcha (hit 2026-07-06):** Cloudflare's "Create" screen pushes
+> **Workers** — their tool for running code — but Tutti needs **Pages**,
+> their tool for serving files. A Worker project fails with
+> `npx wrangler deploy`. If that happened: open the failed project →
+> **Settings** → scroll to the bottom → **Delete project**, then redo with
+> the **Pages** tab as below. The repo also carries a `_redirects` file so
+> the app is served at the domain root (there is no index.html by design).
+
+1. **dash.cloudflare.com** → **Workers & Pages** → **Create** → switch to
+   the **Pages** tab → **Connect to Git** / "Import an existing Git
+   repository".
+2. Authorize your GitHub account, pick the **tutti** repository. Production
+   branch: **main**.
 3. Build settings: framework preset **None**, build command **empty**,
    output directory **/** (root). (No build step — that's by design.)
-4. Deploy. You get a temporary `*.pages.dev` URL — open it: the map should
-   render with all 11 pins (it's using the embedded dataset until config
-   points at the hosted database).
-5. **Custom domains** tab → add your domain from Step 1 → Cloudflare sets
+4. **Save and Deploy**. You get a temporary `*.pages.dev` URL — open it: the
+   map should render with all 11 pins straight at the root address (the
+   `_redirects` rewrite serves the app there; the long
+   `/tutti-orchestra-finder.html` address keeps working too). It uses the
+   embedded dataset until config points at the hosted database.
+5. **Custom domains** tab → add `tutti-orchestra.com` → Cloudflare sets
    DNS + HTTPS automatically.
 
 *Success looks like: `https://tutti-orchestra.com` shows Tutti with the map and
