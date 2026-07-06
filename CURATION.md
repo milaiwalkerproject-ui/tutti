@@ -74,7 +74,8 @@ Both end at the same tables. Pick per task.
 
 ## Publish / unpublish checklist
 
-- [ ] `name`, `type`, `lat`/`lng`, `area`, `website` correct; `metro` = Greater Los Angeles.
+- [ ] `name`, `type`, `lat`/`lng`, `area`, `website` correct; `metro` = Southern California
+      (scope: Bakersfield to San Diego, coast to ~Irvine, ±50 miles — borderline calls are Milai's).
 - [ ] At least one ensemble.
 - [ ] Every `verified` fact has a real, public `source`; everything else is `unverified`.
 - [ ] `not_applicable` used only on professional orgs.
@@ -82,6 +83,11 @@ Both end at the same tables. Pick per task.
 - [ ] `sources[]` lists the pages you checked, with dates.
 - [ ] `last_verified` set to today.
 - [ ] Flip `listing_status` → `published`.
+
+**Refresh cadence (Milai, 2026-07-06): audition windows are re-checked every
+week for now; everything else twice a year.** A re-check that confirms a value
+updates its `asOf`; one that can't confirm it flips the fact back to
+`unverified` — never leave a stale value looking fresh.
 
 ---
 

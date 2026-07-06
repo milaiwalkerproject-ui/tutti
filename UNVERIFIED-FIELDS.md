@@ -2,6 +2,13 @@
 
 _Built: 2026-06-22 · 12 organizations · Greater Los Angeles._
 
+> **Scope note (2026-07-06):** Tutti's scope expanded to **Southern California**
+> (Bakersfield to San Diego, coast to ~Irvine, ±50 miles — Milai's decision).
+> The 11 current orgs' `metro` label was updated accordingly; **no facts
+> changed** and nothing new was verified in that commit. Orgs curated for the
+> wider region get their own dated entries here as they are verified.
+> Audition windows are re-checked **weekly** for now.
+
 This file is the honesty audit for `data.json`. Every field that drives the UI
 is either **verified** (carries a `value` + a `source` URL + `asOf` date) or
 **unverified** (no value — the app shows a **"Check their site"** link instead

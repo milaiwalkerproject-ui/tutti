@@ -1,13 +1,13 @@
 <!--
   Tutti — find an ensemble near you
-  Prototype: orchestra / youth-symphony discovery map for parents and players.
-  Self-contained HTML + Leaflet. Sample data (greater Los Angeles) is illustrative.
-
-  PHASE 1 build (1.1–1.6). New data-model fields (additive — flagged in HANDOFF terms):
-    rating, reviewCount, ratingSource  → 1.1 Compare reviews column (aggregated, NOT org-submitted)
-    instruments[]                      → 1.3 instrument filter
-    rehearsal, commitment, financialAid, goodFit → 1.4 detail depth (sample data, labeled)
-    applyUrl (optional, falls back to website)   → 1.6 Apply hand-off
+  Map-first directory of Southern California orchestras for parents and players.
+  Self-contained HTML + Leaflet + Supabase. Listings are REAL curated data:
+  every parent-facing fact is verified with a cited source or shown as
+  "Check their site" — never invented. See CLAUDE.md / SCHEMA.md / CURATION.md.
+  Scope: Bakersfield to San Diego, coast to ~Irvine, ±50 mi (Milai, 2026-07-06).
+  The dataset embedded in #bootstrap-data is GENERATED from data.json by
+  scripts/sync-data.mjs — never edit it by hand. reviews stay null until a
+  real aggregated source exists (never invent one).
 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -613,7 +613,7 @@
       <aside class="rail" aria-label="Results">
         <div class="rail__head">
           <h2 class="rail__title" id="railTitle">Orchestras near you</h2>
-          <p class="rail__sub" id="railSub">Greater Los Angeles · curated listings</p>
+          <p class="rail__sub" id="railSub">Southern California · curated listings</p>
         </div>
         <div class="filters" id="typeFilters" role="group" aria-label="Filter by type">
           <button class="chip is-on" data-type="all" aria-pressed="true">All</button>
@@ -841,9 +841,9 @@
 
 <script type="application/json" id="bootstrap-data">
 {
-  "version": "2.0.0",
-  "metro": "Greater Los Angeles",
-  "generatedAt": "2026-07-04",
+  "version": "3.0.0",
+  "metro": "Southern California",
+  "generatedAt": "2026-07-06",
   "organizations": [
     {
       "id": "yola",
@@ -852,7 +852,7 @@
       "lat": 33.9596,
       "lng": -118.3517,
       "area": "Inglewood",
-      "metro": "Greater Los Angeles",
+      "metro": "Southern California",
       "website": "https://www.laphil.com/learn/yola",
       "applyUrl": null,
       "blurb": "The LA Phil's free music program: instruments, instruction, and orchestras for young musicians aged 6–18 across five LA County sites, including the Beckmen YOLA Center in Inglewood.",
@@ -980,7 +980,7 @@
       "lat": 34.0537,
       "lng": -118.2497,
       "area": "Downtown LA",
-      "metro": "Greater Los Angeles",
+      "metro": "Southern California",
       "website": "https://www.colburnschool.edu",
       "applyUrl": "https://colburnschool.edu/community-school/by-program/ensembles/",
       "blurb": "The Community School of Performing Arts at Colburn runs graded youth orchestras and a new advanced performance program feeding its renowned conservatory, in the Music Center district.",
@@ -1121,7 +1121,7 @@
       "lat": 34.1718,
       "lng": -118.5125,
       "area": "Encino",
-      "metro": "Greater Los Angeles",
+      "metro": "Southern California",
       "website": "https://losangelesyouthorchestra.org",
       "applyUrl": "https://losangelesyouthorchestra.org/audition-information/",
       "blurb": "A welcoming youth orchestra rehearsing Sunday afternoons in Encino, with an intermediate and an advanced ensemble and two concerts each semester.",
@@ -1230,7 +1230,7 @@
       "lat": 34.1478,
       "lng": -118.1445,
       "area": "Pasadena",
-      "metro": "Greater Los Angeles",
+      "metro": "Southern California",
       "website": "https://pasadenasymphony-pops.org/education/pyso/",
       "applyUrl": "https://pasadenasymphony-pops.org/education/pyso/auditions/",
       "blurb": "The Pasadena Symphony Association's youth program: seven ensembles for grades 4–12, serving 400+ students from across Southern California, with weekly rehearsals and at least two concerts a year.",
@@ -1341,7 +1341,7 @@
       "lat": 34.1466,
       "lng": -118.2551,
       "area": "Glendale",
-      "metro": "Greater Los Angeles",
+      "metro": "Southern California",
       "website": "https://www.glendaleyouthorchestra.com",
       "applyUrl": "https://www.glendaleyouthorchestra.com/auditions",
       "blurb": "An advanced, audition-based youth orchestra founded in 1989, performing three concerts each season at the Alex Theatre, with a members' concerto competition.",
@@ -1430,7 +1430,7 @@
       "lat": 34.0287,
       "lng": -118.479,
       "area": "Santa Monica",
-      "metro": "Greater Los Angeles",
+      "metro": "Southern California",
       "website": "https://soundslikela.org/programs/santa-monica-youth-orchestra/",
       "applyUrl": null,
       "blurb": "A tuition-free, audition-free Sunday music program (part of Sounds Like LA) for ages 6–18, with three orchestra levels and a culturally diverse repertoire, rehearsing at Virginia Avenue Park.",
@@ -1540,7 +1540,7 @@
       "lat": 34.0556,
       "lng": -118.2497,
       "area": "Downtown LA",
-      "metro": "Greater Los Angeles",
+      "metro": "Southern California",
       "website": "https://www.laphil.com",
       "applyUrl": null,
       "blurb": "One of the world's leading orchestras, resident at Walt Disney Concert Hall and the Hollywood Bowl.",
@@ -1627,7 +1627,7 @@
       "lat": 34.0556,
       "lng": -118.2468,
       "area": "Downtown LA",
-      "metro": "Greater Los Angeles",
+      "metro": "Southern California",
       "website": "https://www.laco.org",
       "applyUrl": null,
       "blurb": "Founded in 1968, a preeminent professional chamber orchestra performing orchestral, chamber, and Baroque programs across greater Los Angeles, led by Music Director Jaime Martín.",
@@ -1750,7 +1750,7 @@
       "lat": 34.1452,
       "lng": -118.139,
       "area": "Pasadena",
-      "metro": "Greater Los Angeles",
+      "metro": "Southern California",
       "website": "https://pasadenasymphony-pops.org",
       "applyUrl": null,
       "blurb": "The San Gabriel Valley's professional orchestra: a classical season (Oct–May) at Ambassador Auditorium and a summer POPS series at the LA County Arboretum.",
@@ -1833,7 +1833,7 @@
       "lat": 33.7686,
       "lng": -118.1923,
       "area": "Long Beach",
-      "metro": "Greater Los Angeles",
+      "metro": "Southern California",
       "website": "https://longbeachsymphony.org",
       "applyUrl": null,
       "blurb": "Long Beach's professional orchestra since 1934, led by Music Director Eckart Preu, with a five-concert Classical Series at the Terrace Theater plus a POPS series and youth concerts.",
@@ -1952,7 +1952,7 @@
       "lat": 34.0211,
       "lng": -118.3965,
       "area": "Culver City",
-      "metro": "Greater Los Angeles",
+      "metro": "Southern California",
       "website": "https://www.culvercitysymphony.org",
       "applyUrl": null,
       "blurb": "Founded in 1964 (originally the Westchester String Symphony), an orchestra that pairs professional players with talented amateurs and students, presenting free concerts in Culver City and a summer series as the Marina del Rey Summer Symphony.",
@@ -2139,11 +2139,13 @@ function priceHTML(field, url){
 function hasReviews(o){ return !!(o && o.reviews && typeof o.reviews.rating === "number"); }
 
 const PRESETS = [
+  {label:"Bakersfield", lat:35.3733, lng:-119.0187, z:12},
   {label:"Downtown LA", lat:34.0537, lng:-118.2497, z:13},
   {label:"Pasadena", lat:34.1466, lng:-118.1445, z:13},
   {label:"Santa Monica", lat:34.0195, lng:-118.4912, z:13},
   {label:"Long Beach", lat:33.7700, lng:-118.1900, z:12},
-  {label:"Westside", lat:34.0561, lng:-118.45, z:12},
+  {label:"Irvine", lat:33.6846, lng:-117.8265, z:12},
+  {label:"San Diego", lat:32.7157, lng:-117.1611, z:12},
 ];
 
 const INSTRUMENTS = ["Strings","Winds","Brass","Percussion","Harp"];
@@ -2161,7 +2163,7 @@ let activeSort = "featured";
 let openNowOnly = false;
 let activeOrgId = null;
 let map, markerLayer, markers = {};
-let homePoint = {lat:34.05, lng:-118.30, label:"Greater Los Angeles"}; // "home" for distance — last searched location
+let homePoint = {lat:34.05, lng:-118.30, label:"central Los Angeles"}; // "home" for distance — last searched location. Labeled by what the point IS (central LA), not the whole region, so "from <label>" distances stay honest.
 const compareSet = new Set();             // org ids picked for compare (max 3)
 let lastFocus = null;                      // element to restore focus to when a dialog closes
 
@@ -2294,7 +2296,7 @@ function refreshMarkers(list){
   });
 }
 function initMap(){
-  map = L.map("map",{zoomControl:true, attributionControl:true}).setView([34.05,-118.30], 11);
+  map = L.map("map",{zoomControl:true, attributionControl:true}).setView([34.0,-118.3], 8);
   /* Production tiles (Decision 1): Stadia's quiet "Alidade Smooth" when a key is
      configured; otherwise the current Carto basemap so local dev never breaks. */
   const tiles = TUTTI_CFG.stadiaApiKey

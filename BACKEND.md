@@ -116,7 +116,8 @@ The contract isn't just UI behavior — it's enforced in Postgres:
   a `verified` fact to carry a value **and** a source, and forbids an `unverified` fact from
   carrying a value.
 - **Scope can't creep in through data.** `organizations.metro` is constrained to
-  `'Greater Los Angeles'`; an out-of-area insert fails.
+  `'Southern California'` (widened from Greater Los Angeles by migration
+  `20260706120000_scope_southern_california.sql`); an out-of-area insert fails.
 
 These were validated against Postgres 16 (view shape matches `data.json` exactly; draft orgs
 and their children are hidden from `anon`; bad verifiable rows and non-LA rows are rejected).
