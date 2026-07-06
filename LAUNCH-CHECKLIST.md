@@ -47,6 +47,11 @@ convenient: auto-renew is on.
 
 ## Step 2 — ⚑ Create the hosted Supabase project
 
+> **Progress 2026-07-06:** the project exists and is healthy. Project ref
+> `nylnqmpbijalgzkudhgo` · URL `https://nylnqmpbijalgzkudhgo.supabase.co` ·
+> anon key with Claude Code (found inside the key itself — it carries the
+> project ref). Remaining: the link/push commands below and the one-time seed.
+
 1. Go to **supabase.com** → Sign in (GitHub login is easiest) → **New
    project**.
 2. Organization: your personal one. Name: `tutti`. Database password:
@@ -66,7 +71,7 @@ pasted the three values into a Claude Code session.*
 **Then 🤖 Claude Code (with you watching):**
 
 ```bash
-npx supabase link --project-ref <project-ref>
+npx supabase link --project-ref nylnqmpbijalgzkudhgo
 npx supabase db push        # applies all migrations to the hosted database
 ```
 
@@ -80,7 +85,7 @@ saved lists.)
 rows, metro "Southern California". And this returns only published listings:*
 
 ```bash
-curl 'https://<project-ref>.supabase.co/rest/v1/org_listings?select=id,name' \
+curl 'https://nylnqmpbijalgzkudhgo.supabase.co/rest/v1/org_listings?select=id,name' \
   -H "apikey: <anon-key>"
 ```
 
@@ -119,7 +124,7 @@ database (Claude Code verifies via the network tab / a draft-row test).*
    (created in Phase 3) → **APIs & Services → Credentials** → click your
    OAuth 2.0 Client ID.
 2. Under **Authorized redirect URIs** click **+ Add URI** and enter exactly:
-   `https://<project-ref>.supabase.co/auth/v1/callback`
+   `https://nylnqmpbijalgzkudhgo.supabase.co/auth/v1/callback`
 3. Under **Authorized JavaScript origins** add: `https://tutti-orchestra.com`
 4. Save. Copy the **Client ID** and **Client secret** (from this same page).
 5. Supabase dashboard → **Authentication → Providers → Google** → toggle on
@@ -163,8 +168,8 @@ portal-clicking:
    `com.tutti-orchestra.web.signin` → Register → open it → check **Sign in with
    Apple** → **Configure**:
    - Primary App ID: the one from #2.
-   - Domains: `tutti-orchestra.com` and `<project-ref>.supabase.co`
-   - Return URLs: `https://<project-ref>.supabase.co/auth/v1/callback`
+   - Domains: `tutti-orchestra.com` and `nylnqmpbijalgzkudhgo.supabase.co`
+   - Return URLs: `https://nylnqmpbijalgzkudhgo.supabase.co/auth/v1/callback`
 4. **Keys** → **+** → name `Tutti Sign in with Apple` → check **Sign in with
    Apple** → Configure → pick the App ID → Register → **Download the .p8
    file** (one chance!) and note the **Key ID**; your **Team ID** is at the
@@ -241,7 +246,7 @@ database:
 - Map renders but no listings → config.js values (URL/anon key) or the seed
   didn't load; Claude Code checks the browser network tab first.
 - Google sign-in loops or errors → the redirect URI in Google Console must
-  be **exactly** `https://<project-ref>.supabase.co/auth/v1/callback`, and
+  be **exactly** `https://nylnqmpbijalgzkudhgo.supabase.co/auth/v1/callback`, and
   the Site URL in Supabase must be your domain.
 - Apple button missing → `appleSignIn: true` not set; Apple errors →
   Services ID domains/return URL must list both your domain and the
