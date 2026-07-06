@@ -1,6 +1,6 @@
 -- GENERATED FILE — do not edit by hand.
 -- Source: data.json   Regenerate: node scripts/sync-data.mjs
--- Dataset version 2.0.0 · metro "Greater Los Angeles" · generated 2026-07-04
+-- Dataset version 3.0.0 · metro "Southern California" · generated 2026-07-06
 
 begin;
 
@@ -15,7 +15,7 @@ insert into public.organizations (
   season, ages, instruments, rehearsal, commitment, financial_aid, tuition,
   good_fit, reviews, last_verified, listing_status, provenance_type, submitted_by
 ) values (
-  'yola', 'Youth Orchestra Los Angeles (YOLA)', 'youth', 33.9596, -118.3517, 'Inglewood', 'Greater Los Angeles',
+  'yola', 'Youth Orchestra Los Angeles (YOLA)', 'youth', 33.9596, -118.3517, 'Inglewood', 'Southern California',
   'https://www.laphil.com/learn/yola', NULL, 'The LA Phil''s free music program: instruments, instruction, and orchestras for young musicians aged 6–18 across five LA County sites, including the Beckmen YOLA Center in Inglewood.',
   '{"status":"unverified","source":"https://www.laphil.com/learn/yola/youth-orchestra-los-angeles"}'::jsonb, '{6,18}'::int[], '{"Strings","Winds","Brass","Percussion"}'::public.instrument[],
   '{"status":"unverified","source":"https://www.laphil.com/learn/yola/youth-orchestra-los-angeles"}'::jsonb, '{"status":"verified","value":"Several hours per week, after school","source":"https://heartofla.org/yola/","asOf":"2026-06-22"}'::jsonb, '{"status":"unverified","source":"https://www.laphil.com/learn/yola/youth-orchestra-los-angeles"}'::jsonb, '{"status":"verified","value":"Free — instruments and instruction provided","source":"https://www.laphil.com/learn/yola","asOf":"2026-06-22"}'::jsonb,
@@ -37,7 +37,7 @@ insert into public.organizations (
   season, ages, instruments, rehearsal, commitment, financial_aid, tuition,
   good_fit, reviews, last_verified, listing_status, provenance_type, submitted_by
 ) values (
-  'colburn', 'Colburn Community School of Performing Arts — Youth Orchestras', 'youth', 34.0537, -118.2497, 'Downtown LA', 'Greater Los Angeles',
+  'colburn', 'Colburn Community School of Performing Arts — Youth Orchestras', 'youth', 34.0537, -118.2497, 'Downtown LA', 'Southern California',
   'https://www.colburnschool.edu', 'https://colburnschool.edu/community-school/by-program/ensembles/', 'The Community School of Performing Arts at Colburn runs graded youth orchestras and a new advanced performance program feeding its renowned conservatory, in the Music Center district.',
   '{"status":"unverified","source":"https://colburnschool.edu/community-school/by-program/ensembles/"}'::jsonb, '{8,18}'::int[], '{"Strings","Winds","Brass","Percussion","Harp"}'::public.instrument[],
   '{"status":"unverified","source":"https://colburnschool.edu/community-school/by-program/ensembles/"}'::jsonb, '{"status":"unverified","source":"https://colburnschool.edu/community-school/by-program/ensembles/"}'::jsonb, '{"status":"verified","value":true,"source":"https://colburnschool.edu/community-school/by-program/ensembles/","asOf":"2026-06-22"}'::jsonb, '{"status":"unverified","source":"https://colburnschool.edu/community-school/register/"}'::jsonb,
@@ -61,7 +61,7 @@ insert into public.organizations (
   season, ages, instruments, rehearsal, commitment, financial_aid, tuition,
   good_fit, reviews, last_verified, listing_status, provenance_type, submitted_by
 ) values (
-  'layo', 'Los Angeles Youth Orchestra', 'youth', 34.1718, -118.5125, 'Encino', 'Greater Los Angeles',
+  'layo', 'Los Angeles Youth Orchestra', 'youth', 34.1718, -118.5125, 'Encino', 'Southern California',
   'https://losangelesyouthorchestra.org', 'https://losangelesyouthorchestra.org/audition-information/', 'A welcoming youth orchestra rehearsing Sunday afternoons in Encino, with an intermediate and an advanced ensemble and two concerts each semester.',
   '{"status":"verified","value":"2026–27 season","source":"https://losangelesyouthorchestra.org/audition-information/","asOf":"2026-06-22"}'::jsonb, '{8,18}'::int[], '{"Strings","Winds","Brass","Percussion"}'::public.instrument[],
   '{"status":"verified","value":"Sunday afternoons, 1:30–5:00 PM (Encino)","source":"https://losangelesyouthorchestra.org/audition-information/","asOf":"2026-06-22"}'::jsonb, '{"status":"verified","value":"Weekly rehearsals; two fall and two spring concerts","source":"https://losangelesyouthorchestra.org/audition-information/","asOf":"2026-06-22"}'::jsonb, '{"status":"verified","value":true,"source":"https://losangelesyouthorchestra.org/audition-information/","asOf":"2026-06-22"}'::jsonb, '{"status":"verified","value":"$750 per semester (or $1,400 paid in full for the year)","source":"https://losangelesyouthorchestra.org/audition-information/","asOf":"2026-06-22"}'::jsonb,
@@ -80,7 +80,7 @@ insert into public.organizations (
   season, ages, instruments, rehearsal, commitment, financial_aid, tuition,
   good_fit, reviews, last_verified, listing_status, provenance_type, submitted_by
 ) values (
-  'pyso', 'Pasadena Youth Symphony Orchestras', 'youth', 34.1478, -118.1445, 'Pasadena', 'Greater Los Angeles',
+  'pyso', 'Pasadena Youth Symphony Orchestras', 'youth', 34.1478, -118.1445, 'Pasadena', 'Southern California',
   'https://pasadenasymphony-pops.org/education/pyso/', 'https://pasadenasymphony-pops.org/education/pyso/auditions/', 'The Pasadena Symphony Association''s youth program: seven ensembles for grades 4–12, serving 400+ students from across Southern California, with weekly rehearsals and at least two concerts a year.',
   '{"status":"unverified","source":"https://pasadenasymphony-pops.org/education/pyso/auditions/"}'::jsonb, '{9,18}'::int[], '{"Strings","Winds","Brass","Percussion"}'::public.instrument[],
   '{"status":"verified","value":"Weekly throughout the season","source":"https://pasadenasymphony-pops.org/education/pyso/auditions/","asOf":"2026-06-22"}'::jsonb, '{"status":"verified","value":"Weekly; students perform in at least two concerts each year","source":"https://pasadenasymphony-pops.org/education/pyso/auditions/","asOf":"2026-06-22"}'::jsonb, '{"status":"verified","value":true,"source":"https://pasadenasymphony-pops.org/education/pyso/auditions/","asOf":"2026-06-22"}'::jsonb, '{"status":"unverified","source":"https://pasadenasymphony-pops.org/education/pyso/auditions/"}'::jsonb,
@@ -100,7 +100,7 @@ insert into public.organizations (
   season, ages, instruments, rehearsal, commitment, financial_aid, tuition,
   good_fit, reviews, last_verified, listing_status, provenance_type, submitted_by
 ) values (
-  'gyo', 'Glendale Youth Orchestra', 'youth', 34.1466, -118.2551, 'Glendale', 'Greater Los Angeles',
+  'gyo', 'Glendale Youth Orchestra', 'youth', 34.1466, -118.2551, 'Glendale', 'Southern California',
   'https://www.glendaleyouthorchestra.com', 'https://www.glendaleyouthorchestra.com/auditions', 'An advanced, audition-based youth orchestra founded in 1989, performing three concerts each season at the Alex Theatre, with a members'' concerto competition.',
   '{"status":"unverified","source":"https://www.glendaleyouthorchestra.com/auditions"}'::jsonb, '{12,23}'::int[], '{"Strings","Winds","Brass","Percussion"}'::public.instrument[],
   '{"status":"unverified"}'::jsonb, '{"status":"unverified"}'::jsonb, '{"status":"verified","value":true,"source":"https://www.glendaleyouthorchestra.com/auditions","asOf":"2026-06-22"}'::jsonb, '{"status":"verified","value":"$875 per year (includes 5 concert tickets per concert)","source":"https://www.glendaleyouthorchestra.com/auditions","asOf":"2026-06-22"}'::jsonb,
@@ -118,7 +118,7 @@ insert into public.organizations (
   season, ages, instruments, rehearsal, commitment, financial_aid, tuition,
   good_fit, reviews, last_verified, listing_status, provenance_type, submitted_by
 ) values (
-  'smyo', 'Santa Monica Youth Orchestra', 'youth', 34.0287, -118.479, 'Santa Monica', 'Greater Los Angeles',
+  'smyo', 'Santa Monica Youth Orchestra', 'youth', 34.0287, -118.479, 'Santa Monica', 'Southern California',
   'https://soundslikela.org/programs/santa-monica-youth-orchestra/', NULL, 'A tuition-free, audition-free Sunday music program (part of Sounds Like LA) for ages 6–18, with three orchestra levels and a culturally diverse repertoire, rehearsing at Virginia Avenue Park.',
   '{"status":"unverified"}'::jsonb, '{6,18}'::int[], '{"Strings","Winds"}'::public.instrument[],
   '{"status":"verified","value":"Sunday afternoons, roughly 30 weeks Sept–June (Virginia Avenue Park)","source":"https://arts.ca.gov/grantee/santa-monica-youth-orchestra-2/","asOf":"2026-06-22"}'::jsonb, '{"status":"verified","value":"Weekly (Sundays); open to any student who can commit to rehearsals","source":"https://soundslikela.org/programs/santa-monica-youth-orchestra/","asOf":"2026-06-22"}'::jsonb, '{"status":"unverified"}'::jsonb, '{"status":"verified","value":"Free — tuition-free","source":"https://soundslikela.org/programs/santa-monica-youth-orchestra/","asOf":"2026-06-22"}'::jsonb,
@@ -138,7 +138,7 @@ insert into public.organizations (
   season, ages, instruments, rehearsal, commitment, financial_aid, tuition,
   good_fit, reviews, last_verified, listing_status, provenance_type, submitted_by
 ) values (
-  'laphil', 'Los Angeles Philharmonic', 'professional', 34.0556, -118.2497, 'Downtown LA', 'Greater Los Angeles',
+  'laphil', 'Los Angeles Philharmonic', 'professional', 34.0556, -118.2497, 'Downtown LA', 'Southern California',
   'https://www.laphil.com', NULL, 'One of the world''s leading orchestras, resident at Walt Disney Concert Hall and the Hollywood Bowl.',
   '{"status":"unverified","source":"https://www.laphil.com/campaigns/202627-welcome"}'::jsonb, '{22,99}'::int[], '{"Strings","Winds","Brass","Percussion","Harp"}'::public.instrument[],
   '{"status":"not_applicable"}'::jsonb, '{"status":"verified","value":"Full-time professional","source":"https://www.laphil.com","asOf":"2026-06-22"}'::jsonb, '{"status":"not_applicable"}'::jsonb, '{"status":"not_applicable"}'::jsonb,
@@ -156,7 +156,7 @@ insert into public.organizations (
   season, ages, instruments, rehearsal, commitment, financial_aid, tuition,
   good_fit, reviews, last_verified, listing_status, provenance_type, submitted_by
 ) values (
-  'laco', 'Los Angeles Chamber Orchestra', 'professional', 34.0556, -118.2468, 'Downtown LA', 'Greater Los Angeles',
+  'laco', 'Los Angeles Chamber Orchestra', 'professional', 34.0556, -118.2468, 'Downtown LA', 'Southern California',
   'https://www.laco.org', NULL, 'Founded in 1968, a preeminent professional chamber orchestra performing orchestral, chamber, and Baroque programs across greater Los Angeles, led by Music Director Jaime Martín.',
   '{"status":"verified","value":"2026/27 season","source":"https://www.laco.org/2627season/","asOf":"2026-06-22"}'::jsonb, '{22,99}'::int[], '{"Strings","Winds","Brass"}'::public.instrument[],
   '{"status":"not_applicable"}'::jsonb, '{"status":"verified","value":"Full-time professional","source":"https://www.laco.org","asOf":"2026-06-22"}'::jsonb, '{"status":"not_applicable"}'::jsonb, '{"status":"not_applicable"}'::jsonb,
@@ -178,7 +178,7 @@ insert into public.organizations (
   season, ages, instruments, rehearsal, commitment, financial_aid, tuition,
   good_fit, reviews, last_verified, listing_status, provenance_type, submitted_by
 ) values (
-  'passym', 'Pasadena Symphony and POPS', 'professional', 34.1452, -118.139, 'Pasadena', 'Greater Los Angeles',
+  'passym', 'Pasadena Symphony and POPS', 'professional', 34.1452, -118.139, 'Pasadena', 'Southern California',
   'https://pasadenasymphony-pops.org', NULL, 'The San Gabriel Valley''s professional orchestra: a classical season (Oct–May) at Ambassador Auditorium and a summer POPS series at the LA County Arboretum.',
   '{"status":"verified","value":"Classical season Oct–May at Ambassador Auditorium; POPS Jun–Sep at the LA County Arboretum","source":"https://pasadenasymphony-pops.org","asOf":"2026-06-22"}'::jsonb, '{22,99}'::int[], '{"Strings","Winds","Brass","Percussion"}'::public.instrument[],
   '{"status":"not_applicable"}'::jsonb, '{"status":"verified","value":"Per-service professional","source":"https://pasadenasymphony-pops.org","asOf":"2026-06-22"}'::jsonb, '{"status":"not_applicable"}'::jsonb, '{"status":"not_applicable"}'::jsonb,
@@ -195,7 +195,7 @@ insert into public.organizations (
   season, ages, instruments, rehearsal, commitment, financial_aid, tuition,
   good_fit, reviews, last_verified, listing_status, provenance_type, submitted_by
 ) values (
-  'lbso', 'Long Beach Symphony', 'professional', 33.7686, -118.1923, 'Long Beach', 'Greater Los Angeles',
+  'lbso', 'Long Beach Symphony', 'professional', 33.7686, -118.1923, 'Long Beach', 'Southern California',
   'https://longbeachsymphony.org', NULL, 'Long Beach''s professional orchestra since 1934, led by Music Director Eckart Preu, with a five-concert Classical Series at the Terrace Theater plus a POPS series and youth concerts.',
   '{"status":"verified","value":"2026–27 Classical Series — five concerts at the Terrace Theater","source":"https://longbeachsymphony.org/classical-2026-27/","asOf":"2026-06-22"}'::jsonb, '{22,99}'::int[], '{"Strings","Winds","Brass","Percussion"}'::public.instrument[],
   '{"status":"not_applicable"}'::jsonb, '{"status":"verified","value":"Per-service professional","source":"https://longbeachsymphony.org","asOf":"2026-06-22"}'::jsonb, '{"status":"not_applicable"}'::jsonb, '{"status":"not_applicable"}'::jsonb,
@@ -216,7 +216,7 @@ insert into public.organizations (
   season, ages, instruments, rehearsal, commitment, financial_aid, tuition,
   good_fit, reviews, last_verified, listing_status, provenance_type, submitted_by
 ) values (
-  'culver', 'Culver City Symphony Orchestra', 'community', 34.0211, -118.3965, 'Culver City', 'Greater Los Angeles',
+  'culver', 'Culver City Symphony Orchestra', 'community', 34.0211, -118.3965, 'Culver City', 'Southern California',
   'https://www.culvercitysymphony.org', NULL, 'Founded in 1964 (originally the Westchester String Symphony), an orchestra that pairs professional players with talented amateurs and students, presenting free concerts in Culver City and a summer series as the Marina del Rey Summer Symphony.',
   '{"status":"verified","value":"3–4 free concerts each season in Culver City; summers as the Marina del Rey Summer Symphony at Burton Chace Park","source":"https://www.culvercitysymphony.org","asOf":"2026-06-22"}'::jsonb, '{16,99}'::int[], '{"Strings","Winds","Brass"}'::public.instrument[],
   '{"status":"unverified"}'::jsonb, '{"status":"unverified"}'::jsonb, '{"status":"unverified"}'::jsonb, '{"status":"unverified"}'::jsonb,

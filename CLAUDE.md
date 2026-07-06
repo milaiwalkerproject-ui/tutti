@@ -1,7 +1,7 @@
 # CLAUDE.md — standing rules for every session in this repo
 
-Tutti is a map-first directory helping LA parents find a youth orchestra for their
-kid, and players find auditions. It is curated by Milai Walker (professional
+Tutti is a map-first directory helping Southern California parents find a youth
+orchestra for their kid, and players find auditions. It is curated by Milai Walker (professional
 cellist and music teacher, non-programmer, the product owner and sole approver).
 Its entire value is **trust**. These rules are not preferences; they are the product.
 
@@ -16,10 +16,11 @@ Its entire value is **trust**. These rules are not preferences; they are the pro
   fact.** Not in code, not in copy, not in test data destined for main.
 - Only `listing_status = 'published'` rows are publicly visible. The database
   enforces this (RLS) and enforces the verified/unverified shape and the
-  greater-LA scope (CHECK constraints). Do not loosen migrations to "make
-  something work."
-- Ratings stay `null` — no trustworthy source exists. Scope stays greater Los
-  Angeles.
+  Southern California scope (CHECK constraints). Do not loosen migrations to
+  "make something work."
+- Ratings stay `null` — no trustworthy source exists. Scope is **Southern
+  California** — Bakersfield to San Diego, coast to ~Irvine, ±50 miles
+  (Milai's decision, 2026-07-06; borderline calls are hers).
 - Adding, removing, or changing **listing facts is not a Claude Code task.**
   Curation (web research, citations, judgment) happens in Milai's Claude.ai
   project with her approval. If a task seems to require new org facts, stop and

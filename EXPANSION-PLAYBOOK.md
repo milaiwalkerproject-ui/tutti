@@ -11,6 +11,18 @@ date arrives.*
 launched — hosted Supabase, real domain, `LAUNCH-CHECKLIST.md` done. If it
 hasn't, finish that first; a second metro multiplies whatever is unfinished.
 
+> **Decision record (Milai, 2026-07-06).** The first expansion was decided as a
+> **widening of the single region**, not a metro #2: scope became **Southern
+> California** — Bakersfield to San Diego, coast to ~Irvine, ±50 miles — one
+> site, one dataset, one report inbox. Audition windows are re-checked
+> **weekly for now** (overrides the quarterly cadence below). Executed on
+> branch `phase4/socal-scope`: both schema enums, a new scope migration
+> (`20260706120000_scope_southern_california.sql`), the §2.3 front-end
+> constants, and the scope sentences across the living docs. Discovery and
+> verification of the wider region's orgs runs in Milai's Claude.ai project
+> per §3–§4. This playbook still applies as written to any future region/metro
+> beyond Southern California.
+
 ---
 
 ## 0 · What deciding metro #2 takes (read this part only, to decide)
@@ -169,9 +181,11 @@ non-launched-metro insert").
 
 ### 2.3 Per-metro front-end constants (the complete list)
 
-These are the only LA-specific things in `tutti-orchestra-finder.html` — the
-new metro's copy changes exactly these (all values below are the current LA
-ones, quoted so they're greppable):
+These are the only region-specific things in `tutti-orchestra-finder.html` —
+the new region's copy changes exactly these (values below are the original
+Greater-LA ones as historical examples; since 2026-07-06 the live file carries
+their Southern California equivalents — grep for `setView(`, `homePoint`,
+`PRESETS` to find the current values):
 
 | What | Find | Change to |
 |---|---|---|
