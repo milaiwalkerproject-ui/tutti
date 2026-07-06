@@ -32,20 +32,16 @@ Two parked fixes you approved, now prepared on branches:
 
 ---
 
-## Step 1 — ⚑ Choose and buy the domain (~$15/yr)
+## Step 1 — ⚑ Choose and buy the domain — ✅ DONE 2026-07-06
 
-1. Decide the name (this is a product call only you can make).
-2. Recommended registrar: **Cloudflare** (dash.cloudflare.com → "Domain
-   Registration" → "Register domain") — at-cost pricing, and Step 3 uses
-   Cloudflare anyway, so DNS "just works" with zero extra setup. Any
-   registrar is fine if you prefer.
-3. Turn on auto-renew. No other settings needed.
-
-*Success looks like: the domain shows in your Cloudflare (or registrar)
-account. Nothing resolves yet — that's expected.*
+**The domain is `tutti-orchestra.com`** (bought by Milai 2026-07-06). Every
+later step below uses it verbatim. One thing to confirm in the registrar when
+convenient: auto-renew is on.
 
 > Apple sign-in (Step 6) is legally tied to this domain — that's why it
-> waited until now.
+> waited until now. If the domain was bought outside Cloudflare, Step 3 will
+> also offer to move its DNS to Cloudflare when the site is added — say yes,
+> it makes HTTPS and the custom domain automatic.
 
 ---
 
@@ -105,7 +101,7 @@ curl 'https://<project-ref>.supabase.co/rest/v1/org_listings?select=id,name' \
 5. **Custom domains** tab → add your domain from Step 1 → Cloudflare sets
    DNS + HTTPS automatically.
 
-*Success looks like: `https://<your-domain>` shows Tutti with the map and
+*Success looks like: `https://tutti-orchestra.com` shows Tutti with the map and
 pins, padlock in the address bar.*
 
 **Then 🤖 Claude Code:** updates `config.js` with the production Supabase
@@ -124,13 +120,13 @@ database (Claude Code verifies via the network tab / a draft-row test).*
    OAuth 2.0 Client ID.
 2. Under **Authorized redirect URIs** click **+ Add URI** and enter exactly:
    `https://<project-ref>.supabase.co/auth/v1/callback`
-3. Under **Authorized JavaScript origins** add: `https://<your-domain>`
+3. Under **Authorized JavaScript origins** add: `https://tutti-orchestra.com`
 4. Save. Copy the **Client ID** and **Client secret** (from this same page).
 5. Supabase dashboard → **Authentication → Providers → Google** → toggle on
    → paste Client ID + secret → Save. (Secrets live here, never in git.)
 6. Supabase dashboard → **Authentication → URL Configuration**:
-   - **Site URL**: `https://<your-domain>`
-   - **Redirect URLs**: add `https://<your-domain>` (and your `*.pages.dev`
+   - **Site URL**: `https://tutti-orchestra.com`
+   - **Redirect URLs**: add `https://tutti-orchestra.com` (and your `*.pages.dev`
      URL if you want sign-in on preview deploys).
 
 *Success looks like: on the live site, "Continue with Google" round-trips —
@@ -162,19 +158,19 @@ portal-clicking:
 1. **developer.apple.com → Account → Certificates, Identifiers & Profiles →
    Identifiers**.
 2. **+** → **App IDs** → type App → description `Tutti` → Bundle ID
-   `app.tutti.web` (explicit) → check **Sign in with Apple** → Register.
+   `com.tutti-orchestra.web` (explicit) → check **Sign in with Apple** → Register.
 3. **+** → **Services IDs** → description `Tutti Web` → identifier
-   `app.tutti.web.signin` → Register → open it → check **Sign in with
+   `com.tutti-orchestra.web.signin` → Register → open it → check **Sign in with
    Apple** → **Configure**:
    - Primary App ID: the one from #2.
-   - Domains: `<your-domain>` and `<project-ref>.supabase.co`
+   - Domains: `tutti-orchestra.com` and `<project-ref>.supabase.co`
    - Return URLs: `https://<project-ref>.supabase.co/auth/v1/callback`
 4. **Keys** → **+** → name `Tutti Sign in with Apple` → check **Sign in with
    Apple** → Configure → pick the App ID → Register → **Download the .p8
    file** (one chance!) and note the **Key ID**; your **Team ID** is at the
    top right of the account page.
 5. Supabase dashboard → **Authentication → Providers → Apple** → toggle on →
-   enter Services ID (`app.tutti.web.signin`), Team ID, Key ID, and the
+   enter Services ID (`com.tutti-orchestra.web.signin`), Team ID, Key ID, and the
    contents of the .p8 file → Save.
 6. Tell Claude Code "Apple is configured" → it flips `appleSignIn: true` in
    `config.js`, and the "Continue with Apple" button reappears.
