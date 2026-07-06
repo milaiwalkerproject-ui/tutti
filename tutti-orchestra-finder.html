@@ -108,6 +108,15 @@
   .ghost--accent{color:var(--brass-deep);border-color:rgba(181,131,42,.4)}
   .ghost--accent:hover{background:rgba(181,131,42,.1);border-color:var(--brass);color:var(--brass-deep)}
   @media(max-width:640px){.ghost--plain{display:none}}
+  /* the account button stays visible at every width — phones need sign-in most;
+     "List your organization" steps back on phones to make room (org owners are
+     on desktops; parents are on phones) */
+  .acct-top{display:inline-flex;align-items:center;gap:6px}
+  @media(max-width:640px){
+    .ghost--plain.acct-top{display:inline-flex}
+    #listBtn{display:none}
+  }
+  .acct-top[hidden]{display:none}
 
   /* ---------- Body row ---------- */
   .body{display:flex;flex:1;min-height:0}
@@ -536,6 +545,11 @@
     #view-explore.show-map .cmp-tray{bottom:0}
     .form-grid{grid-template-columns:1fr}
     .factgrid{grid-template-columns:1fr}
+    /* quick-location chips: one thumb-scrollable row instead of a stack over the map */
+    .presets{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;max-width:94%;
+      padding:0 2px 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+    .presets::-webkit-scrollbar{display:none}
+    .preset{flex:none}
   }
   @media(min-width:761px){.map-toggle{display:none}}
   .map-toggle{
@@ -583,6 +597,7 @@
     <div class="topbar__right">
       <button class="ghost ghost--accent" id="listBtn">List your organization</button>
       <button class="ghost ghost--plain" id="helpBtn">How it works</button>
+      <button class="ghost ghost--plain acct-top" id="acctBtn" hidden>Sign in</button>
     </div>
   </header>
 
@@ -766,6 +781,26 @@
 </div>
 
 <!-- PRIVACY MODAL (Phase 3.4) -->
+<div class="modal" id="signInModal" role="dialog" aria-modal="true" aria-labelledby="signInModalTitle" aria-hidden="true">
+  <div class="modal__panel" style="max-width:400px">
+    <div class="modal__head">
+      <div>
+        <h2 class="modal__title" id="signInModalTitle">Sign in</h2>
+        <p class="modal__sub">One thing only: it keeps your Saved list on all your devices.</p>
+      </div>
+      <button class="modal__close" id="signInModalClose" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal__body">
+      <div style="display:flex;flex-direction:column;gap:10px;align-items:stretch">
+        <button class="ghost ghost--accent" id="modalSignInGoogle" type="button">Continue with Google</button>
+        <button class="ghost ghost--plain" id="modalSignInApple" type="button" hidden>Continue with Apple</button>
+        <button class="acct__link" id="modalPrivacyLink" type="button" style="align-self:center">What sign-in stores</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="modal" id="howModal" role="dialog" aria-modal="true" aria-labelledby="howModalTitle" aria-hidden="true">
   <div class="modal__panel">
     <div class="modal__head">
@@ -6012,6 +6047,24 @@ function renderAccount(){
   if(a) a.onclick=()=>signIn("apple");
   if(o) o.onclick=signOut;
   if(p) p.onclick=()=>openModal("#privacyModal");
+  renderHeaderAccount();
+}
+// Top-right account button: "Sign in" opens the sign-in dialog; "Sign out" signs out.
+function renderHeaderAccount(){
+  const t = $("#acctBtn");
+  if(!t) return;
+  if(!sb){ t.hidden = true; return; }
+  const icon = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>`;
+  t.hidden = false;
+  if(currentUser){
+    t.innerHTML = icon + `Sign out`;
+    t.title = "Signed in as " + (currentUser.email || "your account");
+    t.onclick = signOut;
+  }else{
+    t.innerHTML = icon + `Sign in`;
+    t.removeAttribute("title");
+    t.onclick = ()=>openModal("#signInModal");
+  }
 }
 function renderSaved(){
   renderAccount();
@@ -6480,6 +6533,12 @@ $("#subModalClose").addEventListener("click", ()=>closeModal("#subModal"));
 $("#subModal").addEventListener("click", e=>{ if(e.target.id==="subModal") closeModal("#subModal"); });
 $("#privacyModalClose").addEventListener("click", ()=>closeModal("#privacyModal"));
 $("#privacyModal").addEventListener("click", e=>{ if(e.target.id==="privacyModal") closeModal("#privacyModal"); });
+$("#signInModal").addEventListener("click", e=>{ if(e.target.id==="signInModal") closeModal("#signInModal"); });
+$("#signInModalClose").addEventListener("click", ()=>closeModal("#signInModal"));
+$("#modalSignInGoogle").addEventListener("click", ()=>signIn("google"));
+$("#modalSignInApple").addEventListener("click", ()=>signIn("apple"));
+if(TUTTI_CFG.appleSignIn) $("#modalSignInApple").hidden = false;
+$("#modalPrivacyLink").addEventListener("click", ()=>{ closeModal("#signInModal"); openModal("#privacyModal"); });
 
 // auditions board controls
 $("#view-auditions").addEventListener("click", e=>{
