@@ -1,0 +1,10 @@
+# Not uploaded to the public web server (they live in the GitHub repo, but the
+# website only needs the app, its config, the dataset, and the redirect rule).
+supabase/
+scripts/
+*.md
+.claude/
+.gitignore
+.env.example
+wrangler.jsonc
+tutti-project-instructions.md

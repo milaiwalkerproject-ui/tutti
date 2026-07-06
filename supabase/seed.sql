@@ -239,7 +239,7 @@ insert into public.organizations (
   '{"status":"verified","value":"2025–26 concert season (theme: ''I, Too, Sing America''; season finale July 12, 2026)","source":"https://icyola.org/2025-26-season/","asOf":"2026-07-06"}'::jsonb, '{10,25}'::int[], '{"Strings","Winds","Brass","Percussion"}'::public.instrument[],
   '{"status":"unverified"}'::jsonb, '{"status":"verified","value":"Weekly rehearsals; 12–15 concerts annually","source":"https://icyola.org/our-orchestra/","asOf":"2026-07-06"}'::jsonb, '{"status":"unverified"}'::jsonb, '{"status":"verified","value":"Free — no tuition, no auditions, no competition for seats","source":"https://icyola.org/join-our-orchestra/","asOf":"2026-07-06"}'::jsonb,
   'Good fit if you want a tuition-free, no-audition orchestra where beginners and advanced players grow side by side with professional mentors.', NULL, '2026-07-06'::date,
-  'in_review', 'curated', NULL
+  'published', 'curated', NULL
 );
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('icyola', 0, 'Inner City Youth Orchestra of Los Angeles', 'Intermediate', '{10,25}'::int[], 'Single mixed-level orchestra of approximately 125 members; advanced players mentor newer ones and professional mentor-artists rehearse and perform alongside students.');
 insert into public.performances (org_id, position, date, title, venue, program, "from", source) values ('icyola', 0, '2026-07-12'::date, '18th Annual Season Finale Concert', 'Walt Disney Concert Hall', NULL, '{"status":"unverified"}'::jsonb, 'https://icyola.org/2025-26-season/');
@@ -260,7 +260,7 @@ insert into public.organizations (
   '{"status":"verified","value":"2026–27 season","source":"https://www.cymo.org/audition.html","asOf":"2026-07-06"}'::jsonb, '{8,20}'::int[], '{"Strings","Winds","Brass","Percussion"}'::public.instrument[],
   '{"status":"verified","value":"Sundays at Claremont High School, September through May: Overture Strings 2:00–3:00 PM, Intermezzo Orchestra 3:30–5:30 PM, CYMO 6:30–9:15 PM","source":"https://www.cymo.org/orchestra-bio.html","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":"Weekly Sunday rehearsals, September through May","source":"https://www.cymo.org/orchestra-bio.html","asOf":"2026-07-06"}'::jsonb, '{"status":"unverified"}'::jsonb, '{"status":"unverified"}'::jsonb,
   'Good fit if your player wants a classic auditioned youth-symphony ladder in the east San Gabriel Valley with serious repertoire and LA Phil connections.', NULL, '2026-07-06'::date,
-  'in_review', 'curated', NULL
+  'published', 'curated', NULL
 );
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('cymo', 0, 'Claremont Young Musicians Overture String Orchestra', 'Beginner', '{8,13}'::int[], 'Beginning orchestral experience for string players in grades 3–8, preparing them for the Intermezzo Orchestra (about 35 members).');
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('cymo', 1, 'Claremont Young Musicians Intermezzo Orchestra', 'Intermediate', '{9,18}'::int[], '75-member preparatory orchestra for intermediate players, ages 9–18, feeding into CYMO.');
@@ -283,7 +283,7 @@ insert into public.organizations (
   '{"status":"verified","value":"Fall 2026 (semester-based; new members register by August 15, 2026)","source":"https://www.scvyo.org/enroll-in-scvyo","asOf":"2026-07-06"}'::jsonb, '{8,18}'::int[], '{"Strings","Winds","Brass","Percussion"}'::public.instrument[],
   '{"status":"verified","value":"Symphony Orchestra: Sundays 1:00–2:30 PM, Rancho Pico Jr. High School band room","source":"https://www.scvyo.org/orchestra","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":"Semester-based enrollment; all students except continuing Prelude members re-audition each fall","source":"https://www.scvyo.org/enroll-in-scvyo","asOf":"2026-07-06"}'::jsonb, '{"status":"unverified"}'::jsonb, '{"status":"verified","value":"$420 per-semester ensemble fee (Symphony Orchestra, Spring 2026) plus $13 online processing fee; 10% sibling discount; payment plans available","source":"https://www.scvyo.org/payments/symphony-orchestra","asOf":"2026-07-06"}'::jsonb,
   'Good fit if you want a friendly, community-minded orchestra in the Santa Clarita Valley that welcomes players from their first year through advanced repertoire.', NULL, '2026-07-06'::date,
-  'in_review', 'curated', NULL
+  'published', 'curated', NULL
 );
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('scvyo', 0, 'Prelude Ensemble', 'Beginner', '{8,13}'::int[], 'Entry-level ensemble for musicians with about one year of experience on any string, wind or brass instrument (including piano and percussion); continuing students do not re-audition.');
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('scvyo', 1, 'Symphony Orchestra', 'Intermediate', '{10,16}'::int[], 'Mixed-level intermediate orchestra (typically 3+ years of experience) that prepares musicians for Novae Sinfonia.');
@@ -309,7 +309,7 @@ insert into public.organizations (
   '{"status":"verified","value":"2025–2026 (first rehearsals September 13–14, 2025)","source":"https://www.csun.edu/csun-youth-orchestras","asOf":"2026-07-06"}'::jsonb, '{7,17}'::int[], '{"Strings","Winds","Brass","Percussion"}'::public.instrument[],
   '{"status":"unverified"}'::jsonb, '{"status":"unverified"}'::jsonb, '{"status":"unverified"}'::jsonb, '{"status":"unverified"}'::jsonb,
   'Good fit if you want a university-hosted youth orchestra ladder in the San Fernando Valley with a competitive top ensemble.', NULL, '2026-07-06'::date,
-  'in_review', 'curated', NULL
+  'published', 'curated', NULL
 );
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('csun-yo', 0, 'Camerata Strings', 'Intermediate', '{9,14}'::int[], 'Intermediate string orchestra teaching the skills needed for successful orchestral playing.');
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('csun-yo', 1, 'Symphony', 'Intermediate', '{11,17}'::int[], 'Intermediate orchestra of 70–90 members playing standard works and arrangements; players expected to have roughly four or more years of experience.');
@@ -332,7 +332,7 @@ insert into public.organizations (
   '{"status":"verified","value":"2026–2027 (74th season); dates and programming to be posted","source":"https://www.claremontso.org/","asOf":"2026-07-06"}'::jsonb, '{18,99}'::int[], '{"Strings","Winds","Brass","Percussion"}'::public.instrument[],
   '{"status":"verified","value":"Monday evenings 7:30–10:00 PM at Bryant Rehearsal Hall, Thatcher Music Building, Pomona College","source":"https://www.claremontso.org/auditions.html","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":"Volunteer membership; attendance at weekly rehearsals expected","source":"https://www.claremontso.org/auditions.html","asOf":"2026-07-06"}'::jsonb, '{"status":"unverified"}'::jsonb, '{"status":"unverified"}'::jsonb,
   'Good fit if you''re an adult amateur player near the east San Gabriel Valley looking for a welcoming volunteer symphony — or a family wanting free classical concerts.', NULL, '2026-07-06'::date,
-  'in_review', 'curated', NULL
+  'published', 'curated', NULL
 );
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('claremont-so', 0, 'Claremont Symphony Orchestra', 'Intermediate', '{18,99}'::int[], 'All-volunteer community symphony led by Music Director Robert Sage; membership by audition.');
 insert into public.auditions (org_id, position, level, instruments, "window", status, ages, note, source) values ('claremont-so', 0, 'Intermediate', 'All instruments', '{"status":"verified","value":"Year-round, on an ongoing basis","source":"https://www.claremontso.org/auditions.html","asOf":"2026-07-06"}'::jsonb, 'rolling', '{18,99}'::int[], 'String players contact the concertmaster; all other instruments contact the orchestra''s audition coordinator. Confirm you can attend Monday rehearsals before requesting an audition.', 'https://www.claremontso.org/auditions.html');
@@ -350,7 +350,7 @@ insert into public.organizations (
   '{"status":"verified","value":"Concert season runs late August through May, with four major concerts per season","source":"https://www.mslmorchestra.com/audition/","asOf":"2026-07-06"}'::jsonb, '{7,18}'::int[], '{"Strings","Winds","Brass","Percussion","Harp"}'::public.instrument[],
   '{"status":"verified","value":"At the Musique Sur La Mer studio, 423 Shoreline Village Drive, Suite CD, Long Beach","source":"https://www.mslmorchestra.com/audition/","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":"Four major concerts per season (late August–May) plus community performances; school music program participation (where available) and private lessons required for youth members","source":"https://www.mslmorchestra.com/audition/","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":true,"source":"https://www.mslmorchestra.com/audition/","asOf":"2026-07-06"}'::jsonb, '{"status":"unverified"}'::jsonb,
   'Good fit if your Long Beach-area player wants a smaller, studio-based program with big travel ambitions, from first orchestra experience to international touring.', NULL, '2026-07-06'::date,
-  'in_review', 'curated', NULL
+  'published', 'curated', NULL
 );
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('mslm-yo', 0, 'La Petite Musique Training Orchestra', 'Beginner', '{7,15}'::int[], 'Entry ensemble for string players (grades 3–8) with about two years of lessons; no audition — seating assessments happen in the first two weeks of class.');
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('mslm-yo', 1, 'Shoreline Strings', 'Intermediate', '{10,14}'::int[], 'Auditioned ensemble for strings, piano and percussion, grades 5–9, requiring developed vibrato and two-octave scales.');
@@ -375,7 +375,7 @@ insert into public.organizations (
   '{"status":"verified","value":"2026–27 season (concerts listed September 2026 through June 2027)","source":"https://www.pacificsymphony.org/get-tickets","asOf":"2026-07-06"}'::jsonb, '{18,99}'::int[], '{"Strings","Winds","Brass","Percussion","Harp"}'::public.instrument[],
   '{"status":"not_applicable"}'::jsonb, '{"status":"unverified"}'::jsonb, '{"status":"not_applicable"}'::jsonb, '{"status":"not_applicable"}'::jsonb,
   'Good fit if you want to hear a professional orchestra close to home — or show your teen where serious training can lead.', NULL, '2026-07-06'::date,
-  'in_review', 'curated', NULL
+  'published', 'curated', NULL
 );
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('pacsym', 0, 'Pacific Symphony', 'Professional', '{18,99}'::int[], 'The professional orchestra, performing classical, pops, family, and summer outdoor series across Orange County.');
 insert into public.performances (org_id, position, date, title, venue, program, "from", source) values ('pacsym', 0, '2026-08-15'::date, 'Symphony in the Cities: Irvine', NULL, NULL, '{"status":"verified","value":0,"source":"https://www.pacificsymphony.org/get-tickets","asOf":"2026-07-06"}'::jsonb, 'https://www.pacificsymphony.org/get-tickets');
@@ -399,7 +399,7 @@ insert into public.organizations (
   '{"status":"verified","value":"2026–27","source":"https://www.pacificsymphony.org/auditions","asOf":"2026-07-06"}'::jsonb, '{10,18}'::int[], '{"Strings","Winds","Brass","Percussion","Harp"}'::public.instrument[],
   '{"status":"verified","value":"Weekly, September through May, at UC Irvine: Youth Wind Ensemble & Youth Orchestra Sundays 1–4 PM; Youth Concert Band & Santiago Strings Sundays 5–7 PM","source":"https://www.pacificsymphony.org/psye-general-program-information","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":"Members must actively participate in their school music program and study with a private teacher for the duration of the season; all members re-audition each year","source":"https://www.pacificsymphony.org/auditions","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":true,"source":"https://www.pacificsymphony.org/psye-general-program-information","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":"$1,250 per season (Santiago Strings, Youth Concert Band); $1,500 per season (Youth Orchestra, Youth Wind Ensemble)","source":"https://www.pacificsymphony.org/psye-general-program-information","asOf":"2026-07-06"}'::jsonb,
   'Good fit if your grade 6–12 musician wants conservatory-style training, coaching from professional players, and the chance to perform in a world-class hall.', NULL, '2026-07-06'::date,
-  'in_review', 'curated', NULL
+  'published', 'curated', NULL
 );
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('psye', 0, 'Pacific Symphony Santiago Strings', 'Intermediate', '{10,15}'::int[], 'String orchestra for grades 6–9 (age 10+), led by Dr. Johanna Gamboa-Kroesen; violin, viola, cello, and double bass.');
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('psye', 1, 'Pacific Symphony Youth Concert Band', 'Intermediate', '{10,15}'::int[], 'Concert band for woodwind, brass, and percussion players in grades 6–9 (age 10+), led by Angela Woo.');
@@ -423,7 +423,7 @@ insert into public.organizations (
   '{"status":"verified","value":"2026–27 season runs late August 2026 through mid-May 2027","source":"https://www.philharmonicsociety.org/education-community/orange-county-youth-symphony/audition-information","asOf":"2026-07-06"}'::jsonb, '{11,19}'::int[], '{"Strings","Winds","Brass","Percussion","Harp"}'::public.instrument[],
   '{"status":"verified","value":"Sunday afternoons, 1:00–3:30 PM, Irvine Valley College Music & Dance Building","source":"https://www.philharmonicsociety.org/education-community/orange-county-youth-symphony/audition-information","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":"Active participation in your school music program is expected (verified with teachers each semester); three major concerts per season, with OCYS adding winter community concerts and a fall retreat","source":"https://www.philharmonicsociety.org/education-community/orange-county-youth-symphony/audition-information","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":true,"source":"https://www.philharmonicsociety.org/education-community/orange-county-youth-symphony/audition-information","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":"2026–27: OCYS $1,500; OCYSE $1,300","source":"https://www.philharmonicsociety.org/education-community/orange-county-youth-symphony/audition-information","asOf":"2026-07-06"}'::jsonb,
   'Good fit if your advanced high schooler wants a full-orchestra challenge with retreats and a concerto competition, or your middle schooler is ready for a step up in strings.', NULL, '2026-07-06'::date,
-  'in_review', 'curated', NULL
+  'published', 'curated', NULL
 );
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('ocys', 0, 'Orange County Youth Symphony (OCYS)', 'Advanced', '{14,19}'::int[], 'Full orchestra for advanced woodwind, brass, string, and percussion musicians in grades 9–13, led by Music Director Johannes Müller Stosch.');
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('ocys', 1, 'Orange County Youth String Ensemble (OCYSE)', 'Intermediate', '{11,15}'::int[], 'String ensemble for intermediate string players in grades 6–9, led by Conductor Lucy Lu, with sectionals and a chamber group program.');
@@ -443,7 +443,7 @@ insert into public.organizations (
   '{"status":"verified","value":"2026–2027 season","source":"https://www.scysomusic.org/","asOf":"2026-07-06"}'::jsonb, '{8,18}'::int[], '{"Strings","Winds","Brass","Percussion"}'::public.instrument[],
   '{"status":"verified","value":"Weekly by location: Ontario Mondays 5–7 PM; Garden Grove Tuesdays 7–9 PM; Mission Viejo Wednesdays 7–9 PM; plus Saturday combined workshops at La Paz Intermediate School, Mission Viejo","source":"https://www.scysomusic.org/season-schedule-fall","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":"Previous training on your instrument and enrollment in your school instrumental music program (if available) are required; registration includes a season obligation and commitment form","source":"https://www.scysomusic.org/registration-audition","asOf":"2026-07-06"}'::jsonb, '{"status":"unverified"}'::jsonb, '{"status":"unverified"}'::jsonb,
   'Good fit if you want a welcoming orchestra that takes all ability levels and lets you pick the rehearsal night and location that suits your family.', NULL, '2026-07-06'::date,
-  'in_review', 'curated', NULL
+  'published', 'curated', NULL
 );
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('scyso', 0, 'South Coast Youth Symphony Orchestra', 'Intermediate', '{8,18}'::int[], 'One orchestra program open to musicians of all abilities, rehearsing at three sites (Mission Viejo, Garden Grove, Ontario) that combine monthly for workshops and perform together.');
 insert into public.performances (org_id, position, date, title, venue, program, "from", source) values ('scyso', 0, '2026-12-13'::date, 'Season Opening Concert', NULL, NULL, '{"status":"unverified"}'::jsonb, 'https://www.scysomusic.org/season-schedule-fall');
@@ -463,7 +463,7 @@ insert into public.organizations (
   '{"status":"verified","value":"2026–2027 season; rehearsals begin September 11, 2026","source":"https://www.cyosc.org/apply.html","asOf":"2026-07-06"}'::jsonb, '{4,22}'::int[], '{"Strings","Winds","Brass","Harp"}'::public.instrument[],
   '{"status":"verified","value":"Once a week on Friday evenings, one to two hours depending on ensemble; 2026–27 rehearsal space not yet confirmed but will be in the Irvine/Tustin area","source":"https://www.cyosc.org/faqs.html","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":"Signed attendance and behavior contract; students who miss more than 5 rehearsals during the season cannot play concerts and risk removal from their ensemble","source":"https://www.cyosc.org/apply.html","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":true,"source":"https://www.cyosc.org/faqs.html","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":"2026–27: $875 per student ($850 if paying by check/Zelle); 10% sibling discount; 20% discount for qualifying viola and brass students","source":"https://www.cyosc.org/faqs.html","asOf":"2026-07-06"}'::jsonb,
   'Good fit if you want an affordable, community-minded orchestra home for a beginner through advanced player of almost any age.', NULL, '2026-07-06'::date,
-  'in_review', 'curated', NULL
+  'published', 'curated', NULL
 );
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('cyosc', 0, 'Sinfonietta', 'Beginner', '{5,11}'::int[], 'Entry ensemble; students are placed by teachers based on age group and playing level.');
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('cyosc', 1, 'Philharmonia', 'Intermediate', '{8,14}'::int[], 'Intermediate ensemble (described as the String Ensemble in program text).');
@@ -486,7 +486,7 @@ insert into public.organizations (
   '{"status":"verified","value":"2026–27 season at Jacobs Music Center, plus a summer season at The Rady Shell at Jacobs Park","source":"https://www.sandiegosymphony.org/","asOf":"2026-07-06"}'::jsonb, '{18,99}'::int[], '{"Strings","Winds","Brass","Percussion","Harp"}'::public.instrument[],
   '{"status":"not_applicable"}'::jsonb, '{"status":"verified","value":"Full-time professional: 42-week contract (37 playing weeks plus 5 vacation weeks) for the 2026–27 season","source":"https://www.sandiegosymphony.org/about/san-diego-symphony-orchestra/auditions-san-diego-symphony/","asOf":"2026-07-06"}'::jsonb, '{"status":"not_applicable"}'::jsonb, '{"status":"not_applicable"}'::jsonb,
   'Good fit if you want to take the family to hear professionals live — this is a professional orchestra, not an enrollment program for kids.', NULL, '2026-07-06'::date,
-  'in_review', 'curated', NULL
+  'published', 'curated', NULL
 );
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('sdsym', 0, 'San Diego Symphony Orchestra', 'Professional', '{18,99}'::int[], 'Full-time professional symphony orchestra performing at the Jacobs Music Center and The Rady Shell at Jacobs Park.');
 insert into public.performances (org_id, position, date, title, venue, program, "from", source) values ('sdsym', 0, '2026-07-12'::date, 'Beethoven by the Bay', 'The Rady Shell at Jacobs Park', NULL, '{"status":"unverified"}'::jsonb, 'https://www.sandiegosymphony.org/');
@@ -508,7 +508,7 @@ insert into public.organizations (
   '{"status":"verified","value":"2026–27 season; new-student registration re-opens July 6 and ends July 30, 2026, with auditions closing July 31, 2026","source":"https://www.keynote-music.org/sdys/how-to-join/","asOf":"2026-07-06"}'::jsonb, '{7,18}'::int[], '{"Strings","Winds","Brass","Percussion"}'::public.instrument[],
   '{"status":"verified","value":"Weekly weekend rehearsals by ensemble — Saturdays or Sundays at Balboa Park or Liberty Station (e.g. Symphony Orchestra: Sundays 3:30–6:30 PM)","source":"https://www.keynote-music.org/sdys/who-we-are/","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":"Full-season commitment: all students, including marching band students, join in the fall — no mid-year entry","source":"https://www.keynote-music.org/sdys/how-to-join/","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":true,"source":"https://www.keynote-music.org/sdys/how-to-join/","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":"$900–$1,450 per season depending on ensemble (Beginning ensembles $900; Symphony Orchestra $1,450)","source":"https://www.keynote-music.org/sdys/who-we-are/","asOf":"2026-07-06"}'::jsonb,
   'Good fit if you want a large, structured program where any level from age 7 to 18 can find a seat and move up year by year.', NULL, '2026-07-06'::date,
-  'in_review', 'curated', NULL
+  'published', 'curated', NULL
 );
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('sdys', 0, 'Beginning Strings / Winds / Brass / Percussion', 'Beginner', '{7,11}'::int[], 'No-experience-required entry ensembles at Liberty Station; no audition needed.');
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('sdys', 1, 'Debut Strings & Debut Winds', 'Beginner', '{7,13}'::int[], 'First performing ensembles for students with a little experience, rehearsing in Balboa Park.');
@@ -534,7 +534,7 @@ insert into public.organizations (
   '{"status":"verified","value":"2026–27 performance season; tuition and registration due July 31, 2026","source":"https://www.civicyouthorchestra.org/tuition-and-registration","asOf":"2026-07-06"}'::jsonb, '{5,22}'::int[], '{"Strings","Winds","Brass","Percussion"}'::public.instrument[],
   '{"status":"verified","value":"Saturdays 9:00 AM–noon (Prelude 9–11 AM) at Classical Academy High School — PLC, 130 Woodward Avenue, Escondido","source":"https://www.civicyouthorchestra.org/tuition-and-registration","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":"Weekly Saturday rehearsals with roughly 3–4 performances per season; summer workshop required for Prelude–Wind ensembles and Labor Day retreat required for Symphonic and Symphony members","source":"https://www.civicyouthorchestra.org/our-ensembles","asOf":"2026-07-06"}'::jsonb, '{"status":"unverified"}'::jsonb, '{"status":"verified","value":"$725–$975 per season by ensemble (Prelude $725; Symphony Orchestra $975); $85 registration fee included; due July 31, 2026","source":"https://www.civicyouthorchestra.org/tuition-and-registration","asOf":"2026-07-06"}'::jsonb,
   'Good fit for North County families who want affordable Saturday-morning training with room to grow into a full symphony.', NULL, '2026-07-06'::date,
-  'in_review', 'curated', NULL
+  'published', 'curated', NULL
 );
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('sdcyo', 0, 'Prelude Orchestra', 'Beginner', '{7,11}'::int[], 'First ensemble experience for string players with about a year of playing; weekly 2-hour rehearsals and three performances per season.');
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('sdcyo', 1, 'Intermezzo Orchestra', 'Beginner', '{8,13}'::int[], 'String orchestra reinforcing fundamentals for players with 2+ years of experience.');
@@ -559,7 +559,7 @@ insert into public.organizations (
   '{"status":"verified","value":"Season typically runs September through May; 2026/27 summer auditions open July 1–31, 2026","source":"https://www.mmyo.org/faq","asOf":"2026-07-06"}'::jsonb, '{5,18}'::int[], '{"Strings","Winds","Brass","Percussion","Harp"}'::public.instrument[],
   '{"status":"verified","value":"Saturdays at Calvary Lutheran Church, Solana Beach; times by ensemble (Suzuki Stars 8:30–9:15 AM through Advanced Orchestra 9:30 AM–12:30 PM)","source":"https://www.mmyo.org/faq","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":"Weekly Saturday rehearsals, at least two concerts per season; max 4 excused / 2 unexcused absences per semester; private lessons required above the Suzuki Stars level","source":"https://www.mmyo.org/faq","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":true,"source":"https://www.mmyo.org/faq","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":"$725–$900 per student per season, depending on ensemble placement","source":"https://www.mmyo.org/faq","asOf":"2026-07-06"}'::jsonb,
   'Good fit for coastal North County families — one Saturday location, a beginner-friendly entry point, and professional musicians in the room.', NULL, '2026-07-06'::date,
-  'in_review', 'curated', NULL
+  'published', 'curated', NULL
 );
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('mmyo', 0, 'Amadeus Strings (Suzuki Stars / Mozart Comets)', 'Beginner', '{5,10}'::int[], 'Entry-level strings for students with little or no prior experience; no audition to start.');
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('mmyo', 1, 'Prelude Strings', 'Beginner', '{7,12}'::int[], 'Early string orchestra (violin, viola, cello, double bass).');
@@ -585,7 +585,7 @@ insert into public.organizations (
   '{"status":"verified","value":"Spring term January–May and fall term August–December (Pre-Orchestra Division)","source":"https://www.ecysymphony.com/podiv.php","asOf":"2026-07-06"}'::jsonb, '{6,28}'::int[], '{"Strings","Winds","Brass","Percussion"}'::public.instrument[],
   '{"status":"verified","value":"Advanced Division: Fridays 6:00–8:50 PM at 7997 Paradise Valley Road, San Diego; Pre-Orchestra Division: Saturdays, one hour between 8:00 AM–12:30 PM at 2300 Bancroft Drive (Spring Valley)","source":"https://www.ecysymphony.com/auditions.php","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":"All students perform twice a year at the Joan B. Kroc Theatre, plus weekly rehearsals","source":"https://www.ecysymphony.com/events.php","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":true,"source":"https://www.ecysymphony.com/adivi.php","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":"Free — tuition-free participation is the organization''s mission","source":"https://ecysymphony.com/","asOf":"2026-07-06"}'::jsonb,
   'Good fit if cost is a barrier — everything is tuition-free, from a child''s first ensemble classes to the advanced orchestra.', NULL, '2026-07-06'::date,
-  'in_review', 'curated', NULL
+  'published', 'curated', NULL
 );
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('ecys', 0, 'Pre-Orchestra Division', 'Beginner', '{6,14}'::int[], 'Tuition-free six-year training program: first-year classes (ages 6–10, open to all beginners) cover violin, small ensemble, piano and theory; continuing classes (ages 8–14) by audition.');
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('ecys', 1, 'Advanced Orchestra', 'Pre-professional', '{16,28}'::int[], 'Pre-professional orchestra for advanced players, many pursuing college music degrees; by audition or invitation; each player receives a $100–$500 stipend per semester.');
@@ -609,7 +609,7 @@ insert into public.organizations (
   '{"status":"verified","value":"2026 Masterpiece Series (calendar-year 2026 season celebrating the U.S. semiquincentennial)","source":"https://newwestsymphony.org/","asOf":"2026-07-06"}'::jsonb, '{18,99}'::int[], '{"Strings","Winds","Brass","Percussion","Harp"}'::public.instrument[],
   '{"status":"not_applicable"}'::jsonb, '{"status":"unverified"}'::jsonb, '{"status":"not_applicable"}'::jsonb, '{"status":"not_applicable"}'::jsonb,
   'Good fit if you want to hear a professional orchestra close to home, with family and student ticket pricing available.', NULL, '2026-07-06'::date,
-  'in_review', 'curated', NULL
+  'published', 'curated', NULL
 );
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('newwest', 0, 'New West Symphony', 'Professional', '{18,99}'::int[], 'Professional symphony orchestra performing in Thousand Oaks and Camarillo, with tenured members drawn from LA''s film-recording scene.');
 insert into public.performances (org_id, position, date, title, venue, program, "from", source) values ('newwest', 0, '2026-10-03'::date, 'Beethoven & Copland', 'Thousand Oaks (BAPAC)', 'Francesco Lecce-Chong conducts; with Pacific Festival Ballet and Los Robles Children''s Choir. Repeats Sun Oct 4 at 3 PM in Camarillo (RCPAC).', '{"status":"unverified"}'::jsonb, 'https://newwestsymphony.org/');
@@ -630,7 +630,7 @@ insert into public.organizations (
   '{"status":"verified","value":"2026–27 season (LOYO''s 66th); season begins September 11, 2026","source":"https://loyo.lyceumoaks.org/","asOf":"2026-07-06"}'::jsonb, '{6,18}'::int[], '{"Strings","Winds","Brass","Percussion"}'::public.instrument[],
   '{"status":"verified","value":"Mondays at Godspeak Church, 320 Via Las Brisas, Newbury Park; ensemble blocks between 3:45 and 9:00 PM (Youth Strings 3:45–4:30, Preparatory 4:45–6:15, Symphony 6:30–8:15, Virtuosi 8:15–9:00)","source":"https://loyo.lyceumoaks.org/schedule/","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":"Two-semester season of weekly Monday rehearsals (Sept 14, 2026 – Jun 4, 2027); Gala concerts and their dress rehearsals are mandatory","source":"https://loyo.lyceumoaks.org/schedule/","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":true,"source":"https://loyo.lyceumoaks.org/schedule/","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":"$1,000 per season or $700 per single semester (payment plans available; $20 discount for single September payment)","source":"https://loyo.lyceumoaks.org/schedule/","asOf":"2026-07-06"}'::jsonb,
   'Good fit if you want a structured, multi-level orchestra ladder in the Conejo Valley with clear advancement from first ensemble to pre-college level.', NULL, '2026-07-06'::date,
-  'in_review', 'curated', NULL
+  'published', 'curated', NULL
 );
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('loyo', 0, 'Youth Strings', 'Beginner', '{6,12}'::int[], 'Junior string orchestra of 40–80 musicians where most string players begin (about 1–4 years of experience).');
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('loyo', 1, 'Youth Band', 'Beginner', '{8,13}'::int[], 'Junior wind, brass, and percussion ensemble of 20–50 musicians for players in their first years.');
@@ -660,7 +660,7 @@ insert into public.organizations (
   '{"status":"verified","value":"2026/27 season — ''A Season in Motion'' (season tickets on sale now)","source":"https://www.bsonow.org/","asOf":"2026-07-06"}'::jsonb, '{18,99}'::int[], '{"Strings","Winds","Brass","Percussion","Harp"}'::public.instrument[],
   '{"status":"not_applicable"}'::jsonb, '{"status":"unverified"}'::jsonb, '{"status":"not_applicable"}'::jsonb, '{"status":"not_applicable"}'::jsonb,
   'Good fit if you want live symphonic music in downtown Bakersfield, from the classics to holiday and mariachi nights.', NULL, '2026-07-06'::date,
-  'in_review', 'curated', NULL
+  'published', 'curated', NULL
 );
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('baksym', 0, 'Bakersfield Symphony Orchestra', 'Professional', '{18,99}'::int[], 'Professional symphony performing at the Dignity Health Theater; auditions are held blind behind a screen.');
 insert into public.performances (org_id, position, date, title, venue, program, "from", source) values ('baksym', 0, '2026-10-03'::date, 'Rhythm & Fire', 'Dignity Health Theater, Bakersfield', 'Bartók, Dvořák, and Ligeti; Jackson Snead performs Sarasate''s Zigeunerweisen', '{"status":"unverified"}'::jsonb, 'https://www.bsonow.org/calendar');
@@ -681,7 +681,7 @@ insert into public.organizations (
   '{"status":"verified","value":"2026–27 season (calendar published; auditions September 12, 2026)","source":"https://www.bysorocks.org/audition","asOf":"2026-07-06"}'::jsonb, '{12,19}'::int[], '{"Strings","Winds","Brass","Percussion","Harp"}'::public.instrument[],
   '{"status":"verified","value":"Sundays 5:30–8:00 PM at CSU Bakersfield (except three-day weekends)","source":"https://www.bysorocks.org/audition","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":"Attendance at all rehearsals and concerts is mandatory for members","source":"https://www.bysorocks.org/audition","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":true,"source":"https://www.bysorocks.org/audition","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":"$275 per year ($25 application fee applies toward tuition; financial aid available based on need)","source":"https://www.bysorocks.org/audition","asOf":"2026-07-06"}'::jsonb,
   'Good fit if your middle or high schooler is ready for a step up from school ensembles and can commit to Sunday evening rehearsals.', NULL, '2026-07-06'::date,
-  'in_review', 'curated', NULL
+  'published', 'curated', NULL
 );
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('byso', 0, 'Bakersfield Youth Symphony Orchestra', 'Advanced', '{12,19}'::int[], 'Single audition-only ensemble of highly motivated students performing high-level orchestral repertoire, from 7th grade through first-year undergraduates.');
 insert into public.auditions (org_id, position, level, instruments, "window", status, ages, note, source) values ('byso', 0, 'Advanced', 'Strings, woodwinds, brass, percussion, harp', '{"status":"verified","value":"Applications due September 4, 2026 ($10 late fee after); auditions September 12, 2026 at the CSUB Music Building, 9001 Stockdale Hwy","source":"https://www.bysorocks.org/audition","asOf":"2026-07-06"}'::jsonb, 'open', '{12,19}'::int[], '$25 non-refundable application fee. Assigned scales, excerpts, and sight-reading per instrument; students must be enrolled and in good standing in their school instrumental ensemble where available.', 'https://www.bysorocks.org/audition');
@@ -700,7 +700,7 @@ insert into public.organizations (
   '{"status":"verified","value":"2025–2026 season (fall and spring semesters; full calendar posted)","source":"https://www.sanbernardinosymphony.org/symphony-youth-orchestras","asOf":"2026-07-06"}'::jsonb, '{11,18}'::int[], '{"Strings","Winds","Brass","Percussion","Harp"}'::public.instrument[],
   '{"status":"verified","value":"SBSYO: Sundays 2:00–5:00 PM at San Bernardino Valley College (North Hall 164); SBSOO: Sundays 3:00–4:30 PM at Wilmer Amina Carter High School","source":"https://www.sanbernardinosymphony.org/symphony-youth-orchestras","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":"Weekly Sunday rehearsals September–May with fall and spring concerts; attendance policy per program handbook","source":"https://www.sanbernardinosymphony.org/symphony-youth-orchestras","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":true,"source":"https://www.sanbernardinosymphony.org/symphony-youth-orchestras","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":"2025–26: SBSYO $200/semester ($400/year, or $350 if paid in full by Sept 7); SBSOO $100/semester ($200/year, or $175 in full); prorated for mid-year joins","source":"https://www.sanbernardinosymphony.org/symphony-youth-orchestras","asOf":"2026-07-06"}'::jsonb,
   'Good fit if your middle or high schooler wants a full-orchestra experience on a modest budget, with a path onto the professional symphony''s stage.', NULL, '2026-07-06'::date,
-  'in_review', 'curated', NULL
+  'published', 'curated', NULL
 );
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('sbsyo', 0, 'San Bernardino Symphony Youth Orchestra (SBSYO)', 'Advanced', '{14,18}'::int[], 'Full orchestra for ages 14–18 (grades 9–12); rehearses Sundays at San Bernardino Valley College and performs at the SBVC Auditorium and with the San Bernardino Symphony.');
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('sbsyo', 1, 'San Bernardino Symphony Overture Orchestra (SBSOO)', 'Intermediate', '{11,14}'::int[], 'Full orchestra for ages 11–14 (grades 6–9); rehearses Sundays at Wilmer Amina Carter High School. 9th graders are placed in SBSOO or SBSYO by audition.');
@@ -720,7 +720,7 @@ insert into public.organizations (
   '{"status":"verified","value":"2026–27 season; registration open","source":"https://www.riversideartsacademy.com/overview","asOf":"2026-07-06"}'::jsonb, '{7,18}'::int[], '{"Strings","Winds","Brass","Percussion"}'::public.instrument[],
   '{"status":"verified","value":"Riverside Youth Orchestra: Sundays 6:00–9:00 PM at UC Riverside; Overture Orchestra and beginner strings: Saturday mornings at the Arlanza Community Center, Riverside","source":"https://www.riversideartsacademy.com/overview","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":"Rehearsal attendance mandatory; up to 2 absences per semester (excluding dress rehearsals and concerts) under the RYO policy","source":"https://www.riversideartsacademy.com/ryo","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":true,"source":"https://www.riversideartsacademy.com/overview","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":"Riverside Youth Orchestra: $1,200 per school year (3 units) before financial aid, payable in one sum or monthly; beginner strings classes are 1.5 units","source":"https://www.riversideartsacademy.com/ryo","asOf":"2026-07-06"}'::jsonb,
   'Good fit if you want one program that can carry a child from first beginner-strings lessons to an auditioned full youth orchestra without leaving Riverside.', NULL, '2026-07-06'::date,
-  'in_review', 'curated', NULL
+  'published', 'curated', NULL
 );
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('riverside-arts', 0, 'Riverside Youth Orchestra', 'Advanced', '{11,18}'::int[], 'Flagship auditioned full orchestra for grades 6–12 with 2+ years of experience; Sundays 6:00–9:00 PM at UC Riverside, with instrument-specific sectionals; repertoire spans the classical canon to film and video game music.');
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('riverside-arts', 1, 'Overture Orchestra', 'Intermediate', '{11,18}'::int[], 'New auditioned intermediate full orchestra (strings, winds, brass, percussion) for grades 6–12; Saturdays 9:00 AM–12:00 PM at Arlanza Community Center.');
@@ -741,7 +741,7 @@ insert into public.organizations (
   '{"status":"verified","value":"Fall and spring semesters plus a summer session","source":"https://temeculavalleysymphony.org/youth-symphony/","asOf":"2026-07-06"}'::jsonb, '{8,18}'::int[], '{"Strings","Winds","Brass","Percussion"}'::public.instrument[],
   '{"status":"verified","value":"Weekly Monday night rehearsals","source":"https://temeculavalleysymphony.org/youth-symphony/","asOf":"2026-07-06"}'::jsonb, '{"status":"verified","value":"Weekly rehearsals; 3–4 concerts per season plus community recital and chamber opportunities","source":"https://temeculavalleysymphony.org/youth-symphony/","asOf":"2026-07-06"}'::jsonb, '{"status":"unverified"}'::jsonb, '{"status":"unverified"}'::jsonb,
   'Good fit if you want a youth orchestra close to home in the Temecula–Murrieta area rather than driving to Riverside or San Diego.', NULL, '2026-07-06'::date,
-  'in_review', 'curated', NULL
+  'published', 'curated', NULL
 );
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('tvys', 0, 'Symphonic Orchestra', 'Advanced', '{12,18}'::int[], 'Top full-orchestra tier of the youth program.');
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('tvys', 1, 'Concert Orchestra', 'Intermediate', '{10,16}'::int[], 'Intermediate orchestra between beginning strings and the symphonic orchestra.');
@@ -761,7 +761,7 @@ insert into public.organizations (
   '{"status":"verified","value":"2026–2027 season — 75th Anniversary Season","source":"https://www.redlandssymphony.com/26-27-season","asOf":"2026-07-06"}'::jsonb, '{18,99}'::int[], '{"Strings","Winds","Brass","Percussion","Harp"}'::public.instrument[],
   '{"status":"not_applicable"}'::jsonb, '{"status":"verified","value":"Professional orchestra; musicians are represented by AFM Local 47 and must be members in good standing to perform","source":"https://www.redlandssymphony.com/careers","asOf":"2026-07-06"}'::jsonb, '{"status":"not_applicable"}'::jsonb, '{"status":"not_applicable"}'::jsonb,
   'Good fit for families who want professional concerts in an intimate campus hall close to home; not a student ensemble.', NULL, '2026-07-06'::date,
-  'in_review', 'curated', NULL
+  'published', 'curated', NULL
 );
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('redsym', 0, 'Redlands Symphony Orchestra', 'Professional', '{18,99}'::int[], 'Professional symphony orchestra performing its subscription series at Memorial Chapel, University of Redlands.');
 insert into public.performances (org_id, position, date, title, venue, program, "from", source) values ('redsym', 0, '2026-09-12'::date, 'Shostakovich''s Fifth', 'Memorial Chapel, University of Redlands', 'Deanna Tham conducts — Derrick Skye ''Prisms, Cycles, Leaps''; Melanie Bonis ''Trois femmes de légende''; Shostakovich Symphony No. 5', '{"status":"unverified"}'::jsonb, 'https://www.redlandssymphony.com/26-27-season');
@@ -783,7 +783,7 @@ insert into public.organizations (
   '{"status":"unverified"}'::jsonb, '{18,99}'::int[], '{"Strings","Winds","Brass","Percussion","Harp"}'::public.instrument[],
   '{"status":"not_applicable"}'::jsonb, '{"status":"unverified"}'::jsonb, '{"status":"not_applicable"}'::jsonb, '{"status":"not_applicable"}'::jsonb,
   'Good fit if you want big-stage professional concerts in the heart of the Inland Empire — and a symphony family your young musician can grow into.', NULL, '2026-07-06'::date,
-  'in_review', 'curated', NULL
+  'published', 'curated', NULL
 );
 insert into public.ensembles (org_id, position, name, level, ages, "desc") values ('sbso', 0, 'San Bernardino Symphony Orchestra', 'Professional', '{18,99}'::int[], 'Professional orchestra led by Music Director Anthony Parnther; its education wing fields the SBSYO and SBSOO youth orchestras (listed separately).');
 insert into public.performances (org_id, position, date, title, venue, program, "from", source) values ('sbso', 0, '2026-09-05'::date, 'This is Jazz', NULL, 'The Josh Nelson Jazz Ensemble — works by Mulgrew Miller, Michel Petrucciani, Mike Wofford, Kenny Kirkland, George Cables, and Josh Nelson', '{"status":"unverified"}'::jsonb, 'https://www.sanbernardinosymphony.org/september-5-concert');

@@ -1,0 +1,13 @@
+// Cloudflare deploy config. The connected Cloudflare project runs
+// `npx wrangler deploy` on every push to main; this file tells it Tutti is a
+// STATIC site served from the repo root (no build step, no server code).
+// The _redirects file maps the domain root to the app. Files listed in
+// .assetsignore are not uploaded.
+{
+  "name": "tutti",
+  "compatibility_date": "2026-07-06",
+  "assets": {
+    "directory": ".",
+    "html_handling": "auto-trailing-slash"
+  }
+}
