@@ -74,8 +74,10 @@ Both end at the same tables. Pick per task.
 
 ## Publish / unpublish checklist
 
-- [ ] `name`, `type`, `lat`/`lng`, `area`, `website` correct; `metro` = Southern California
-      (scope: Bakersfield to San Diego, coast to ~Irvine, ±50 miles — borderline calls are Milai's).
+- [ ] `name`, `type`, `lat`/`lng`, `area`, `website` correct; `metro` = the org's region:
+      Greater Los Angeles / Orange County / San Diego County / Ventura County / Kern County /
+      Inland Empire (scope: Bakersfield to San Diego, coast to ~Irvine, ±50 miles;
+      Santa Barbara & Coachella out — borderline calls are Milai's).
 - [ ] At least one ensemble.
 - [ ] Every `verified` fact has a real, public `source`; everything else is `unverified`.
 - [ ] `not_applicable` used only on professional orgs.

@@ -3,7 +3,7 @@
 The finalized data contract for real Tutti listings. `schema.json` is the machine-checkable version (JSON Schema, Draft 2020-12); this file is the plain-English explainer.
 
 **Decisions this schema encodes** (locked in Phase 2 planning):
-- **Scope:** Southern California only — Bakersfield to San Diego, coast to ~Irvine, ±50 miles (expanded from Greater Los Angeles 2026-07-06). The `metro` field is an enum with one allowed value, so anything outside the region fails validation — scope creep can't sneak in through the data.
+- **Scope:** Southern California only — Bakersfield to San Diego, coast to ~Irvine, ±50 miles; Inland Empire in, Santa Barbara & Coachella out (expanded from Greater Los Angeles 2026-07-06). Each org's `metro` is its **region** (a closed six-value enum), so anything outside the scope fails validation — scope creep can't sneak in through the data.
 - **Sourcing:** manual curation now (we draft + cite, you approve), with `provenanceType` and `listingStatus` reserved so self-serve submissions and scrape-then-review plug in later without a schema change.
 - **Honesty fallback:** unconfirmed facts render as **"Check their site"** rather than a guessed value.
 
@@ -59,7 +59,7 @@ This has two knock-on effects for the **2.3 HTML rebuild** (flagging now so they
 | field | type | req | notes |
 |---|---|---|---|
 | `version` | string | ✓ | e.g. `"2.0.0"` |
-| `metro` | enum | ✓ | only `"Southern California"` |
+| `metro` | enum | ✓ | `"Southern California"` (multi-region set) or `"Greater Los Angeles"` (original single-region file) |
 | `generatedAt` | date | ✓ | when the file was assembled |
 | `organizations` | array | ✓ | the listings |
 
@@ -72,7 +72,7 @@ This has two knock-on effects for the **2.3 HTML rebuild** (flagging now so they
 | `type` | enum | ✓ | youth / professional / community / collegiate → drives pin & badge color |
 | `lat`, `lng` | number | ✓ | for the map pin |
 | `area` | string | ✓ | neighborhood label |
-| `metro` | enum | ✓ | `"Southern California"` |
+| `metro` | enum | ✓ | the org's region: Greater LA / Orange County / San Diego County / Ventura County / Kern County / Inland Empire |
 | `website` | uri | ✓ | the authoritative source we route to |
 | `applyUrl` | uri/null | | "Apply" target; falls back to `website` |
 | `blurb` | string | ✓ | editorial description |
