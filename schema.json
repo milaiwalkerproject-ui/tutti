@@ -43,10 +43,11 @@
         {
           "if": { "properties": { "status": { "const": "verified" } } },
           "then": {
-            "required": ["value", "source"],
+            "required": ["value", "source", "asOf"],
             "properties": {
               "value": { "type": "string", "minLength": 1 },
-              "source": { "type": "string", "minLength": 1 }
+              "source": { "type": "string", "minLength": 1 },
+              "asOf": { "type": "string", "minLength": 1 }
             }
           }
         },
@@ -72,10 +73,11 @@
         {
           "if": { "properties": { "status": { "const": "verified" } } },
           "then": {
-            "required": ["value", "source"],
+            "required": ["value", "source", "asOf"],
             "properties": {
               "value": { "type": "number", "minimum": 0 },
-              "source": { "type": "string", "minLength": 1 }
+              "source": { "type": "string", "minLength": 1 },
+              "asOf": { "type": "string", "minLength": 1 }
             }
           }
         },
@@ -101,10 +103,11 @@
         {
           "if": { "properties": { "status": { "const": "verified" } } },
           "then": {
-            "required": ["value", "source"],
+            "required": ["value", "source", "asOf"],
             "properties": {
               "value": { "type": "boolean" },
-              "source": { "type": "string", "minLength": 1 }
+              "source": { "type": "string", "minLength": 1 },
+              "asOf": { "type": "string", "minLength": 1 }
             }
           }
         }

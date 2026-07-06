@@ -27,7 +27,7 @@ Example — a confirmed tuition vs. an unconfirmed one vs. a pro orchestra:
 "tuition": { "status": "not_applicable" }   // professional org — no tuition
 ```
 
-The schema enforces this: a `verified` field **must** carry a `source`, and an `unverified` field **must not** carry a value (so nobody can smuggle a guess in). This is what lets us drop the blanket "sample data" ribbon for confirmed fields while staying truthful about the gaps.
+The schema enforces this: a `verified` field **must** carry a `value`, a `source`, **and** an `asOf` date (tightened 2026-07-06 — previously `asOf` was convention only), and an `unverified` field **must not** carry a value (so nobody can smuggle a guess in). This is what lets us drop the blanket "sample data" ribbon for confirmed fields while staying truthful about the gaps.
 
 An `unverified` field may also carry a `source` — not a confirmation, just a **pointer**: the page where a parent can check that fact directly. The UI uses it as the "Check their site" link target instead of the homepage. A pointer must be a page we actually consulted (add it to the org's `sources` audit trail too); never guess a URL. `asOf` stays reserved for confirmed values.
 
