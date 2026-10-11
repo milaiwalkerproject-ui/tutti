@@ -95,7 +95,31 @@ This has two knock-on effects for the **2.3 HTML rebuild** (flagging now so they
 
 **Ensemble:** `name`✓, `level`✓ (the 5 levels), `ages`✓, `desc`.
 **Performance:** `date`✓, `title`✓, `from`✓ (verifiable number; `value:0` = free), `venue`, `program`, `source`.
-**Audition:** `level`✓, `instruments`✓, `window`✓ (verifiable — the most volatile field in the dataset), `status`✓ (open/upcoming/rolling), `ages`✓, `note`, `source`.
+**Audition:** `level`✓, `instruments`✓, `window`✓ (verifiable — the most volatile field in the dataset), `status`✓ (open/upcoming/rolling), `opensOn`, `closesOn`, `ages`✓, `note`, `source`.
+
+### Audition dates — "dates decide" (Phase 5, approved by Milai 2026-10-10)
+
+Until October 2026 the badge on an audition ("Open now", "Upcoming") came straight from the hand-set `status`, and nothing ever expired it — labels set in July still said "Open now" in October. Now the badge is **computed from two optional dates**:
+
+| field | meaning |
+|---|---|
+| `opensOn` | first day families can apply for this round (`YYYY-MM-DD`) |
+| `closesOn` | last day to get in: the application deadline — or, if the deadline is soft (late fee) or there is none, the last day the source says a family can still get in (often the last audition day) |
+
+Both **restate dates from the audition's verified `window`** — same source, same `asOf`. They are only allowed when `window.status` is `verified` (schema check in `scripts/sync-data.mjs` and a database CHECK), and `opensOn` can't be after `closesOn`. Never fill them from a guess, a "usually" or an "each spring".
+
+What the parent sees (today = Pacific time):
+
+| dates | badge |
+|---|---|
+| today before `opensOn` | **Opens Mar 1** |
+| between `opensOn` and `closesOn` | **Open now · until May 1** |
+| only `closesOn` known, still ahead | **Apply by May 1** |
+| `closesOn` has passed | **Closed for this round** (kept on the board, grouped last, so families see when an orchestra usually auditions) |
+| no dates, `status: "rolling"`, window verified within a year | **Year-round** |
+| anything else | **Dates: check their site** |
+
+`status` stays in the data (nothing renamed) but only its `rolling` value still shapes the badge. "Open now" filters count both *Open now* and *Apply by* cards.
 
 ---
 

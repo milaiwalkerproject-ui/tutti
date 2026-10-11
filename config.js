@@ -19,6 +19,10 @@ window.TUTTI_CONFIG = {
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im55bG5xbXBiaWphbGd6a3VkaGdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMTQxNjAsImV4cCI6MjA5ODg5MDE2MH0.WrH7Tugj7EMLZ0cnrr6i1cIKNQFacn6bii9JsQ4c2XA",
   useApi: true,
   stadiaApiKey: "24746999-ed8d-4634-bd4f-170c079720b8", // public, for map tiles
+  // Report-a-problem + "Suggest an orchestra" inbox (Milai's decision, 2026-10-10).
+  // Cloudflare Email Routing forwards it to Milai's Gmail — set that up BEFORE this
+  // reaches main (LAUNCH-CHECKLIST.md, Step 7), or reports would bounce.
+  reportEmail: "reports@tutti-orchestra.com",
   // appleSignIn: true,   // uncomment ONLY after Apple sign-in is configured in
   //                      // Supabase (Services ID + key + domain). Until then the
   //                      // "Continue with Apple" button stays hidden so nobody

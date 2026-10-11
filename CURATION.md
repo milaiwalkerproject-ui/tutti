@@ -86,10 +86,36 @@ Both end at the same tables. Pick per task.
 - [ ] `last_verified` set to today.
 - [ ] Flip `listing_status` → `published`.
 
-**Refresh cadence (Milai, 2026-07-06): audition windows are re-checked every
-week for now; everything else twice a year.** A re-check that confirms a value
-updates its `asOf`; one that can't confirm it flips the fact back to
-`unverified` — never leave a stale value looking fresh.
+**Refresh cadence (Milai, 2026-10-10 — replaces the weekly plan of 2026-07-06):
+two seasonal sweeps a year, in late February (ahead of spring auditions) and early
+June (ahead of summer auditions), run as scheduled tasks in the Claude.ai project.**
+Claude researches every orchestra with citations and drafts a review list; Milai
+approves; nothing changes without her OK. Reports from the inbox trigger a
+re-check of that listing in between.
+
+Between sweeps the site stays honest on its own: audition badges are computed from
+`opensOn` / `closesOn` ("dates decide", see SCHEMA.md), so a round closes itself on
+its deadline, and past concerts drop off the boards. A re-check that confirms a value
+updates its `asOf`; one that can't confirm it flips the fact back to `unverified` —
+never leave a stale value looking fresh.
+
+**Filling audition dates during a sweep**
+- Only on a `verified` window, restating dates that page states: `closesOn` = the
+  application deadline (soft deadline or late registration → the last day a family
+  can still get in; no deadline → the last audition day); `opensOn` only when the
+  page gives a start date.
+- "Each spring", "usually in August", "by appointment" → no dates. The card then
+  says "Dates: check their site", which is the honest answer.
+- When a round has closed and the next one isn't posted, keep the closed dates —
+  "Closed for this round" plus the last window tells families when to look again.
+
+**Getting a sweep onto the live site without touching Saved lists**
+1. Update `data.json`, then `node scripts/sync-data.mjs` (validates + regenerates).
+2. `node scripts/audition-updates-sql.mjs > audition-updates.sql` — prints in-place
+   UPDATEs for every audition and each org's `last_verified` (no truncate).
+3. Supabase dashboard → **SQL Editor** → paste → **Run**. The last line returns the
+   audition count; it should match the number the file's comment states.
+Adding or removing an audition or an organization is still a Studio job (path A).
 
 ---
 

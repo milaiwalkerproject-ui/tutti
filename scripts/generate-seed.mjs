@@ -72,8 +72,8 @@ export function buildSeed(data) {
 
     (o.auditions || []).forEach((a, i) => {
       w(
-        `insert into public.auditions (org_id, position, level, instruments, "window", status, ages, note, source) values (` +
-          `${q(o.id)}, ${i}, ${q(a.level)}, ${q(a.instruments)}, ${jsonb(a.window)}, ${q(a.status)}, ${intArr(a.ages)}, ${txt(a.note)}, ${txt(a.source)});`
+        `insert into public.auditions (org_id, position, level, instruments, "window", status, opens_on, closes_on, ages, note, source) values (` +
+          `${q(o.id)}, ${i}, ${q(a.level)}, ${q(a.instruments)}, ${jsonb(a.window)}, ${q(a.status)}, ${dateLit(a.opensOn)}, ${dateLit(a.closesOn)}, ${intArr(a.ages)}, ${txt(a.note)}, ${txt(a.source)});`
       );
     });
 
