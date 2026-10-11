@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>Tutti</title>
+  <!-- Tutti's map pin: the same note-head teardrop as the map (youth brass, white edge,
+       point to the left), with an upright eighth note -->
+  <g transform="translate(3.6 4)">
+    <path d="M14 46V28a18 18 0 0 1 36 0a18 18 0 0 1-18 18Z" transform="rotate(45 32 28)"
+          fill="#B5832A" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
+    <g fill="#fff" transform="translate(32 28) scale(.78) translate(-32 -28)">
+      <ellipse cx="28.6" cy="35" rx="6.4" ry="4.8" transform="rotate(-24 28.6 35)"/>
+      <rect x="32.4" y="14.5" width="3.4" height="21" rx="1.2"/>
+      <path d="M35.4 14.7c4.8 2 9 5.3 7.7 12.7c-1.2-3.7-4.1-6.1-7.7-7.2z"/>
+    </g>
+  </g>
+</svg>

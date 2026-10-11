@@ -88,6 +88,13 @@ Goal: make the prototype demo-ready and convincing without a backend yet.
 
 ---
 
+## Phase 5 — Trust, sharing, and Auditioner (2026-10-10)
+Decided in a grill session the day Auditioner joined as Tutti's sister project. The decision log, what was built, the 20 restated audition dates awaiting approval, and the next tasks (5.1–5.9) live in **`PHASE-5-PLAN.md`**; the rollout is **`LAUNCH-CHECKLIST.md` → Step 10**.
+
+In one line each: families first · dates decide "Open now" · two seasonal re-check sweeps · "Prepare in Auditioner" only where it helps · share links + previews · reports@tutti-orchestra.com · project knowledge = GitHub `main` only.
+
+---
+
 ## Delegating well — quick tips
 - **One task per conversation.** Paste the task prompt; let Claude read HANDOFF.md + the current file.
 - **Always hand over the latest file** when iterating, or tell Claude to start from the version in project knowledge.

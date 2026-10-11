@@ -9,10 +9,29 @@
   The dataset embedded in #bootstrap-data is GENERATED from data.json by
   scripts/sync-data.mjs — never edit it by hand. reviews stay null until a
   real aggregated source exists (never invent one).
+  Phase 5 (2026-10-10): audition badges are computed from confirmed opensOn/closesOn
+  dates ("dates decide"), past concerts drop off, and every orchestra has a share
+  address at /o/<id>. See PHASE-5-PLAN.md.
 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Tutti — find an ensemble near you</title>
+<!-- Link previews (Phase 5): what a shared link shows in a group chat, an email or a search
+     result. One card for the whole site — every /o/<id> address serves this same page. -->
+<meta name="description" content="Find a youth orchestra for your child across Southern California: a hand-curated map of orchestras with ages, costs and auditions. Confirmed details cite their source." />
+<link rel="canonical" href="https://tutti-orchestra.com/" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Tutti" />
+<meta property="og:title" content="Tutti — find an ensemble near you" />
+<meta property="og:description" content="A hand-curated map of Southern California youth orchestras: ages, costs and auditions, with confirmed details cited." />
+<meta property="og:url" content="https://tutti-orchestra.com/" />
+<meta property="og:image" content="https://tutti-orchestra.com/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Tutti — orchestra pins shaped like music notes sitting on a five-line staff." />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="theme-color" content="#1E2E37" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -22,8 +41,10 @@
 
 <!-- Phase 3: optional backend. config.js sets window.TUTTI_CONFIG (Supabase URL + anon
      key); supabase-js powers accounts + persistent Saved. Both are optional — if neither
-     loads, Tutti falls back to the bundled dataset and an in-memory Saved list. -->
-<script src="config.js"></script>
+     loads, Tutti falls back to the bundled dataset and an in-memory Saved list.
+     Root-absolute ("/config.js") since Phase 5: share links live at /o/<id>, where a
+     relative path would resolve to /o/config.js. Serve the repo from its root locally. -->
+<script src="/config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
@@ -63,7 +84,8 @@
   }
 
   /* ---------- App shell ---------- */
-  .app{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
+  /* overflow:clip (where supported) also stops focus or scripts from scrolling the shell sideways */
+  .app{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;overflow:clip}
 
   /* ---------- Top bar ---------- */
   .topbar{
@@ -109,7 +131,7 @@
   .ghost--accent:hover{background:rgba(181,131,42,.1);border-color:var(--brass);color:var(--brass-deep)}
   @media(max-width:640px){.ghost--plain{display:none}}
   /* the account button stays visible at every width — phones need sign-in most;
-     "List your organization" steps back on phones to make room (org owners are
+     "Suggest an orchestra" steps back on phones to make room (org owners are
      on desktops; parents are on phones) */
   .acct-top{display:inline-flex;align-items:center;gap:6px}
   @media(max-width:640px){
@@ -243,7 +265,10 @@
   .cmp-tray__clear{background:transparent;border:0;color:#cfdade;font-weight:700;font-size:12.5px}
 
   /* map */
-  .map-wrap{flex:1;position:relative;min-width:0}
+  /* isolation keeps Leaflet's own z-indexes (zoom buttons sit at 1000) inside the map, so the
+     orchestra panel and dialogs always cover them — on phones the zoom buttons used to float
+     on top of the panel */
+  .map-wrap{flex:1;position:relative;min-width:0;isolation:isolate}
   #map{position:absolute;inset:0;background:#e9e9e4}
   .legend{
     position:absolute;left:14px;bottom:16px;z-index:450;background:var(--surface);
@@ -301,7 +326,9 @@
   .detail__close:hover{color:var(--ink);border-color:var(--ink-soft)}
   /* full-size (and finger-friendly) hit area — the visible circle plus a 6px halo */
   .detail__close::after,.modal__close::after{content:"";position:absolute;inset:-6px;border-radius:50%}
-  .detail__badges{display:flex;gap:7px;position:relative;z-index:2;margin-bottom:8px;flex-wrap:wrap}
+  .detail__badges{display:flex;gap:7px;position:relative;z-index:2;margin-bottom:8px;flex-wrap:wrap;padding-right:40px}
+  /* a long season label wraps inside the panel instead of running off its edge */
+  .detail__badges .badge{white-space:normal;line-height:1.35}
   .detail__name{font-family:var(--display);font-size:25px;font-weight:600;line-height:1.12;margin:0;position:relative;z-index:2}
   .detail__area{font-size:13.5px;color:var(--ink-soft);margin:6px 0 0;position:relative;z-index:2;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
   .detail__rating{display:inline-flex;align-items:center;gap:5px;color:var(--brass-deep);font-weight:800}
@@ -356,11 +383,16 @@
   .audrow__top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
   .lvl{font-size:11px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;
     padding:3px 8px;border-radius:6px;background:rgba(62,83,96,.13);color:var(--slate)}
-  .status{font-size:11px;font-weight:800;display:flex;align-items:center;gap:5px}
-  .status .d{width:7px;height:7px;border-radius:50%}
+  /* Audition timing badges (Phase 5: dates decide). Computed from opensOn/closesOn —
+     never from a hand-set label — so a badge can't outlive its dates. Existing tokens only. */
+  .status{font-size:11px;font-weight:800;display:flex;align-items:center;gap:5px;line-height:1.3;white-space:nowrap}
+  .status .d{width:7px;height:7px;border-radius:50%;flex:0 0 auto;box-sizing:border-box}
   .status--open{color:var(--teal)} .status--open .d{background:var(--teal);box-shadow:0 0 0 3px rgba(46,110,106,.18)}
+  .status--deadline{color:var(--teal)} .status--deadline .d{background:var(--teal)}
   .status--upcoming{color:var(--brass-deep)} .status--upcoming .d{background:var(--brass)}
-  .status--rolling{color:var(--ink-soft)} .status--rolling .d{background:var(--ink-faint)}
+  .status--yearround{color:var(--teal)} .status--yearround .d{border:2px solid var(--teal)}
+  .status--unknown{color:var(--ink-soft)} .status--unknown .d{border:1.5px solid var(--ink-soft)}
+  .status--closed{color:var(--ink-soft)} .status--closed .d{background:var(--ink-faint)}
   .audrow__meta{font-size:12.5px;color:var(--ink-soft);line-height:1.5}
   .audrow__meta b{color:var(--ink)}
 
@@ -378,7 +410,8 @@
   .btn--primary:hover{background:#7d590f}
   .btn--save{flex:0 0 auto;width:48px;padding:12px 0}
   .btn--save.is-saved{background:rgba(140,47,54,.1);border-color:var(--garnet);color:var(--garnet)}
-  .detail__cta-row2{grid-column:1/-1;margin-top:-2px}
+  .detail__cta-row2{grid-column:1/-1;margin-top:-2px;display:flex;flex-wrap:wrap;gap:10px}
+  .detail__cta-row2 .btn{flex:1 1 120px;white-space:nowrap}
   .detail__checked{margin:2px 22px 22px;font-size:12.5px;line-height:1.55;color:var(--ink-soft)}
   .detail__checked a{color:inherit}
   .linklike{background:none;border:0;padding:0;font:inherit;color:inherit;text-decoration:underline;cursor:pointer}
@@ -396,11 +429,12 @@
   .board__filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
   .board__search{
     display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;
-    padding:7px 13px;background:var(--paper);min-width:180px;
+    padding:7px 13px;background:var(--paper);min-width:230px;
   }
   .board__search input{border:0;outline:0;background:transparent;font-size:13.5px;width:100%;font-family:inherit}
   .board__scroll{flex:1;min-height:0;overflow:auto;padding:18px 28px 32px}
-  .board__grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+  /* min(330px,100%): a phone column is narrower than 330px, which used to push cards past the right edge */
+  .board__grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(330px,100%),1fr));gap:14px}
 
   .aud-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 17px;
     display:flex;flex-direction:column;gap:0;transition:.13s}
@@ -413,6 +447,14 @@
   .kv svg{flex:0 0 auto;color:var(--brass-deep);margin-top:1px}
   .kv span{color:var(--ink-soft)} .kv b{color:var(--ink);font-weight:700}
   .aud-card__foot{margin-top:auto;display:flex;gap:9px}
+  .aud-card__top > div{min-width:0}
+  .aud-card__top .status{flex:0 0 auto;padding-top:3px}
+  /* a round that has closed stays visible (families learn when an orchestra usually
+     auditions) but steps back: dashed edge, no lift — text keeps full AA contrast */
+  .aud-card.is-closed{background:rgba(255,255,255,.6);border-style:dashed}
+  .aud-card.is-closed:hover{box-shadow:none;transform:none}
+  .board__group{grid-column:1/-1;margin:14px 0 0}
+  .board__group span{font-weight:700;letter-spacing:0;text-transform:none;color:var(--ink-soft)}
   .linkout{
     flex:1;text-align:center;text-decoration:none;border:1px solid var(--ink);border-radius:10px;
     padding:9px;font-weight:800;font-size:13px;color:var(--ink);display:flex;align-items:center;justify-content:center;gap:6px;
@@ -437,7 +479,7 @@
   .empty h3{font-family:var(--display);color:var(--ink-soft);font-weight:600;margin:0 0 5px;font-size:19px}
   .empty p{margin:0;font-size:13.5px}
 
-  /* ---------- Modal shell (compare + submit) ---------- */
+  /* ---------- Modal shell (compare, sign-in, how it works, suggest) ---------- */
   .modal{
     position:fixed;inset:0;z-index:800;display:none;align-items:center;justify-content:center;
     padding:24px;background:rgba(30,46,55,.42);
@@ -477,51 +519,6 @@
   .cmp-cell-apply{display:inline-flex;align-items:center;gap:6px;color:var(--brass-deep);font-weight:800;text-decoration:none;font-size:12.5px}
   .cmp-empty{padding:40px 10px;text-align:center;color:var(--ink-soft)}
 
-  /* submit form */
-  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px}
-  .field{display:flex;flex-direction:column;gap:5px}
-  .field--full{grid-column:1/-1}
-  .field label{font-size:12px;font-weight:800;color:var(--ink);letter-spacing:.01em}
-  .field label .req{color:var(--garnet)}
-  .field .hint{font-size:11.5px;color:var(--ink-soft);font-weight:600}
-  .field input,.field select,.field textarea{
-    font-family:inherit;font-size:13.5px;color:var(--ink);background:var(--surface);
-    border:1px solid var(--line);border-radius:10px;padding:9px 11px;width:100%;
-  }
-  .field textarea{resize:vertical;min-height:66px}
-  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--brass);box-shadow:0 0 0 3px rgba(181,131,42,.16)}
-  .field.has-error input,.field.has-error select,.field.has-error textarea{border-color:var(--garnet)}
-  .field__err{font-size:11.5px;color:var(--garnet);font-weight:700;display:none}
-  .field.has-error .field__err{display:block}
-  .form-sect{margin-top:22px;border-top:1px solid var(--line-soft);padding-top:16px}
-  .form-sect__h{font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--brass-deep);margin:0 0 4px}
-  .form-sect__note{font-size:12px;color:var(--ink-soft);margin:0 0 12px}
-  .checks{display:flex;flex-wrap:wrap;gap:8px}
-  .checks label{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--ink-soft);
-    border:1px solid var(--line);border-radius:999px;padding:6px 12px;cursor:pointer}
-  .checks input{width:auto;accent-color:var(--brass-deep)}
-  .switchline{display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:700;color:var(--ink)}
-  .switchline input{width:auto;accent-color:var(--brass-deep);transform:scale(1.15)}
-  .repeat{border:1px solid var(--line);border-radius:12px;padding:13px;margin-bottom:10px;position:relative;background:var(--paper)}
-  .repeat__rm{position:absolute;top:9px;right:9px;border:1px solid var(--line);background:var(--surface);
-    border-radius:8px;font-size:11.5px;font-weight:800;color:var(--ink-soft);padding:3px 8px}
-  .repeat__rm:hover{color:var(--garnet);border-color:var(--garnet)}
-  .add-row{border:1px dashed var(--line);background:var(--surface);color:var(--brass-deep);
-    border-radius:10px;padding:9px;font-weight:800;font-size:13px;width:100%;display:flex;align-items:center;justify-content:center;gap:7px}
-  .add-row:hover{border-color:var(--brass);background:rgba(181,131,42,.06)}
-  .modal__foot{display:flex;align-items:center;justify-content:space-between;gap:12px;
-    padding:14px 24px;border-top:1px solid var(--line);background:var(--surface)}
-  .modal__foot .note{font-size:12px;color:var(--ink-soft);max-width:42ch}
-  .btn--submit{background:var(--brass-deep);border:1px solid var(--brass-deep);color:#fff;border-radius:11px;
-    padding:11px 22px;font-weight:800;font-size:14px}
-  .btn--submit:hover{background:#7d590f}
-  .form-success{text-align:center;padding:34px 20px}
-  .form-success__mark{width:58px;height:58px;border-radius:50%;background:rgba(46,110,106,.14);color:var(--teal);
-    display:grid;place-items:center;margin:0 auto 14px}
-  .form-success h3{font-family:var(--display);font-size:22px;font-weight:600;margin:0 0 6px}
-  .form-success p{font-size:13.5px;color:var(--ink-soft);margin:0 auto 6px;max-width:46ch;line-height:1.5}
-  .form-success__actions{display:flex;gap:10px;justify-content:center;margin-top:18px}
-
   /* sample-data ribbon */
   .ribbon{
     position:fixed;bottom:14px;right:16px;z-index:700;background:var(--ink);color:#e6edef;
@@ -532,6 +529,20 @@
   .ribbon button{border:0;background:rgba(255,255,255,.14);color:#fff;border-radius:6px;
     width:22px;height:22px;flex:0 0 auto;font-weight:800}
   .ribbon button:hover{background:rgba(255,255,255,.28)}
+  /* while an orchestra's panel is open the notice steps aside: it sat on top of the panel's
+     Share / Report buttons, and the panel carries its own "How we check listings" line */
+  body.detail-open .ribbon{display:none}
+  /* the text button needs its own size — the 22px square is for the × only */
+  .ribbon #ribbonHow{width:auto;padding:0 9px;white-space:nowrap;font-size:11.5px}
+
+  /* toast — "Link copied" and other one-line confirmations (Phase 5) */
+  .toast{
+    position:fixed;left:50%;bottom:22px;z-index:900;transform:translate(-50%,14px);
+    background:var(--ink);color:#fff;border-radius:11px;padding:10px 16px;
+    font-size:13px;font-weight:700;box-shadow:var(--shadow);max-width:min(92vw,520px);
+    overflow-wrap:anywhere;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;
+  }
+  .toast.is-on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
 
   /* mobile */
   @media(max-width:760px){
@@ -540,16 +551,34 @@
     #view-explore.show-map .rail{display:none}
     #view-explore .map-wrap{display:none}
     #view-explore.show-map .map-wrap{display:block}
-    .map-toggle{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);z-index:460}
+    /* bottom-left, so it never sits under the "How we check" notice on the right */
+    .map-toggle{position:absolute;bottom:14px;left:12px;z-index:460}
+    .cmp-tray.is-up ~ .map-toggle{bottom:74px}   /* stay above the compare tray */
     .cmp-tray{right:0}
     #view-explore.show-map .cmp-tray{bottom:0}
-    .form-grid{grid-template-columns:1fr}
     .factgrid{grid-template-columns:1fr}
     /* quick-location chips: one thumb-scrollable row instead of a stack over the map */
     .presets{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;max-width:94%;
       padding:0 2px 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
     .presets::-webkit-scrollbar{display:none}
     .preset{flex:none}
+    /* Phase 5 phone fixes: 16px gutters on the boards, full-width orchestra panel,
+       and the audition badge drops under the title instead of squeezing it */
+    .board__head{padding:18px 16px 8px}
+    .board__scroll{padding:14px 16px 28px}
+    .board__search{min-width:0;flex:1 1 100%}
+    .aud-card__top{flex-direction:column;gap:6px}
+    .aud-card__top .status{padding-top:0}
+    .detail{width:100%}
+    .detail__head{padding:18px 16px 14px}
+    .detail__body{padding:6px 16px 24px}
+    .detail__cta{padding:12px 16px}
+    .detail__checked{margin:2px 16px 20px}
+    /* the honesty notice shrinks to its "How we check" button on phones — full size it
+       covered the map/list switch, the compare tray and the bottom of every panel */
+    .ribbon{right:10px;bottom:12px;max-width:none;padding:6px;gap:6px}
+    .ribbon > span{display:none}
+    body.tray-up .ribbon{bottom:70px}
   }
   @media(min-width:761px){.map-toggle{display:none}}
   .map-toggle{
@@ -595,7 +624,7 @@
       </div>
     </div>
     <div class="topbar__right">
-      <button class="ghost ghost--accent" id="listBtn">List your organization</button>
+      <button class="ghost ghost--accent" id="listBtn" hidden>Suggest an orchestra</button>
       <button class="ghost ghost--plain" id="helpBtn">How it works</button>
       <button class="ghost ghost--plain acct-top" id="acctBtn" hidden>Sign in</button>
     </div>
@@ -682,7 +711,6 @@
           <div class="legend__row"><span class="legend__dot" style="background:var(--garnet)"></span>Professional</div>
           <div class="legend__row"><span class="legend__dot" style="background:var(--teal)"></span>Community</div>
         </div>
-        <button class="map-toggle" id="mapToggle">View list</button>
       </div>
 
       <!-- compare tray -->
@@ -693,6 +721,10 @@
         <button class="cmp-tray__go" id="cmpGo" disabled>Compare</button>
       </div>
 
+      <!-- phone map/list switch. It lives outside .map-wrap (Phase 5 fix): inside it, the
+           button vanished together with the map in list view, leaving no way back. -->
+      <button class="map-toggle" id="mapToggle">View list</button>
+
       <!-- detail slide-over -->
       <div class="detail" id="detail" role="dialog" aria-modal="true" aria-labelledby="detailName" aria-hidden="true"></div>
     </section>
@@ -701,12 +733,12 @@
     <section class="view board" id="view-auditions" aria-label="Auditions">
       <div class="board__head">
         <h2 class="board__title">Auditions</h2>
-        <p class="board__sub">Open and upcoming auditions across every level — from a child's first ensemble to professional seats. Each card links straight to the organization's audition page.</p>
+        <p class="board__sub">Auditions and sign-ups at every level, from a child's first ensemble to professional seats. A card says “Open now” only while its confirmed dates say so; every card links to the orchestra's own audition page.</p>
         <div class="board__filters" role="group" aria-label="Filter auditions">
           <button class="chip is-on" data-aud-status="all" aria-pressed="true">All</button>
           <button class="chip" data-aud-status="open" aria-pressed="false">Open now</button>
-          <button class="chip" data-aud-status="upcoming" aria-pressed="false">Upcoming</button>
-          <button class="chip" data-aud-status="rolling" aria-pressed="false">Rolling</button>
+          <button class="chip" data-aud-status="upcoming" aria-pressed="false">Coming up</button>
+          <button class="chip" data-aud-status="yearround" aria-pressed="false">Year-round</button>
           <span style="width:1px;height:22px;background:var(--line);margin:0 4px" aria-hidden="true"></span>
           <label for="audLevel" class="visually-hidden">Filter by level</label>
           <select id="audLevel" style="font-family:inherit;font-size:13px;font-weight:600;border:1px solid var(--line);border-radius:999px;padding:8px 12px;background:var(--surface);color:var(--ink)">
@@ -731,7 +763,7 @@
     <section class="view board" id="view-performances" aria-label="Concerts">
       <div class="board__head">
         <h2 class="board__title">Upcoming concerts</h2>
-        <p class="board__sub">Every performance in the current season, soonest first — with ticket pricing and venue at a glance.</p>
+        <p class="board__sub">Concerts from the orchestras on Tutti, soonest first. Past dates drop off on their own; each orchestra's site has its full season.</p>
       </div>
       <div class="board__scroll"><div class="board__grid" id="perfGrid"></div></div>
     </section>
@@ -764,19 +796,29 @@
   </div>
 </div>
 
-<!-- SUBMIT MODAL -->
-<div class="modal" id="subModal" role="dialog" aria-modal="true" aria-labelledby="subModalTitle" aria-hidden="true">
-  <div class="modal__panel">
+<!-- SUGGEST AN ORCHESTRA (Phase 5). Replaces the prototype "List your organization" form,
+     which only logged to the browser console while telling the sender they were "in the
+     review queue". Listings are curated (PHASE-3-PLAN: no public submission form), so this
+     is an honest email hand-off to the report inbox; the button stays hidden until
+     window.TUTTI_CONFIG.reportEmail is set. -->
+<div class="modal" id="suggestModal" role="dialog" aria-modal="true" aria-labelledby="suggestModalTitle" aria-hidden="true">
+  <div class="modal__panel" style="max-width:480px">
     <div class="modal__head">
       <div>
-        <h2 class="modal__title" id="subModalTitle">List your organization</h2>
-        <p class="modal__sub">Tell parents and players about your ensemble. We review every submission before it appears on the map.</p>
+        <h2 class="modal__title" id="suggestModalTitle">Suggest an orchestra</h2>
+        <p class="modal__sub">Tutti is put together by hand, so there's no form to fill in.</p>
       </div>
-      <button class="modal__close" id="subModalClose" aria-label="Close form">
+      <button class="modal__close" id="suggestModalClose" aria-label="Close">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
       </button>
     </div>
-    <div class="modal__body" id="subBody"><!-- form injected --></div>
+    <div class="modal__body">
+      <div class="privacy">
+        <p>Know an orchestra or youth ensemble in Southern California that belongs on the map — or run one? Email us its name and website. A person checks every suggestion against the organization's own site before anything is listed, and organizations can't pay to change how they appear.</p>
+        <p style="margin:16px 0 4px"><a class="btn btn--primary" id="suggestMail" href="#">Email a suggestion</a></p>
+        <p style="font-size:12.5px">Already listed and something's out of date? Use “Report a problem” on that orchestra's panel.</p>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -820,7 +862,7 @@
           <li>Coloured pins are orchestras: brass = youth, garnet = professional, teal = community, slate = collegiate.</li>
           <li>Tap a pin or a card for season, ensembles by age, prices and auditions.</li>
           <li>"Compare" puts two or three organizations side by side.</li>
-          <li>The Auditions tab gathers every open and upcoming audition, with links out.</li>
+          <li>The Auditions tab lists every orchestra's auditions. “Open now” shows only while the confirmed dates say so.</li>
         </ol>
         <h3>How we check listings</h3>
         <p>Every listing is curated by a person and checked against the organization's own website — nothing is scraped or auto-generated. Confirmed details cite the source we checked; anything we couldn't confirm shows <b>"Check their site,"</b> which takes you straight to the right page to verify it yourself.</p>
@@ -874,12 +916,13 @@
   <button id="ribbonHow">How we check</button>
   <button id="ribbonClose" aria-label="Dismiss notice">×</button>
 </div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script type="application/json" id="bootstrap-data">
 {
-  "version": "3.1.0",
+  "version": "3.2.0",
   "metro": "Southern California",
-  "generatedAt": "2026-07-06",
+  "generatedAt": "2026-10-10",
   "organizations": [
     {
       "id": "yola",
@@ -1235,6 +1278,7 @@
             "asOf": "2026-06-22"
           },
           "status": "upcoming",
+          "closesOn": "2026-08-23",
           "ages": [
             8,
             18
@@ -2425,6 +2469,7 @@
             "asOf": "2026-07-06"
           },
           "status": "open",
+          "closesOn": "2026-08-15",
           "ages": [
             13,
             18
@@ -2442,6 +2487,7 @@
             "asOf": "2026-07-06"
           },
           "status": "open",
+          "closesOn": "2026-08-15",
           "ages": [
             10,
             16
@@ -2459,6 +2505,7 @@
             "asOf": "2026-07-06"
           },
           "status": "open",
+          "closesOn": "2026-08-15",
           "ages": [
             8,
             13
@@ -2986,6 +3033,7 @@
             "asOf": "2026-07-06"
           },
           "status": "open",
+          "closesOn": "2026-09-04",
           "ages": [
             18,
             99
@@ -3003,6 +3051,7 @@
             "asOf": "2026-07-06"
           },
           "status": "open",
+          "closesOn": "2026-09-07",
           "ages": [
             18,
             99
@@ -3020,6 +3069,7 @@
             "asOf": "2026-07-06"
           },
           "status": "open",
+          "closesOn": "2026-10-05",
           "ages": [
             18,
             99
@@ -3153,6 +3203,7 @@
             "asOf": "2026-07-06"
           },
           "status": "upcoming",
+          "closesOn": "2026-05-01",
           "ages": [
             10,
             15
@@ -3170,6 +3221,7 @@
             "asOf": "2026-07-06"
           },
           "status": "upcoming",
+          "closesOn": "2026-05-01",
           "ages": [
             13,
             18
@@ -3406,6 +3458,7 @@
             "asOf": "2026-07-06"
           },
           "status": "open",
+          "opensOn": "2026-05-25",
           "ages": [
             8,
             18
@@ -3538,6 +3591,7 @@
             "asOf": "2026-07-06"
           },
           "status": "open",
+          "closesOn": "2026-08-16",
           "ages": [
             4,
             22
@@ -3671,6 +3725,7 @@
             "asOf": "2026-07-06"
           },
           "status": "open",
+          "closesOn": "2026-08-28",
           "ages": [
             18,
             99
@@ -3688,6 +3743,7 @@
             "asOf": "2026-07-06"
           },
           "status": "open",
+          "closesOn": "2026-10-02",
           "ages": [
             18,
             99
@@ -3842,6 +3898,8 @@
             "asOf": "2026-07-06"
           },
           "status": "open",
+          "opensOn": "2026-07-06",
+          "closesOn": "2026-07-30",
           "ages": [
             7,
             18
@@ -3859,6 +3917,7 @@
             "asOf": "2026-07-06"
           },
           "status": "open",
+          "closesOn": "2026-07-31",
           "ages": [
             7,
             11
@@ -4015,6 +4074,7 @@
             "asOf": "2026-07-06"
           },
           "status": "open",
+          "closesOn": "2026-07-18",
           "ages": [
             5,
             22
@@ -4166,6 +4226,8 @@
             "asOf": "2026-07-06"
           },
           "status": "open",
+          "opensOn": "2026-07-01",
+          "closesOn": "2026-07-31",
           "ages": [
             7,
             18
@@ -4625,6 +4687,7 @@
             "asOf": "2026-07-06"
           },
           "status": "open",
+          "closesOn": "2026-09-11",
           "ages": [
             6,
             13
@@ -4642,6 +4705,7 @@
             "asOf": "2026-07-06"
           },
           "status": "open",
+          "closesOn": "2026-08-03",
           "ages": [
             10,
             18
@@ -4865,6 +4929,7 @@
             "asOf": "2026-07-06"
           },
           "status": "open",
+          "closesOn": "2026-09-12",
           "ages": [
             12,
             19
@@ -5540,7 +5605,8 @@ async function loadData(){
   }
   let ds = null;
   try{
-    const res = await fetch("data.json", {cache:"no-store"});
+    // root-absolute over http(s) so it still resolves on a /o/<id> share address
+    const res = await fetch(/^https?:$/.test(location.protocol) ? "/data.json" : "data.json", {cache:"no-store"});
     if(res && res.ok) ds = await res.json();
   }catch(e){ /* file:// or offline — fall through to embedded bootstrap */ }
   if(ds){ DATA = publishedOrgs(ds); DATA_SOURCE = "file"; DATA_READY = true; return; }
@@ -5599,8 +5665,6 @@ const PRESETS = [
   {label:"San Diego", lat:32.7157, lng:-117.1611, z:12},
 ];
 
-const INSTRUMENTS = ["Strings","Winds","Brass","Percussion","Harp"];
-const LEVELS = ["Beginner","Intermediate","Advanced","Pre-professional","Professional"];
 
 /* ============================ STATE ============================ */
 const saved = new Set();          // working set of saved org ids (mirrors the DB when signed in)
@@ -5633,7 +5697,53 @@ function distanceMi(aLat,aLng,bLat,bLng){
 }
 function orgDistance(o){ return distanceMi(homePoint.lat, homePoint.lng, o.lat, o.lng); }
 function fmtDist(mi){ return mi<10 ? mi.toFixed(1)+" mi" : Math.round(mi)+" mi"; }
-function hasOpenAudition(o){ return o.auditions.some(a=>a.status==="open"); }
+
+/* ===================== AUDITION TIMING (Phase 5: dates decide) =====================
+   A badge only claims what confirmed dates support. opensOn / closesOn are optional and
+   exist only on auditions whose "When" is verified — schema.json, scripts/sync-data.mjs
+   and a database CHECK all enforce that — so a guessed date can never drive a badge.
+   The hand-set `status` no longer says "open" or "upcoming" on its own; only its
+   "rolling" value (year-round) still counts, and only while the window was confirmed
+   within the last year. "Today" is Pacific time: every listing is in Southern California. */
+const TODAY = todayInLA();
+function todayInLA(){
+  try{ return new Intl.DateTimeFormat("en-CA",{timeZone:"America/Los_Angeles",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date()); }
+  catch(e){ return new Date().toISOString().slice(0,10); }
+}
+const isIsoDate = s => typeof s==="string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
+const daysBetween = (a,b) => Math.round((Date.parse(b+"T00:00:00Z") - Date.parse(a+"T00:00:00Z")) / 86400000);
+function fmtDay(iso){   // "Mar 1" — or "Mar 1, 2027" when it isn't this year
+  const [y,m,d] = iso.split("-").map(Number);
+  return `${MONTHS[m-1]} ${d}` + (String(y)!==TODAY.slice(0,4) ? `, ${y}` : "");
+}
+const TIMING_ORDER = {open:0, deadline:1, upcoming:2, yearround:3, unknown:4, closed:5};
+function auditionTiming(a){
+  const verified = !!(a && a.window && a.window.status==="verified");
+  const opens  = verified && isIsoDate(a.opensOn)  ? a.opensOn  : null;
+  const closes = verified && isIsoDate(a.closesOn) ? a.closesOn : null;
+  if(closes && closes < TODAY)  return {key:"closed",   label:"Closed for this round", sort:closes};
+  if(opens && TODAY < opens)    return {key:"upcoming", label:`Opens ${fmtDay(opens)}`, sort:opens};
+  if(opens && closes)           return {key:"open",     label:`Open now · until ${fmtDay(closes)}`, sort:closes};
+  if(closes)                    return {key:"deadline", label:`Apply by ${fmtDay(closes)}`, sort:closes};
+  if(a.status==="rolling" && verified && isIsoDate(a.window.asOf) && daysBetween(a.window.asOf, TODAY) <= 365)
+                                return {key:"yearround", label:"Year-round", sort:""};
+  return {key:"unknown", label:"Dates: check their site", sort:""};
+}
+// "Open now" filters include "Apply by <date>": a confirmed deadline still ahead is something a family can act on today.
+const isOpenTiming = t => t.key==="open" || t.key==="deadline";
+const timingBadge = t => `<span class="status status--${t.key}"><span class="d"></span>${esc(t.label)}</span>`;
+function openAuditionCount(o){ return o.auditions.filter(a=>isOpenTiming(auditionTiming(a))).length; }
+function hasOpenAudition(o){ return openAuditionCount(o) > 0; }
+// Concerts are kept only while they're still ahead (today counts as upcoming).
+const upcomingPerformances = o => (o.performances||[]).filter(p=>isIsoDate(p.date) && p.date >= TODAY);
+
+/* Map moves: animated fly-to normally, an instant jump when the visitor asks for less motion. */
+const REDUCED_MOTION = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+function mapGo(latlng, zoom, opts){
+  if(!map) return;
+  if(REDUCED_MOTION) map.setView(latlng, zoom, {animate:false});
+  else map.flyTo(latlng, zoom, opts);
+}
 
 /* ============================ FILTER + SORT LOGIC ============================ */
 function ageOverlap(org){
@@ -5668,14 +5778,16 @@ function renderResults(){
   const showDist = activeSort==="nearest";
   $("#railSub").textContent = `${list.length} listing${list.length!==1?"s":""} · curated${showDist?` · from ${homePoint.label}`:""}`;
   if(!list.length){
-    wrap.innerHTML = `<div class="empty"><h3>No matches</h3><p>Try widening the age range, instrument, or type, or turn off “open now”.</p></div>`;
+    wrap.innerHTML = openNowOnly
+      ? `<div class="empty"><h3>Nothing confirmed open right now</h3><p>No audition here has confirmed dates that are open today. Turn off “open now” to see every orchestra and when they last held auditions.</p></div>`
+      : `<div class="empty"><h3>No matches</h3><p>Try widening the age range, instrument, or type.</p></div>`;
     refreshMarkers(list); return;
   }
   wrap.innerHTML =
     `<div class="results__count">${list.length} result${list.length!==1?"s":""}</div>` +
     list.map(o=>{
       const ageTxt = o.type==="professional" ? "Adult / pro" : `Ages ${o.ages[0]}–${o.ages[1]}`;
-      const open = o.auditions.filter(a=>a.status==="open").length;
+      const open = openAuditionCount(o);
       const dist = fmtDist(orgDistance(o));
       const cmpOn = compareSet.has(o.id);
       return `<div class="card${o.id===activeOrgId?" is-active":""}${cmpOn?" is-compared":""}" data-id="${o.id}" tabindex="0" role="button" aria-label="${esc(o.name)}, ${esc(o.area)}. Open details.">
@@ -5796,7 +5908,7 @@ function openDetail(id, recenter=true){
   if(map){
     if(prevId && prevId !== id) setPinActive(prevId, false);
     setPinActive(id, true);
-    if(recenter) map.flyTo([o.lat,o.lng], 14, {duration:.6});
+    if(recenter) mapGo([o.lat,o.lng], 14, {duration:.6});
   }
 
   const tiers = o.ensembles.map(e=>`
@@ -5808,7 +5920,8 @@ function openDetail(id, recenter=true){
       <p class="tier__desc">${esc(e.desc)}</p>
     </div>`).join("");
 
-  const perfs = o.performances.map(p=>{
+  const upcoming = upcomingPerformances(o);
+  const perfs = upcoming.map(p=>{
     const d=fmtDate(p.date);
     const ph=priceHTML(p.from, p.source || o.website);
     return `<div class="perf">
@@ -5820,7 +5933,7 @@ function openDetail(id, recenter=true){
       </div>
     </div>`;}).join("");
 
-  const vPrices = o.performances.map(p=>p.from).filter(f=>f&&f.status==="verified").map(f=>Number(f.value));
+  const vPrices = upcoming.map(p=>p.from).filter(f=>f&&f.status==="verified").map(f=>Number(f.value));
   let priceTxt;
   if(vPrices.length){
     const lo=Math.min(...vPrices), hi=Math.max(...vPrices);
@@ -5831,7 +5944,7 @@ function openDetail(id, recenter=true){
     <div class="audrow">
       <div class="audrow__top">
         <span class="lvl">${esc(a.level)}</span>
-        <span class="status status--${a.status}"><span class="d"></span>${statusLabel(a.status)}</span>
+        ${timingBadge(auditionTiming(a))}
       </div>
       <div class="audrow__meta">
         <b>${esc(a.instruments)}</b><br>
@@ -5896,7 +6009,7 @@ function openDetail(id, recenter=true){
 
       <div class="sect">
         <h3 class="sect__h">Upcoming performances</h3>
-        ${perfs || '<p class="tier__desc">No dates announced yet.</p>'}
+        ${perfs || `<p class="tier__desc">No upcoming dates listed here — ${checkSite(o.website)} for their full season.</p>`}
       </div>
 
       <div class="sect">
@@ -5918,32 +6031,92 @@ function openDetail(id, recenter=true){
         Apply on their site
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg>
       </a>
-      <a class="btn btn--ghost detail__cta-row2" href="${esc(o.website)}" target="_blank" rel="noopener">
-        Visit website
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg>
-      </a>
+      <div class="detail__cta-row2">
+        <a class="btn btn--ghost" href="${esc(o.website)}" target="_blank" rel="noopener">
+          Visit website
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg>
+        </a>
+        <button class="btn btn--ghost" id="detailShare" type="button" aria-label="Share ${esc(o.name)}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>
+          Share
+        </button>
+      </div>
     </div>
     <p class="detail__checked">${checkedLine(o)}</p>`;
 
   const panel = $("#detail");
-  panel.classList.add("is-open"); panel.setAttribute("aria-hidden","false");
+  panel.classList.add("is-open"); panel.setAttribute("aria-hidden","false"); panel.inert = false;
+  document.body.classList.add("detail-open");
   $("#detailClose").onclick = closeDetail;
   $("#detailSave").onclick = ()=>{ toggleSave(o.id); openDetail(o.id, false); };
+  $("#detailShare").onclick = ()=>shareOrg(o);
   const howBtn = document.querySelector("#detail [data-open-how]");
   if(howBtn) howBtn.onclick = ()=>openModal("#howModal");
+  setOrgUrl(o.id);   // the address bar now holds this orchestra's own link
   setTimeout(()=>{ if($("#detail").classList.contains("is-open")) $("#detailClose").focus({preventScroll:true}); }, 290);
 }
-function statusLabel(s){return {open:"Open now",upcoming:"Upcoming",rolling:"Rolling"}[s]||s;}
 function clockSvg(){return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`;}
 function gaugeSvg(){return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 13a3 3 0 1 0 3 3"/><path d="M12 3a9 9 0 0 1 9 9"/><path d="M3 12a9 9 0 0 1 4-7.5"/></svg>`;}
 function tagSvg(){return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11V5a2 2 0 0 1 2-2h6l9 9-8 8z"/><circle cx="7.5" cy="7.5" r="1.2" fill="currentColor"/></svg>`;}
 function closeDetail(){
   const p=$("#detail"); p.classList.remove("is-open"); p.setAttribute("aria-hidden","true");
+  p.inert = true;   // a closed panel keeps its content off the keyboard path
+  document.body.classList.remove("detail-open");
   const prevId = activeOrgId;
   activeOrgId=null; $$(".card").forEach(c=>c.classList.remove("is-active"));
   if(map && prevId) setPinActive(prevId, false);
   if(lastFocus && document.contains(lastFocus)) lastFocus.focus({preventScroll:true});
   lastFocus = null;
+  setOrgUrl(null);
+}
+
+/* ============================ SHARE LINKS (Phase 5) ============================
+   Every orchestra has its own address — tutti-orchestra.com/o/<id> — so one parent can
+   text it to another. The host rewrites /o/* to this page (see _redirects). Where there's
+   no rewrite (opening the file directly, a preview), the same link works as #o=<id>. */
+function servedAtRoot(){
+  return /^https?:$/.test(location.protocol) && (location.pathname==="/" || location.pathname.startsWith("/o/"));
+}
+function shareUrlFor(id){
+  return servedAtRoot()
+    ? `${location.origin}/o/${encodeURIComponent(id)}`
+    : `${location.href.split("#")[0]}#o=${encodeURIComponent(id)}`;
+}
+function requestedOrgId(){
+  const p = location.pathname.match(/^\/o\/([a-z0-9-]+)\/?$/);
+  if(p) return p[1];
+  const h = (location.hash||"").match(/^#o=([a-z0-9-]+)$/);
+  return h ? h[1] : null;
+}
+function setOrgUrl(id){
+  try{
+    if(servedAtRoot()) history.replaceState(null, "", id ? `/o/${id}` : "/");
+    else history.replaceState(null, "", id ? `#o=${id}` : location.pathname + location.search);
+  }catch(e){ /* sandboxed previews can refuse history changes — Share still works */ }
+}
+function openRequestedOrg(){
+  const id = requestedOrgId();
+  if(!id) return;
+  if(DATA.some(o=>o.id===id)){ switchView("explore"); openDetail(id, true); }
+  else setOrgUrl(null);   // unknown or unpublished id: quietly land on the map
+}
+async function shareOrg(o){
+  const url = shareUrlFor(o.id);
+  // Phones get the native share sheet (Messages, WhatsApp, email…); everyone else copies the link.
+  const touch = !!(window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
+  if(touch && navigator.share){
+    try{ await navigator.share({title:`${o.name} on Tutti`, text:`${o.name} — ${o.area}`, url}); return; }
+    catch(e){ if(e && e.name==="AbortError") return; /* otherwise fall back to copying */ }
+  }
+  try{ await navigator.clipboard.writeText(url); showToast("Link copied — paste it anywhere."); }
+  catch(e){ showToast("Copy this link: " + url, true); }
+}
+let toastTimer = null;
+function showToast(msg, linger){
+  const t = $("#toast"); if(!t) return;
+  t.textContent = msg; t.classList.add("is-on");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove("is-on"), linger ? 9000 : 2600);
 }
 
 /* ============================ SAVED ============================ */
@@ -6012,7 +6185,9 @@ async function loadSavedFromDb(){
 }
 async function signIn(provider){
   if(!sb) return;
-  const redirectTo = location.origin + location.pathname;
+  // Return to the app itself, not a /o/<id> share address — Supabase only accepts
+  // redirect URLs on its allow-list (the site root on production).
+  const redirectTo = location.origin + location.pathname.replace(/^\/o\/[^/]*\/?$/, "/");
   try{ await sb.auth.signInWithOAuth({ provider, options:{ redirectTo } }); }
   catch(e){ console.warn("Sign-in failed.", e); alert("Sorry — sign-in couldn't start. Please try again."); }
 }
@@ -6111,6 +6286,8 @@ function renderCmpTray(){
   $("#cmpCount").textContent=n;
   $("#cmpTray .cmp-tray__txt").innerHTML = `<b id="cmpCount">${n}</b> selected · pick 2–3 to compare`;
   tray.classList.toggle("is-up", n>0);
+  tray.inert = n===0;   // hidden tray: its buttons stay out of the Tab order
+  document.body.classList.toggle("tray-up", n>0);
   $("#cmpChips").innerHTML = [...compareSet].map(id=>{
     const o=DATA.find(x=>x.id===id);
     return `<span class="cmp-pill">${esc(o.name)}<button data-cmp-rm="${id}" aria-label="Remove ${esc(o.name)}">×</button></span>`;
@@ -6128,13 +6305,13 @@ function openCompare(){
     ["Rating", o=>hasReviews(o)?`<b>${o.reviews.rating.toFixed(1)}</b> / 5 <span style="color:var(--ink-soft)">(${o.reviews.count} reviews)</span>`:`<span style="color:var(--ink-soft)">No aggregated rating yet</span>`],
     ["Program tuition", o=>(o.tuition&&o.tuition.status==="not_applicable")?"No tuition (professional)":(vHTML(o.tuition,o.website)||"—")],
     ["Financial aid", o=>{const f=o.financialAid; if(f&&f.status==="not_applicable")return "—"; if(f&&f.status==="verified")return f.value?"<b style='color:var(--teal)'>Available</b>":"Not offered"; return checkSite((f && f.source) || o.website);}],
-    ["Concerts this season", o=>`<b>${o.performances.length}</b>`, {bestHigh:orgs.map(x=>x.performances.length)}],
+    ["Upcoming concerts listed", o=>`<b>${upcomingPerformances(o).length}</b>`, {bestHigh:orgs.map(x=>upcomingPerformances(x).length)}],
     ["Ensembles / tiers", o=>`<b>${o.ensembles.length}</b>`, {bestHigh:orgs.map(x=>x.ensembles.length)}],
     ["Player ages", o=>o.type==="professional"?"Adult / pro":`${o.ages[0]}–${o.ages[1]}`],
     ["Instruments", o=>(o.instruments||[]).join(", ")],
     ["Rehearsals", o=>vHTML(o.rehearsal,o.website)||"—"],
     ["Commitment", o=>vHTML(o.commitment,o.website)||"—"],
-    ["Open auditions", o=>{const n=o.auditions.filter(a=>a.status==="open").length; return n?`<b style="color:var(--teal)">${n} open now</b>`:"None open now";}],
+    ["Open auditions", o=>{const n=openAuditionCount(o); return n?`<b style="color:var(--teal)">${n} open now</b>`:"None confirmed open";}],
     ["", o=>`<a class="cmp-cell-apply" href="${esc(applyUrlFor(o))}" target="_blank" rel="noopener">Apply ${extSvg()}</a>`],
   ];
   const head = `<tr><th></th>${orgs.map(o=>`<th><p class="cmp-org">${esc(o.name)}</p><span class="cmp-org__area">${pinSvg()} ${esc(o.area)}</span></th>`).join("")}</tr>`;
@@ -6151,48 +6328,80 @@ function openCompare(){
 
 /* ============================ AUDITIONS BOARD ============================ */
 let audStatus="all", audLevel="all", audQuery="";
+// Every audition with its computed timing. Order: open now (soonest deadline first) →
+// apply-by → coming up (soonest first) → year-round → dates unknown → closed (most recent
+// first). Within a group the curated order stands (Array.sort is stable).
 function allAuditions(){
   const rows=[];
-  DATA.forEach(o=>o.auditions.forEach(a=>rows.push({...a, org:o.name, orgId:o.id, area:o.area, website:o.website, applyUrl:o.applyUrl, type:o.type})));
-  const order={open:0,upcoming:1,rolling:2};
-  return rows.sort((a,b)=>order[a.status]-order[b.status]);
+  DATA.forEach(o=>o.auditions.forEach(a=>rows.push({...a, timing:auditionTiming(a), org:o.name, orgId:o.id, area:o.area, website:o.website, applyUrl:o.applyUrl, type:o.type})));
+  return rows.sort((a,b)=>{
+    const g = TIMING_ORDER[a.timing.key] - TIMING_ORDER[b.timing.key];
+    if(g) return g;
+    return a.timing.key==="closed" ? b.timing.sort.localeCompare(a.timing.sort) : a.timing.sort.localeCompare(b.timing.sort);
+  });
 }
-function renderAuditions(){
-  const q=audQuery.trim().toLowerCase();
-  const rows = allAuditions().filter(a=>
-    (audStatus==="all"||a.status===audStatus) &&
-    (audLevel==="all"||a.level===audLevel) &&
-    (!q || a.instruments.toLowerCase().includes(q) || a.org.toLowerCase().includes(q))
-  );
-  const grid=$("#audGrid");
-  if(!rows.length){ grid.innerHTML=`<div class="empty" style="grid-column:1/-1"><h3>No auditions match</h3><p>Try a different level or clear the search.</p></div>`; return; }
-  grid.innerHTML = rows.map(a=>`
-    <div class="aud-card">
+function audMatchesStatus(t){
+  if(audStatus==="all") return true;
+  if(audStatus==="open") return isOpenTiming(t);
+  return t.key===audStatus;     // "upcoming" | "yearround"
+}
+function audCard(a){
+  const closed = a.timing.key==="closed";
+  return `
+    <div class="aud-card${closed?" is-closed":""}">
       <div class="aud-card__top">
         <div>
           <div class="aud-card__org">${esc(a.org)} · ${esc(a.area)}</div>
           <div class="aud-card__title">${esc(a.level)} audition</div>
         </div>
-        <span class="status status--${a.status}"><span class="d"></span>${statusLabel(a.status)}</span>
+        ${timingBadge(a.timing)}
       </div>
       <div class="aud-card__rows">
         <div class="kv">${noteIcon()}<span><b>Instruments:</b> ${esc(a.instruments)}</span></div>
-        <div class="kv">${calIcon()}<span><b>When:</b> ${vHTML(a.window, a.source || a.website)}</span></div>
+        <div class="kv">${calIcon()}<span><b>${closed?"Last round":"When"}:</b> ${vHTML(a.window, a.source || a.website)}</span></div>
         <div class="kv">${userIcon()}<span><b>Ages ${a.ages[0]}–${a.ages[1]}.</b> ${esc(a.note)}</span></div>
       </div>
       <div class="aud-card__foot">
-        <a class="linkout" href="${esc(a.applyUrl||a.website)}" target="_blank" rel="noopener">Audition info ${extSvg()}</a>
+        <a class="linkout" href="${esc(a.applyUrl||a.website)}" target="_blank" rel="noopener">${closed?"Next round on their site":"Audition info"} ${extSvg()}</a>
         <button class="linkout linkout--ghost" data-open="${a.orgId}">Org</button>
       </div>
-    </div>`).join("");
+    </div>`;
+}
+function renderAuditions(){
+  const q=audQuery.trim().toLowerCase();
+  const rows = allAuditions().filter(a=>
+    audMatchesStatus(a.timing) &&
+    (audLevel==="all"||a.level===audLevel) &&
+    (!q || a.instruments.toLowerCase().includes(q) || a.org.toLowerCase().includes(q))
+  );
+  const grid=$("#audGrid");
+  if(!rows.length){
+    const empty = (audStatus==="open" && audLevel==="all" && !q)
+      ? `<h3>Nothing confirmed open right now</h3><p>No audition has confirmed dates that are open today. Switch to “All” to see when each orchestra last held auditions, or check their sites.</p>`
+      : (audStatus==="upcoming" && audLevel==="all" && !q)
+      ? `<h3>No confirmed dates coming up yet</h3><p>When an orchestra posts its next audition dates and we've checked them, they'll show here.</p>`
+      : `<h3>No auditions match</h3><p>Try a different level or clear the search.</p>`;
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1">${empty}</div>`;
+    return;
+  }
+  const current = rows.filter(a=>a.timing.key!=="closed");
+  const closed  = rows.filter(a=>a.timing.key==="closed");
+  grid.innerHTML = current.map(audCard).join("") +
+    (closed.length
+      ? `<h3 class="sect__h board__group">Closed for this round <span>— so you can see when each orchestra usually auditions</span></h3>` + closed.map(audCard).join("")
+      : "");
 }
 function extSvg(){return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg>`;}
 
 /* ============================ PERFORMANCES BOARD ============================ */
 function renderPerformances(){
   const rows=[];
-  DATA.forEach(o=>o.performances.forEach(p=>rows.push({...p, org:o.name, orgId:o.id, type:o.type, website:o.website})));
+  DATA.forEach(o=>upcomingPerformances(o).forEach(p=>rows.push({...p, org:o.name, orgId:o.id, type:o.type, website:o.website})));
   rows.sort((a,b)=>a.date.localeCompare(b.date));
+  if(!rows.length){
+    $("#perfGrid").innerHTML = `<div class="empty" style="grid-column:1/-1"><h3>No upcoming concerts listed</h3><p>Each orchestra's own site has its full season — open any orchestra on the map for its link.</p></div>`;
+    return;
+  }
   $("#perfGrid").innerHTML = rows.map(p=>{
     const d=fmtDate(p.date);
     return `<div class="perf-card">
@@ -6243,205 +6452,20 @@ function closeModal(sel){
   lastFocus=null;
 }
 
-/* ============================ SUBMIT FORM (1.2) ============================ */
-function instChecks(prefix){
-  return INSTRUMENTS.map(i=>`<label><input type="checkbox" name="${prefix}" value="${i}"> ${i}</label>`).join("");
-}
-function levelOptions(){ return LEVELS.map(l=>`<option value="${l}">${l}</option>`).join(""); }
-
-function ensembleRow(){
-  return `<div class="repeat" data-ens>
-    <button type="button" class="repeat__rm" data-rm>Remove</button>
-    <div class="form-grid">
-      <div class="field"><label>Ensemble name <span class="req">*</span></label><input data-f="name" placeholder="e.g. Junior Strings"></div>
-      <div class="field"><label>Level</label><select data-f="level">${levelOptions()}</select></div>
-      <div class="field"><label>Min age</label><input data-f="ageMin" type="number" min="3" max="99" placeholder="8"></div>
-      <div class="field"><label>Max age</label><input data-f="ageMax" type="number" min="3" max="99" placeholder="12"></div>
-      <div class="field field--full"><label>Short description</label><input data-f="desc" placeholder="What this ensemble plays and who it's for"></div>
-    </div>
-  </div>`;
-}
-function perfRow(){
-  return `<div class="repeat" data-perf>
-    <button type="button" class="repeat__rm" data-rm>Remove</button>
-    <div class="form-grid">
-      <div class="field"><label>Date</label><input data-f="date" type="date"></div>
-      <div class="field"><label>Title</label><input data-f="title" placeholder="Fall Concert"></div>
-      <div class="field"><label>Venue</label><input data-f="venue" placeholder="Zipper Hall"></div>
-      <div class="field"><label>Program</label><input data-f="program" placeholder="Brahms · Sibelius"></div>
-      <div class="field"><label>Tickets from ($)</label><input data-f="from" type="number" min="0" placeholder="0 = free"></div>
-    </div>
-  </div>`;
-}
-function audRow(){
-  return `<div class="repeat" data-aud>
-    <button type="button" class="repeat__rm" data-rm>Remove</button>
-    <div class="form-grid">
-      <div class="field"><label>Level</label><select data-f="level">${levelOptions()}</select></div>
-      <div class="field"><label>Status</label><select data-f="status"><option value="open">Open now</option><option value="upcoming">Upcoming</option><option value="rolling">Rolling</option></select></div>
-      <div class="field field--full"><label>Instruments</label><input data-f="instruments" placeholder="Strings, winds, brass…"></div>
-      <div class="field"><label>When</label><input data-f="window" placeholder="Aug 22, 2026"></div>
-      <div class="field"><label>Min age</label><input data-f="ageMin" type="number" min="3" max="99"></div>
-      <div class="field"><label>Max age</label><input data-f="ageMax" type="number" min="3" max="99"></div>
-      <div class="field field--full"><label>Note</label><input data-f="note" placeholder="Prepared excerpt + scales"></div>
-    </div>
-  </div>`;
-}
-
-function buildForm(){
-  $("#subBody").innerHTML = `
-  <form id="orgForm" novalidate>
-    <div class="form-grid">
-      <div class="field field--full"><label for="f-name">Organization name <span class="req">*</span></label>
-        <input id="f-name" data-f="name" placeholder="Los Angeles Youth Orchestra"><span class="field__err">Please add a name.</span></div>
-
-      <div class="field"><label for="f-type">Type <span class="req">*</span></label>
-        <select id="f-type" data-f="type"><option value="">Choose…</option><option value="youth">Youth</option><option value="professional">Professional</option><option value="community">Community</option><option value="collegiate">Collegiate</option></select>
-        <span class="field__err">Please choose a type.</span></div>
-
-      <div class="field"><label for="f-area">Area / neighborhood <span class="req">*</span></label>
-        <input id="f-area" data-f="area" placeholder="West LA"><span class="field__err">Please add an area.</span></div>
-
-      <div class="field"><label for="f-website">Official website <span class="req">*</span></label>
-        <input id="f-website" data-f="website" type="url" placeholder="https://…"><span class="field__err">Please add a valid URL (https://…).</span></div>
-
-      <div class="field"><label for="f-apply">Apply / audition link</label>
-        <input id="f-apply" data-f="applyUrl" type="url" placeholder="Optional — defaults to website"><span class="hint">Where the “Apply” button should send people.</span></div>
-
-      <div class="field"><label for="f-lat">Latitude</label><input id="f-lat" data-f="lat" type="number" step="0.0001" placeholder="34.0561"></div>
-      <div class="field"><label for="f-lng">Longitude</label><input id="f-lng" data-f="lng" type="number" step="0.0001" placeholder="-118.4715"></div>
-
-      <div class="field"><label for="f-season">Season label</label><input id="f-season" data-f="season" placeholder="2026–27 Season"></div>
-      <div class="field"><label for="f-tuition">Program tuition</label><input id="f-tuition" data-f="tuition" placeholder="$650 / semester — leave blank if none"></div>
-
-      <div class="field"><label for="f-ageMin">Youngest player age</label><input id="f-ageMin" data-f="ageMin" type="number" min="3" max="99" placeholder="7"></div>
-      <div class="field"><label for="f-ageMax">Oldest player age</label><input id="f-ageMax" data-f="ageMax" type="number" min="3" max="99" placeholder="18"></div>
-
-      <div class="field field--full"><label for="f-blurb">About the organization <span class="req">*</span></label>
-        <textarea id="f-blurb" data-f="blurb" placeholder="A short, parent-friendly description."></textarea><span class="field__err">Please add a short description.</span></div>
-
-      <div class="field field--full"><label for="f-fit">“Good fit if…” summary</label>
-        <input id="f-fit" data-f="goodFit" placeholder="Good fit if your child wants a friendly first orchestra."></div>
-
-      <div class="field"><label for="f-reh">Rehearsals</label><input id="f-reh" data-f="rehearsal" placeholder="Sunday afternoons"></div>
-      <div class="field"><label for="f-com">Commitment</label><input id="f-com" data-f="commitment" placeholder="Weekly · ~2 hrs"></div>
-
-      <div class="field field--full"><label>Instruments accepted</label>
-        <div class="checks" id="f-instruments">${instChecks("inst")}</div></div>
-
-      <div class="field field--full"><label class="switchline"><input type="checkbox" id="f-aid" data-f="financialAid"> Financial aid / scholarships available</label></div>
-    </div>
-
-    <div class="form-sect">
-      <p class="form-sect__h">Ensembles &amp; tiers <span class="req">*</span></p>
-      <p class="form-sect__note">Add at least one ensemble. Use a row per tier (e.g. beginner strings, youth symphony).</p>
-      <div id="ensList">${ensembleRow()}</div>
-      <button type="button" class="add-row" data-add="ens">${plusSvg()} Add an ensemble</button>
-    </div>
-
-    <div class="form-sect">
-      <p class="form-sect__h">Upcoming performances</p>
-      <p class="form-sect__note">Optional. Add concerts so parents can see what's on.</p>
-      <div id="perfList"></div>
-      <button type="button" class="add-row" data-add="perf">${plusSvg()} Add a performance</button>
-    </div>
-
-    <div class="form-sect">
-      <p class="form-sect__h">Auditions</p>
-      <p class="form-sect__note">Optional. Each one appears on the Auditions board.</p>
-      <div id="audList"></div>
-      <button type="button" class="add-row" data-add="aud">${plusSvg()} Add an audition</button>
-    </div>
-  </form>`;
-
-  // re-add the footer each time we (re)build, so "submit another" works
-  let foot = $("#subModal .modal__foot");
-  if(!foot){
-    foot=document.createElement("div"); foot.className="modal__foot";
-    $("#subModal .modal__panel").appendChild(foot);
-  }
-  foot.innerHTML = `
-    <span class="note">Reviewed before listing. Ratings aren't self-reported — they come from aggregated reviews once you're live.</span>
-    <button type="button" class="btn--submit" id="subSubmit">Submit for review</button>`;
-  $("#subSubmit").onclick = submitOrgForm;
-}
-
-function collectRepeat(scope, fields){
-  return $$(`${scope} .repeat`).map(r=>{
-    const obj={};
-    fields.forEach(f=>{ const el=r.querySelector(`[data-f="${f}"]`); obj[f]=el?el.value.trim():""; });
-    return obj;
-  });
-}
-function submitOrgForm(){
-  const form=$("#orgForm");
-  $$(".field.has-error").forEach(f=>f.classList.remove("has-error"));
-  const get=k=>{ const el=form.querySelector(`[data-f="${k}"]`); return el?el.value.trim():""; };
-
-  // required validation
-  let firstBad=null;
-  const required=[["name"],["type"],["area"],["website"],["blurb"]];
-  required.forEach(([k])=>{
-    const el=form.querySelector(`[data-f="${k}"]`);
-    if(!el.value.trim()){ el.closest(".field").classList.add("has-error"); firstBad=firstBad||el; }
-  });
-  // url sanity
-  const site=get("website");
-  if(site && !/^https?:\/\//i.test(site)){ form.querySelector('[data-f="website"]').closest(".field").classList.add("has-error"); firstBad=firstBad||form.querySelector('[data-f="website"]'); }
-  // at least one ensemble with a name
-  const ensembles=collectRepeat("#ensList", ["name","level","ageMin","ageMax","desc"])
-    .filter(e=>e.name)
-    .map(e=>({name:e.name, level:e.level||"Intermediate", ages:[+e.ageMin||0,+e.ageMax||0], desc:e.desc||""}));
-  if(!ensembles.length){ $("#ensList .repeat:first-child")?.classList.add("has-error"); firstBad=firstBad||$("#ensList input"); }
-
-  if(firstBad){ firstBad.focus(); firstBad.scrollIntoView({block:"center",behavior:"smooth"}); return; }
-
-  const instruments=$$('#f-instruments input:checked').map(c=>c.value);
-  const performances=collectRepeat("#perfList", ["date","title","venue","program","from"])
-    .filter(p=>p.title||p.date)
-    .map(p=>({date:p.date||"", title:p.title||"", venue:p.venue||"", program:p.program||"", from:+p.from||0}));
-  const auditions=collectRepeat("#audList", ["level","status","instruments","window","ageMin","ageMax","note"])
-    .filter(a=>a.instruments||a.window)
-    .map(a=>({level:a.level||"Intermediate", instruments:a.instruments||"", window:a.window||"", status:a.status||"upcoming", ages:[+a.ageMin||0,+a.ageMax||0], note:a.note||""}));
-
-  const tuition=get("tuition");
-  const org = {
-    id: get("name").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,40) || ("org-"+Date.now()),
-    name:get("name"), type:get("type"),
-    lat:+get("lat")||null, lng:+get("lng")||null,
-    area:get("area"), website:site, applyUrl:get("applyUrl")||null,
-    blurb:get("blurb"),
-    ages:[+get("ageMin")||null, +get("ageMax")||null],
-    season:get("season")||"",
-    // rating/reviewCount intentionally omitted — aggregated post-launch, not self-reported
-    instruments,
-    rehearsal:get("rehearsal")||"", commitment:get("commitment")||"",
-    financialAid: $("#f-aid").checked,
-    goodFit:get("goodFit")||"",
-    ensembles,
-    tuition: tuition || null,
-    performances,
-    auditions,
-  };
-
-  console.log("Tutti — submitted organization (prototype, not persisted):", org);
-
-  $("#subBody").innerHTML = `
-    <div class="form-success">
-      <div class="form-success__mark">
-        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m20 6-11 11-5-5"/></svg>
-      </div>
-      <h3>Thanks — we've got ${esc(org.name)}</h3>
-      <p>Your listing is in the review queue. Once it's approved it'll appear on the map for parents and players in ${esc(org.area)}.</p>
-      <p style="color:var(--ink-faint);font-size:12px">Prototype: nothing is saved to a server yet — the full record was logged to the browser console.</p>
-      <div class="form-success__actions">
-        <button class="btn--submit" id="subAnother">Submit another</button>
-        <button class="ghost" id="subDone">Done</button>
-      </div>
-    </div>`;
-  const foot=$("#subModal .modal__foot"); if(foot) foot.style.display="none";
-  $("#subAnother").onclick = ()=>{ buildForm(); const f=$("#subModal .modal__foot"); if(f) f.style.display="flex"; $("#orgForm").querySelector("input").focus(); };
-  $("#subDone").onclick = ()=>closeModal("#subModal");
+/* ============================ SUGGEST AN ORCHESTRA (Phase 5) ============================
+   Listings are curated (no public submission form), so suggestions travel by email to the
+   report inbox. Without a configured inbox the button stays hidden — never a dead end. */
+function initSuggest(){
+  const btn = $("#listBtn"), mail = $("#suggestMail");
+  if(!btn || !mail || !TUTTI_CFG.reportEmail) return;
+  const body = "Orchestra or ensemble name:\nWebsite:\nCity:\nAnything else we should know:\n";
+  mail.href = "mailto:" + TUTTI_CFG.reportEmail +
+    "?subject=" + encodeURIComponent("Tutti — orchestra suggestion") +
+    "&body=" + encodeURIComponent(body);
+  btn.hidden = false;
+  btn.addEventListener("click", ()=>openModal("#suggestModal"));
+  $("#suggestModalClose").addEventListener("click", ()=>closeModal("#suggestModal"));
+  $("#suggestModal").addEventListener("click", e=>{ if(e.target.id==="suggestModal") closeModal("#suggestModal"); });
 }
 
 /* ============================ SEARCH / GEOCODE ============================ */
@@ -6457,9 +6481,9 @@ async function geocode(q){
 async function doSearch(q){
   if(!q.trim()) return;
   const local = DATA.find(o=>o.area.toLowerCase().includes(q.toLowerCase()));
-  if(local && map){ setHome(local.lat, local.lng, q.trim()); map.flyTo([local.lat,local.lng],13,{duration:.7}); return; }
+  if(local && map){ setHome(local.lat, local.lng, q.trim()); mapGo([local.lat,local.lng],13,{duration:.7}); return; }
   const hit = await geocode(q);
-  if(hit && map){ setHome(hit.lat, hit.lng, q.trim()); map.flyTo([hit.lat,hit.lng],13,{duration:.7}); }
+  if(hit && map){ setHome(hit.lat, hit.lng, q.trim()); mapGo([hit.lat,hit.lng],13,{duration:.7}); }
   else { alert("Couldn't find that location. Try a nearby city or use one of the quick locations on the map."); }
 }
 
@@ -6471,23 +6495,13 @@ document.addEventListener("click", e=>{
   const cmpRm = e.target.closest("[data-cmp-rm]");
   const openBtn = e.target.closest("[data-open]");
   const preset = e.target.closest("[data-preset]");
-  const addBtn = e.target.closest("[data-add]");
-  const rmBtn = e.target.closest("[data-rm]");
 
-  if(rmBtn){ rmBtn.closest(".repeat").remove(); return; }
-  if(addBtn){
-    const t=addBtn.dataset.add;
-    if(t==="ens") $("#ensList").insertAdjacentHTML("beforeend", ensembleRow());
-    if(t==="perf") $("#perfList").insertAdjacentHTML("beforeend", perfRow());
-    if(t==="aud") $("#audList").insertAdjacentHTML("beforeend", audRow());
-    return;
-  }
   if(cmpRm){ compareSet.delete(cmpRm.dataset.cmpRm); renderResults(); renderCmpTray(); return; }
   if(cmp){ e.stopPropagation(); toggleCompare(cmp.dataset.cmp); return; }
   if(heart){ e.stopPropagation(); toggleSave(heart.dataset.heart); return; }
   if(card){ openDetail(card.dataset.id); return; }
   if(openBtn){ switchView("explore"); openDetail(openBtn.dataset.open); return; }
-  if(preset){ const p=PRESETS[+preset.dataset.preset]; if(map){ setHome(p.lat,p.lng,p.label); map.flyTo([p.lat,p.lng],p.z,{duration:.7}); } return; }
+  if(preset){ const p=PRESETS[+preset.dataset.preset]; if(map){ setHome(p.lat,p.lng,p.label); mapGo([p.lat,p.lng],p.z,{duration:.7}); } return; }
 });
 document.addEventListener("keydown", e=>{
   if(e.key==="Enter"){ const c=e.target.closest(".card[data-id]"); if(c){ openDetail(c.dataset.id);} }
@@ -6516,7 +6530,7 @@ $("#locSearch").addEventListener("keydown", e=>{ if(e.key==="Enter") doSearch(e.
 $("#nearMe").addEventListener("click", ()=>{
   if(!navigator.geolocation){ alert("Location isn't available in this browser."); return; }
   navigator.geolocation.getCurrentPosition(
-    pos=>{ setHome(pos.coords.latitude,pos.coords.longitude,"your location"); if(map) map.flyTo([pos.coords.latitude,pos.coords.longitude],13,{duration:.7}); },
+    pos=>{ setHome(pos.coords.latitude,pos.coords.longitude,"your location"); mapGo([pos.coords.latitude,pos.coords.longitude],13,{duration:.7}); },
     ()=>alert("Couldn't get your location. Type a city instead.")
   );
 });
@@ -6527,10 +6541,8 @@ $("#cmpClear").addEventListener("click", ()=>{ compareSet.clear(); renderResults
 $("#cmpModalClose").addEventListener("click", ()=>closeModal("#cmpModal"));
 $("#cmpModal").addEventListener("click", e=>{ if(e.target.id==="cmpModal") closeModal("#cmpModal"); });
 
-// submit modal
-$("#listBtn").addEventListener("click", ()=>{ buildForm(); const f=$("#subModal .modal__foot"); if(f) f.style.display="flex"; openModal("#subModal"); });
-$("#subModalClose").addEventListener("click", ()=>closeModal("#subModal"));
-$("#subModal").addEventListener("click", e=>{ if(e.target.id==="subModal") closeModal("#subModal"); });
+// suggest an orchestra (shown only when the report inbox is configured)
+initSuggest();
 $("#privacyModalClose").addEventListener("click", ()=>closeModal("#privacyModal"));
 $("#privacyModal").addEventListener("click", e=>{ if(e.target.id==="privacyModal") closeModal("#privacyModal"); });
 $("#signInModal").addEventListener("click", e=>{ if(e.target.id==="signInModal") closeModal("#signInModal"); });
@@ -6574,6 +6586,7 @@ window.addEventListener("load", async ()=>{
   await loadData();
   if(window.L){ initMap(); }
   else { $("#map").innerHTML='<div style="padding:40px;text-align:center;color:#888">Map library failed to load.</div>'; renderResults(); }
+  openRequestedOrg(); // a shared /o/<id> (or #o=<id>) link opens straight to that orchestra
   restoreSession();   // restore any signed-in session and load that account's Saved list
 });
 </script>

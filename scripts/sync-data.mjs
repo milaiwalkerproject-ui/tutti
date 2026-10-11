@@ -214,10 +214,31 @@ function extraChecks(data) {
     ageOk(o.ages, `${at}.ages`);
     (Array.isArray(o.ensembles) ? o.ensembles : []).forEach((e, j) =>
       ageOk(e?.ages, `${at}.ensembles[${j}].ages`));
-    (Array.isArray(o.auditions) ? o.auditions : []).forEach((a, j) =>
-      ageOk(a?.ages, `${at}.auditions[${j}].ages`));
+    (Array.isArray(o.auditions) ? o.auditions : []).forEach((a, j) => {
+      ageOk(a?.ages, `${at}.auditions[${j}].ages`);
+      auditionDatesOk(a, `${at}.auditions[${j}]`);
+    });
   });
   return errors;
+
+  // "Dates decide" (Phase 5): opensOn/closesOn restate dates from a VERIFIED
+  // window — same source, same as-of date — so they can never appear on an
+  // unconfirmed audition, and a round can't close before it opens. The database
+  // enforces the same two rules (migration 20261010120000_audition_dates.sql).
+  function auditionDatesOk(a, where) {
+    if (a === null || typeof a !== "object") return;
+    const hasDates = a.opensOn != null || a.closesOn != null;
+    if (hasDates && a.window?.status !== "verified")
+      errors.push(
+        `${where}: opensOn/closesOn are only allowed when the audition's window is verified (they restate dates from that cited source)`
+      );
+    if (
+      typeof a.opensOn === "string" &&
+      typeof a.closesOn === "string" &&
+      a.opensOn > a.closesOn
+    )
+      errors.push(`${where}: opensOn (${a.opensOn}) is after closesOn (${a.closesOn})`);
+  }
 }
 
 // --- Embedded bootstrap ------------------------------------------------------

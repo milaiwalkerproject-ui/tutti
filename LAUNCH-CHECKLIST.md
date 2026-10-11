@@ -200,13 +200,27 @@ including on an iPhone.*
 
 ## Step 7 — ⚑ Report-a-problem inbox
 
-1. Create (or choose) the dedicated address — your decision: **one inbox for
-   the whole region**.
-2. Hand the address to Claude Code → it adds `reportEmail` to `config.js`.
+**Decided 2026-10-10: `reports@tutti-orchestra.com`, forwarded to your Gmail** by
+Cloudflare Email Routing (the domain's DNS already lives at Cloudflare). Phase 5
+already put the address in `config.js` — so do these clicks **before** merging
+`phase5/trust-and-sharing`, or the first reports would bounce. About 10 minutes.
 
-*Success looks like: every listing shows "Something off? Report a problem",
-and "How Tutti works" shows the email link. Send yourself a test report —
-it arrives with the org's name in the subject line.*
+1. **dash.cloudflare.com** → **Compute** → **Email Service** → **Email Routing**
+   → **Onboard Domain** → pick `tutti-orchestra.com` → review the records it
+   adds (MX, SPF, DKIM) → **Done**. (Menu names move around now and then; if you
+   can't find it, search the dashboard for "Email Routing".)
+2. **Destination Addresses** → type your Gmail address → submit → open the
+   email Cloudflare sends you → **Verify email address**.
+3. **Routing Rules** → **Create routing rule** → Email pattern `reports`,
+   domain `tutti-orchestra.com` → Action **Send to an email** → Destination:
+   your Gmail → **Save**.
+4. Test from a *different* account (Gmail sometimes hides mail you send to
+   yourself): email reports@tutti-orchestra.com and check it arrives (look in
+   Spam the first time).
+
+*Success looks like: the test email lands in your Gmail. After the merge,
+every listing shows "Something off? Report a problem", "How Tutti works"
+shows the email link, and the top bar shows "Suggest an orchestra".*
 
 ---
 
@@ -241,9 +255,10 @@ database:
 
 - [ ] Announce however feels right (there is no analytics on the site — by
       design, nothing to configure).
-- [ ] **Weekly audition re-check** (your Claude.ai project, every week for
-      now): re-confirm each org's audition window; update `asOf` on
-      confirmed values; flip anything unconfirmable back to `unverified`.
+- [ ] ~~Weekly audition re-check~~ — **replaced 2026-10-10** by two seasonal
+      sweeps (late February, early June) run as scheduled tasks, plus "dates
+      decide" so badges expire on their own. See CURATION.md and
+      PHASE-5-PLAN.md.
 - [ ] Watch the report inbox; every report gets a listing re-check.
 - [ ] Twice-a-year full refresh for everything else (tuition, seasons,
       rehearsal details).
@@ -251,6 +266,36 @@ database:
       they enter via `CURATION.md` (Studio for singles, `data.json` +
       sync for batches) — the scope guard now expects exactly
       `Southern California`.
+
+---
+
+## Step 10 — Phase 5 rollout (trust & sharing, 2026-10-10)
+
+Order matters; each step says what success looks like.
+
+1. ⚑ **Step 7 above** (report inbox forwarding) — test email arrives.
+2. ⚑ **Merge** `phase5/trust-and-sharing` on GitHub (open the pull request →
+   **Merge**). Cloudflare redeploys by itself in a minute or two.
+   *Success: tutti-orchestra.com → Auditions shows no "Open now" badges in
+   October (nothing is open), past concerts are gone from Concerts.*
+3. 🤖/⚑ **Add the two date columns to the live database** (in Terminal, in
+   your Tutti folder, after `git pull`):
+   ```bash
+   npx supabase db push        # applies 20261010120000_audition_dates.sql
+   ```
+   *Success: it lists exactly one new migration and finishes without errors.*
+4. ⚑ **Load the dates** without touching anyone's Saved list:
+   ```bash
+   node scripts/audition-updates-sql.mjs > audition-updates.sql
+   ```
+   Open `audition-updates.sql`, copy everything, paste into Supabase →
+   **SQL Editor** → **Run**.
+   *Success: the last result says `51`. If it's a smaller number, the live
+   database is missing some listings — tell Claude before going further.*
+5. ⚑ **Check on your phone:** open `https://tutti-orchestra.com/o/pyso` —
+   it should open Pasadena Youth Symphony straight away. Tap **Share** and
+   paste the link into a text to yourself: the preview card shows the Tutti
+   image. (Messages caches previews; a brand-new link shows the new card.)
 
 ---
 
@@ -265,6 +310,8 @@ database:
   Services ID domains/return URL must list both your domain and the
   Supabase callback.
 - Stale page in Safari → Cmd+Shift+R before debugging anything else.
+- A `/o/<id>` link shows a 404 → the `_redirects` file didn't deploy; check
+  that the Cloudflare build used the latest `main`.
 - Local dev still works the whole time: `npx supabase start` + the local
   config values (local `npx supabase db reset` wipes only *local* test
   sign-ins/saves — expected, not a bug; production data is untouched).

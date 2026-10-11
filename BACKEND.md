@@ -70,6 +70,11 @@ Serve the front-end from the project folder (any static server works):
 python3 -m http.server 3000      # then open http://127.0.0.1:3000/tutti-orchestra-finder.html
 ```
 
+Serve from the **project folder itself** (since Phase 5 the page loads `/config.js` and
+`/data.json` from the site root). The simple local server has no `/o/<id>` rewrite, so locally
+a share link looks like `…/tutti-orchestra-finder.html#o=pyso` — same behaviour, different
+address. On the real site it's `tutti-orchestra.com/o/pyso`.
+
 You should see the map render from the API. To confirm the API directly:
 
 ```bash

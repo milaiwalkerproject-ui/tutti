@@ -18,6 +18,10 @@ Its entire value is **trust**. These rules are not preferences; they are the pro
   enforces this (RLS) and enforces the verified/unverified shape and the
   Southern California scope (CHECK constraints). Do not loosen migrations to
   "make something work."
+- **Dates decide** (Phase 5, Milai 2026-10-10): a time-sensitive claim must be
+  able to expire on its own. Audition badges are computed from `opensOn` /
+  `closesOn` (only on verified windows); never render the hand-set `status` as
+  "open"/"upcoming", and never show a past concert as upcoming.
 - Ratings stay `null` — no trustworthy source exists. Scope is **Southern
   California** — Bakersfield to San Diego, coast to ~Irvine, ±50 miles
   (Milai's decision, 2026-07-06; borderline calls are hers).
@@ -54,9 +58,19 @@ Its entire value is **trust**. These rules are not preferences; they are the pro
   branch; never patch from memory of an older snapshot. (A stale-snapshot edit
   once deleted the whole auth layer. Recovery exists — `git show <hash>:file` —
   but don't need it.)
-- Work on feature branches (`phase4/<task>`), self-review with /code-review,
+- Work on feature branches (`phase5/<task>`), self-review with /code-review,
   then present Milai a plain-words summary with the done-when evidence. She
   merges (or says "merge it").
+
+## Sister project: Auditioner
+
+`milaiwalkerproject-ui/auditioner` (iPhone/iPad audition-practice app) shares the
+honesty contract. Tutti is **families first**: professional auditions move to
+Auditioner's open-auditions feed once it launches. Anything Auditioner's crawler
+finds reaches Tutti only as `provenanceType: "scraped"`, `listingStatus:
+"in_review"` drafts for Milai to approve. "Prepare in Auditioner" links appear only
+once the app is installable, only on auditions for ages 13+, and only where it has
+that orchestra's list. See PHASE-5-PLAN.md.
 
 ## Escalate to Milai instead of guessing
 

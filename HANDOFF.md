@@ -4,7 +4,7 @@
 
 Tagline: *find an ensemble near you.* ("Tutti" = the musical instruction meaning *everyone plays* — chosen for an inclusive, join-friendly feel.)
 
-This document is the source of truth for anyone (human or Claude) continuing the build. Read it fully before changing the prototype.
+This document orients anyone (human or Claude) continuing the build; it points to the files that define things (`schema.json`, `CLAUDE.md`, the phase plans). Read it fully before changing the app. **Last refreshed 2026-10-10 (Phase 5).**
 
 ---
 
@@ -13,34 +13,33 @@ This document is the source of truth for anyone (human or Claude) continuing the
 - **Primary user:** a parent with a school-age child who plays an instrument and wants to find a suitable youth orchestra to join. They are *not* music professionals; the experience must be friendly and obvious.
 - **Secondary users:** student/collegiate/adult players hunting for auditions; concertgoers looking for what's on.
 - **Core job of the landing page:** drop in a location → see nearby orchestras as map pins → open one and understand *is this right for my kid, what does it cost, and how do they get in.*
-- **Must-have, explicitly requested:** an **Auditions** section in the left nav covering open + upcoming auditions across levels (student → professional), each linking out to the org's own page.
+- **Must-have, explicitly requested:** an **Auditions** section in the left nav covering auditions across levels, each linking out to the org's own page.
+- **Families first (Phase 5, 2026-10-10):** youth and student auditions are Tutti's job. Professional auditions move to **Auditioner**'s feed once it launches (they stay on Tutti until then).
 
 Not a ticketing platform and not a competitor to any single orchestra's site — Tutti is the **discovery + comparison layer** that routes people to the real org.
 
+**Sister project — Auditioner** (`milaiwalkerproject-ui/auditioner`): an iPhone/iPad app that helps players prepare for orchestra auditions. Tutti helps families *find* an orchestra; Auditioner helps players *win the seat*. Same honesty contract. How the two connect is in `PHASE-5-PLAN.md` and `CLAUDE.md`.
+
 ---
 
-## 2. Current state
+## 2. Current state (2026-10-10)
 
-A working **front-end prototype** exists: `tutti-orchestra-finder.html`. It is a single self-contained HTML file (no build step). Everything below is implemented and functional.
+**Live** at **https://tutti-orchestra.com** since July 2026: 36 published, curated organizations across Southern California (24 youth, 10 professional, 2 community) in six regions — Greater Los Angeles, Orange County, San Diego County, Ventura County, Kern County, Inland Empire.
 
 **What works**
-- Map-first landing using Leaflet, with location search (Enter), **Near me** (geolocation), and quick-location chips.
-- Color-coded note-head pins; legend bottom-left.
-- Left **results rail** synced to the map, filterable by **type** (All / Youth / Professional / Community) and **player age**.
-- **Detail slide-over** (from right) per org: blurb, ensembles broken out by **tier + age + level**, **upcoming performances with ticket prices**, tickets/tuition, auditions, and **Visit website** link-out.
-- Left icon nav with four views: **Explore** (map), **Auditions**, **Concerts**, **Saved**.
-- **Auditions board:** every audition aggregated across orgs, filterable by status (Open / Upcoming / Rolling), level, and instrument/org search; each card links to the org's audition page.
-- **Concerts board:** all performances, soonest first, with pricing.
-- **Saved:** heart any org (session-only).
-- Mobile: rail/map toggle, responsive boards, keyboard focus, reduced-motion support.
-- A persistent "prototype — sample data" ribbon so nothing reads as a real claim.
+- Map-first landing (Leaflet + Stadia tiles), location search, **Near me**, quick-location chips, note-head pins coloured by type.
+- Results rail with type / player age / instrument filters, sorting, and an "Auditions open now" toggle; **Compare** for 2–3 orgs.
+- Orchestra panel: blurb, "Good fit if…", facts at a glance, ensembles by tier, upcoming performances, tickets/tuition, auditions, **Apply on their site**, **Visit website**, **Share**, "Details last checked <month>", **Report a problem**, "How we check listings".
+- **Auditions board** with date-driven badges (Phase 5): Open now · until <date> / Apply by <date> / Opens <date> / Year-round / Dates: check their site / Closed for this round (grouped last).
+- **Concerts board** — upcoming only; past dates drop off by themselves.
+- **Saved**, synced to an account with Google sign-in (Apple sign-in prepared, not yet switched on).
+- **Share links:** every orchestra at `/o/<id>`; link preview image; favicon.
+- "How Tutti works" dialog; "Suggest an orchestra" (email to the report inbox).
+- Phones, keyboard focus, reduced motion (the map jumps instead of flying).
 
-**What is fake / not real yet**
-- All listings in the prototype are **illustrative sample data**. Org *names* are real public organizations placed at approximate real coordinates, but **season, ticket prices, tuition, audition windows, and some website URLs are placeholders.**
-- No backend, no database, no accounts. Saved state is in-memory and resets on reload.
-- Geocoding is best-effort via the public Nominatim endpoint (rate-limited; usage-policy constrained).
+**Every parent-facing fact** is either verified with a cited source and an as-of date, or shown as "Check their site". The database enforces it (see §7).
 
-> **Phase 2 in progress — the data model is changing.** The finalized real-data contract now lives in `schema.json` + `SCHEMA.md` (see section 4). Once the real LA dataset (Phase 2.2) lands, the blanket "everything is sample data" framing above stops being true: confirmed facts are shown with a cited source, and facts we *couldn't* confirm render as **"Check their site"** rather than a placeholder. The "sample data" ribbon stays only as long as listings are still sample data.
+**What's still open** — see `PHASE-5-PLAN.md` → *Next tasks* (rollout, sweeps, Auditioner links, Google-readable org pages, "Confirmed by the organization", Apple sign-in).
 
 ---
 
@@ -48,15 +47,18 @@ A working **front-end prototype** exists: `tutti-orchestra-finder.html`. It is a
 
 | Concern | Choice | Notes |
 |---|---|---|
-| Structure | Single `.html` file, vanilla JS, no framework | Renders directly in a browser or as a Claude artifact. No build/tooling. |
-| Map | **Leaflet 1.9.4** via cdnjs | `L.divIcon` note-head pins; `L.layerGroup` for markers. |
-| Tiles | **CARTO Positron** (`light_all`) | Muted base so brass/garnet pins read clearly. |
-| Geocoding | **Nominatim** (OpenStreetMap), best-effort | Falls back to matching a known `area` string first, so demo never hard-fails. |
-| "Near me" | `navigator.geolocation` | |
-| Fonts | Google Fonts: **Fraunces** (display), **Mulish** (body/UI) | |
-| State | Plain JS module-scope variables + a `Set` for saved | **No `localStorage`** — it is unsupported in Claude artifacts and will break rendering there. Keep all state in memory. |
+| App | One file, `tutti-orchestra-finder.html` — vanilla JS, no framework, no build step | Also renders as a Claude artifact (falls back to the embedded dataset). |
+| Config | `config.js` (public values only: Supabase URL + anon key, Stadia key, report inbox) | Loaded as `/config.js` so it resolves on `/o/<id>` share addresses. |
+| Data | **Supabase** Postgres — RLS (published-only), honesty CHECKs, `org_listings` read view | Load order: API → `/data.json` → embedded copy. |
+| Source of truth | `data.json` → `node scripts/sync-data.mjs` regenerates `supabase/seed.sql` and the embedded copy | `--check` fails on any drift. Live refresh: `scripts/audition-updates-sql.mjs`. |
+| Map | Leaflet 1.9.4 (cdnjs); **Stadia** "Alidade Smooth" tiles with the key, Carto fallback | Note-head `L.divIcon` pins. |
+| Search | Matches a known listing area first, then OpenStreetMap **Nominatim** (best-effort, rate-limited) | New orgs get coordinates once, at curation time. |
+| Accounts | Supabase Auth — Google (Apple ready to switch on) | Powers Saved only. |
+| Hosting | **Cloudflare** static assets (`wrangler.jsonc`) — deploys on every push to `main` | `_redirects`: `/` and `/o/*` serve the app. |
+| Fonts | Fraunces (display), Mulish (body) via Google Fonts | |
+| State | In memory + Supabase | **No `localStorage`/`sessionStorage`.** |
 
-**Important constraint:** if work continues *inside Claude artifacts*, never introduce `localStorage`/`sessionStorage`, and keep external scripts to cdnjs. If/when the project graduates to a real hosted app, these constraints lift — see the Delegation Plan.
+Run it locally: `BACKEND.md`. Put it online / roll out a phase: `LAUNCH-CHECKLIST.md`.
 
 ---
 
@@ -66,14 +68,15 @@ A working **front-end prototype** exists: `tutti-orchestra-finder.html`. It is a
 
 There are effectively two models, and it matters which one you're touching:
 
-- **Prototype model (current `tutti-orchestra-finder.html`):** the inline `DATA[]` array, where every fact is a plain value. This still describes the shipped prototype file.
-- **Real-data model (Phase 2 onward):** what `schema.json` defines. The external `data.json` (Phase 2.2) and the HTML rebuild (Phase 2.3) target *this* one. Build new work against the schema, not against the inline prototype array.
+The app, `data.json`, the database and the API all use the one model `schema.json` defines (the early prototype's plain-value `DATA[]` array is gone).
 
-**Two changes in the real model you must know before touching anything:**
+**Three things you must know before touching anything:**
 
 1. **Verifiable facts carry a status, not just a value.** The volatile, parent-facing fields — `season`, `tuition`, `rehearsal`, `commitment`, `financialAid`, each performance's price (`from`), and each audition's `window` — are now small objects with `status: "verified" | "unverified" | "not_applicable"`. The UI shows the value when **verified** (which requires a cited `source`), **"Check their site"** when **unverified**, and hides the row when **not_applicable**. The schema forbids an unverified field from carrying a value, so a guess can't masquerade as confirmed. Stable identity fields (name, type, lat/lng, website) and editorial fields (`blurb`, `goodFit`) stay plain values. See `SCHEMA.md` for the full list and examples.
 
 2. **Ratings are absent until a real source exists.** The prototype's `rating` / `reviewCount` / `ratingSource` were fake. The real model has a single `reviews` object that is **`null` until a genuine aggregated source exists** — never invented, never self-reported by orgs. Any code that renders stars or offers a "Highest rated" sort must handle `reviews: null` gracefully.
+
+3. **Dates decide (Phase 5).** An audition may carry `opensOn` / `closesOn`, restating dates from its *verified* window. The badge parents see is computed from them and today's date — the hand-set `status` never says "open" on its own any more. Only on verified windows (schema, sync script, DB CHECK). Table of badges: `SCHEMA.md`.
 
 The real model also adds lifecycle hooks — `listingStatus` (draft / in_review / **published**), `provenanceType` (curated / self_submitted / scraped), and `submittedBy` — so self-serve submissions and scrape-then-review can plug in later (Phase 3) without a schema change. Only `published` listings should reach parents.
 
@@ -84,7 +87,8 @@ Prototype-only config that is **not** org data: `PRESETS[]` = quick map location
 - A performance price of `0` renders as "Free"; the detail-panel price range is computed across all performance prices.
 - A tuition row is hidden when tuition is `not_applicable` (pro orgs); shown as a value when `verified`; shown as **"Check their site"** when `unverified`.
 - Age filter checks **ensemble** age overlap, not just org `ages`.
-- Auditions board sorts open → upcoming → rolling.
+- Auditions board sorts open now → apply-by → coming up → year-round → dates unknown → closed (closed rounds grouped last).
+- Concerts and the price range only use performances dated today or later.
 
 ---
 
@@ -115,31 +119,38 @@ The aesthetic is "modern map app meets concert programme" — warm, refined, but
 
 ## 6. Code layout (within the single file)
 
-Top-to-bottom: `<style>` (tokens → shell → topbar → nav → explore/rail/map → detail → boards → mobile) → markup (topbar, nav, four `<section class="view">` blocks, ribbon) → `<script>` (DATA → PRESETS → state → filter logic → results rail → map → detail panel → saved → auditions board → concerts board → view switching → search/geocode → event listeners → boot).
+Top-to-bottom: head (link-preview tags, `/config.js`, supabase-js) → `<style>` (tokens → shell → topbar → nav → explore/rail/map → detail → boards → modals → ribbon/toast → mobile) → markup (topbar, nav, four `<section class="view">` blocks, dialogs, ribbon, toast) → the embedded dataset (`<script id="bootstrap-data">`, generated) → `<script>` (loader → verifiable-field helpers → state → audition timing → filters → rail → map → panel → share links → saved/auth → compare → boards → view switching → dialogs → suggest → search → events → boot).
 
 **Watch-outs learned the hard way**
 - CSS specificity traps: a class like `.board { display:flex }` will silently override `.view { display:none }` (equal specificity, later rule wins) and make hidden views leak. Keep **display** controlled by `.view` / `.view.is-active`, and use separate classes only for non-display styling. (This bug already bit us once — the boards overlapped the map.)
 - Leaflet needs `map.invalidateSize()` after a hidden container becomes visible (handled on view switch + boot).
+- `.map-wrap` uses `isolation:isolate` so Leaflet's own z-indexes (zoom buttons at 1000) stay under the panel and dialogs.
+- Anything off-screen but still in the DOM (closed panel, hidden compare tray) is `inert`, so Tab can't land in it and scroll the shell.
+- Use `mapGo()`, not `map.flyTo()`, so reduced-motion visitors get a jump.
 
 ---
 
-## 7. Known limitations & honest-data rules
+## 7. Honest-data rules (enforced, not just intended)
 
-- **Never present an unconfirmed fact as real.** In the prototype that means keeping the "sample data" labeling. In the real model it means the rule is enforced by the data: a fact is only shown as a value when its `status` is `verified` (with a cited `source`); anything `unverified` renders as **"Check their site"**, never as a guessed value. Don't hand-write a tuition, price, date, or audition window into a `verified` field without a real source.
-- **Never invent or self-report ratings.** `reviews` stays `null` until a genuine aggregated source exists.
-- The "prototype / sample data" ribbon stays until real published listings exist; retire it per-listing (or globally) only once data is genuinely real and verified.
-- Some sample `website` URLs in the prototype are best-guess homepages; verify before any are treated as authoritative.
-- Nominatim and CARTO tiles are free/community resources with rate limits and attribution requirements — fine for a prototype, not for production scale.
+- **A fact is shown as a value only when it's `verified`** — value + cited `source` + `asOf`. Anything else renders **"Check their site"**. The database refuses a verified fact without source/as-of and an unverified fact with a value.
+- **Time-sensitive claims expire by themselves.** Audition badges come from confirmed dates; past concerts vanish. Never render a hand-set status as current.
+- **Only published listings reach parents** (RLS, and the view filters too). **Scope** is a closed list of six Southern California regions (DB CHECK).
+- **Never invent or self-report ratings.** `reviews` stays `null`.
+- **Curated only.** No public submission form; suggestions arrive by email and a person checks them.
+- **Refresh:** two seasonal sweeps a year (late Feb, early June) plus a re-check for every report (CURATION.md).
 
 ---
 
-## 8. Open product decisions (need a human call)
+## 8. Product decisions — made, and still open
 
-1. **How does data get in and stay current?** Manual curation vs. org self-service submissions vs. scrape-then-review. This is the real business problem; the UI is the easy part.
-2. **Geographic scope for v1.** Prototype is greater Los Angeles. One metro done well > thin national coverage.
-3. **Map/geocoding/search at scale** (stay on OSM/Nominatim, or move to Mapbox/Google for reliability + quota).
-4. **Monetization / sustainability**, if any (free directory, org listings, sponsorship).
-5. **Trust:** how listings are verified so a parent can rely on them.
+**Made** (details in the phase plans): curated sourcing with Milai's approval (Phase 2); Southern California scope, six regions (2026-07-06); Stadia tiles, free at launch, dedicated report inbox (Phase 4); families first, dates decide, seasonal sweeps, share links, Auditioner link rules (Phase 5).
+
+**Still open (Milai's call):**
+1. When and how professional auditions hand over to Auditioner (waits on Auditioner's feed).
+2. Becoming findable on Google — one generated page per orchestra (Phase 5 task 5.6).
+3. "Confirmed by the organization" badge and the email loop with orgs.
+4. Sustainability beyond "free" — revisit only with real usage (there is no analytics, by design).
+5. A second region beyond Southern California (`EXPANSION-PLAYBOOK.md`).
 
 ---
 
@@ -154,4 +165,4 @@ Top-to-bottom: `<style>` (tokens → shell → topbar → nav → explore/rail/m
 
 ---
 
-*Current prototype build file: `tutti-orchestra-finder.html`. The data contract now lives in `schema.json` + `SCHEMA.md`; the design tokens are in section 5. Treat both as stable contracts — change them deliberately, not incidentally.*
+*App: `tutti-orchestra-finder.html`. Data contract: `schema.json` + `SCHEMA.md`. Design tokens: section 5. Standing rules: `CLAUDE.md`. Current phase: `PHASE-5-PLAN.md`. Treat the contracts as stable — change them deliberately, not incidentally.*
